@@ -1,0 +1,104 @@
+import React from 'react';
+import { StyleSheet, View, Text, Image, Dimensions } from 'react-native';
+import { useRouter } from 'expo-router';
+import Button from '@/components/common/Button';
+import Colors from '@/constants/Colors';
+import Typography from '@/constants/Typography';
+import Spacing from '@/constants/Spacing';
+
+const { width } = Dimensions.get('window');
+
+export default function OnboardingScreen() {
+  const router = useRouter();
+
+  const handleGetStarted = () => {
+    router.push('/(auth)/login');
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.logoContainer}>
+        <Image 
+          source={{ uri: 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg' }} 
+          style={styles.image}
+        />
+        <Text style={styles.logoText}>Bizmitra</Text>
+      </View>
+      
+      <View style={styles.contentContainer}>
+        <Text style={styles.title}>Connect. Collaborate. Grow.</Text>
+        <Text style={styles.subtitle}>
+          Build your local business network, discover opportunities, 
+          and grow your business with Bizmitra.
+        </Text>
+      </View>
+      
+      <View style={styles.footer}>
+        <Button
+          title="Get Started"
+          onPress={handleGetStarted}
+          variant="primary"
+          size="large"
+          style={styles.button}
+        />
+        <Text style={styles.termsText}>
+          By continuing, you agree to our Terms of Service and Privacy Policy.
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.white,
+    paddingHorizontal: Spacing.lg,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginTop: Spacing.xxl * 2,
+    marginBottom: Spacing.xl,
+  },
+  image: {
+    width: width * 0.4,
+    height: width * 0.4,
+    borderRadius: (width * 0.4) / 2,
+  },
+  logoText: {
+    fontSize: Typography.size.xxxl,
+    fontWeight: Typography.weight.bold as any,
+    color: Colors.primary[600],
+    marginTop: Spacing.md,
+  },
+  contentContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: Typography.size.xxl,
+    fontWeight: Typography.weight.bold as any,
+    color: Colors.gray[800],
+    textAlign: 'center',
+    marginBottom: Spacing.md,
+  },
+  subtitle: {
+    fontSize: Typography.size.md,
+    color: Colors.gray[600],
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  footer: {
+    marginBottom: Spacing.xxl,
+  },
+  button: {
+    width: '100%',
+    marginBottom: Spacing.md,
+  },
+  termsText: {
+    fontSize: Typography.size.sm,
+    color: Colors.gray[500],
+    textAlign: 'center',
+  },
+});
