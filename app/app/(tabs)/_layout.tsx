@@ -40,6 +40,14 @@ export default function TabLayout() {
       <Tabs.Screen
         name="circles"
         options={{
+          title: 'Directory',
+          tabBarIcon: ({ color, size }) => <Users size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="circles-old"
+        options={{
+          href: null,
           title: 'Circles',
           tabBarIcon: ({ color, size }) => <Users size={size} color={color} />,
         }}
@@ -47,6 +55,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="marketplace"
         options={{
+          href: null,
           title: 'Marketplace',
           tabBarIcon: ({ color, size }) => (
             <ShoppingBag size={size} color={color} />
@@ -56,6 +65,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="chats"
         options={{
+          href: null,
           title: 'Chats',
           tabBarIcon: ({ color, size }) => (
             <MessageSquare size={size} color={color} />
