@@ -81,7 +81,7 @@ export default function RegisterScreen() {
       <View style={styles.card}>
         <View style={styles.iconContainer}>
           <LinearGradient
-            colors={['#6A5AE0', '#B05CE2']}
+            colors={['#369cd6', '#d2853d']}
             style={styles.iconGradient}
           >
             <Feather name="user" size={32} color="white" />
@@ -149,7 +149,7 @@ export default function RegisterScreen() {
 
         {/* Button */}
         <TouchableOpacity style={styles.button} onPress={handleRegister}>
-          <LinearGradient colors={['#6A5AE0', '#B05CE2']} style={styles.button}>
+          <LinearGradient colors={['#369cd6', '#d2853d']} style={styles.button}>
             <Text style={styles.buttonText}>Register</Text>
           </LinearGradient>
         </TouchableOpacity>
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     color: '#444',
   },
   linkText: {
-    color: '#6A5AE0',
+    color: '#369cd6',
     fontWeight: '600',
   },
   footer: {

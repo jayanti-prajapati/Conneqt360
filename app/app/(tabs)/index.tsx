@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { 
-  StyleSheet, 
-  View, 
-  Text, 
-  ScrollView, 
+import {
+  StyleSheet,
+  View,
+  Text,
+  ScrollView,
   TouchableOpacity,
   SafeAreaView,
   TextInput
@@ -120,7 +120,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
@@ -149,10 +149,10 @@ export default function HomeScreen() {
           />
         ))}
       </ScrollView>
-
+      {/* 
       <TouchableOpacity style={styles.floatingButton} onPress={handleNewPost}>
         <Plus size={24} color={Colors.white} />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </SafeAreaView>
   );
 }

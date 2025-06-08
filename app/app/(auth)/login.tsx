@@ -33,7 +33,8 @@ export default function LoginScreen() {
       <View style={styles.card}>
         <View style={styles.iconContainer}>
           <LinearGradient
-            colors={['#6A5AE0', '#B05CE2']}
+            colors={['#369cd6', '#d2853d']}
+
             style={styles.iconGradient}
           >
             <Feather name="user" size={32} color="white" />
@@ -92,7 +93,7 @@ export default function LoginScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.button} onPress={handleLogin} >
-          <LinearGradient colors={['#6A5AE0', '#B05CE2']} style={styles.button}>
+          <LinearGradient colors={['#369cd6', '#d2853d']} style={styles.button}>
 
             <Text style={styles.buttonText}>{isEmailLogin ? "Login" : "Send OTP"}</Text>
           </LinearGradient>
@@ -199,7 +200,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   forgotText: {
-    color: '#6A5AE0',
+    color: '#369cd6',
     fontSize: 14,
   },
   button: {
@@ -243,7 +244,7 @@ const styles = StyleSheet.create({
     color: '#444',
   },
   linkText: {
-    color: '#6A5AE0',
+    color: '#369cd6',
     fontWeight: '600',
   },
   footer: {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, Image, Dimensions, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, Image, Dimensions, TouchableOpacity, ImageBackground } from 'react-native';
 import { useRouter } from 'expo-router';
 import Button from '@/components/common/Button';
 import Colors from '@/constants/Colors';
@@ -17,27 +17,33 @@ export default function OnboardingScreen() {
   };
 
   return (
+
     <View style={styles.container}>
       <View style={styles.logoContainer}>
         <Image
           source={{ uri: 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg' }}
           style={styles.image}
         />
-        <Text style={styles.logoText}>Bizmitra</Text>
+        <Image
+          source={require('@/assets/images/logo.png')} // <-- Your local logo image
+          style={styles.logoImage}
+          resizeMode="contain"
+        />
+        {/* <Text style={styles.logoText}>Connect360</Text> */}
       </View>
 
       <View style={styles.contentContainer}>
         <Text style={styles.title}>Connect. Collaborate. Grow.</Text>
         <Text style={styles.subtitle}>
           Build your local business network, discover opportunities,
-          and grow your business with Bizmitra.
+          and grow your business with Connect360.
         </Text>
       </View>
 
       <View style={styles.footer}>
 
         <TouchableOpacity style={styles.button} onPress={handleGetStarted} >
-          <LinearGradient colors={['#6A5AE0', '#B05CE2']} style={styles.button}>
+          <LinearGradient colors={['#369cd6', '#d2853d']} style={styles.button}>
 
             <Text style={styles.buttonText}>Get Started</Text>
           </LinearGradient>
@@ -55,6 +61,7 @@ export default function OnboardingScreen() {
         </Text>
       </View>
     </View>
+
   );
 }
 
@@ -69,6 +76,10 @@ const styles = StyleSheet.create({
     marginTop: Spacing.xxl * 2,
     marginBottom: Spacing.xl,
   },
+  background: {
+    flex: 1,
+    justifyContent: 'center',
+  },
   image: {
     width: width * 0.4,
     height: width * 0.4,
@@ -77,7 +88,7 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: Typography.size.xxxl,
     fontWeight: Typography.weight.bold as any,
-    color: '#6A5AE0',
+    color: '#369cd6',
 
     marginTop: Spacing.md,
   },
@@ -113,6 +124,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     // marginBottom: 20,
+  },
+  logoImage: {
+    width: 200,
+    height: 100,
+    marginBottom: 12,
   },
   termsText: {
     fontSize: Typography.size.sm,
