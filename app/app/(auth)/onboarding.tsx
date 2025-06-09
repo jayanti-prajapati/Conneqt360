@@ -43,7 +43,12 @@ export default function OnboardingScreen() {
       <View style={styles.footer}>
 
         <TouchableOpacity style={styles.button} onPress={handleGetStarted} >
-          <LinearGradient colors={['#369cd6', '#d2853d']} style={styles.button}>
+          <LinearGradient
+            colors={['#1F73C6', '#F7941E']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.button}
+          >
 
             <Text style={styles.buttonText}>Get Started</Text>
           </LinearGradient>
@@ -88,7 +93,7 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: Typography.size.xxxl,
     fontWeight: Typography.weight.bold as any,
-    color: '#369cd6',
+    color: '#1F73C6',
 
     marginTop: Spacing.md,
   },

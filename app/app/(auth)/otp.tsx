@@ -49,7 +49,7 @@ export default function OTPScreen() {
             keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
         >
             <View style={styles.card}>
-                <Ionicons name="shield-checkmark-outline" size={48} color="#369cd6" />
+                <Ionicons name="shield-checkmark-outline" size={48} color="#1F73C6" />
                 <Text style={styles.title}>Enter Verification Code</Text>
                 <Text style={styles.subtitle}>
                     We've sent a 6-digit code to your registered number.
@@ -73,7 +73,9 @@ export default function OTPScreen() {
                 </View>
 
                 <TouchableOpacity onPress={handleVerify} style={styles.button}>
-                    <LinearGradient colors={['#369cd6', '#d2853d']} style={styles.button}>
+                    <LinearGradient colors={['#1F73C6', '#F7941E']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }} style={styles.button}>
                         <Text style={styles.buttonText}>Verify OTP</Text>
                     </LinearGradient>
                 </TouchableOpacity>
@@ -148,7 +150,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     resendText: {
-        color: '#369cd6',
+        color: '#1F73C6',
         textDecorationLine: 'underline',
         marginTop: 6,
     },

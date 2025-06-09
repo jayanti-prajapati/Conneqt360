@@ -10,38 +10,52 @@ import {
 } from 'lucide-react-native';
 import Colors from '@/constants/Colors';
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
+import TabBarBackground from '@/components/tabs/TabBarBackground';
+import BottomView from '@/components/bottomViewExpo';
 
 export default function TabLayout() {
   return (
     <View style={styles.container}>
-      <Tabs
+      {/* <Tabs
         screenOptions={{
-          tabBarActiveTintColor: Colors.primary[600],
-          tabBarInactiveTintColor: Colors.gray[400],
-          tabBarStyle: {
-            backgroundColor: Colors.white,
-            borderTopWidth: 1,
-            borderTopColor: Colors.gray[200],
-            height: 100,
-            paddingBottom: 18,
-            paddingTop: 10,
-
-          },
-          tabBarLabelStyle: {
-            fontSize: 12,
-            fontWeight: '500',
-          },
           headerShown: false,
+          tabBarStyle: {
+            backgroundColor: '#ffffff',
+            borderTopWidth: 1,
+            borderTopColor: '#f0f0f0',
+            height: 80,
+            paddingBottom: 20,
+            paddingTop: 20,
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            shadowColor: '#000',
+            shadowOffset: {
+              width: 0,
+              height: -2,
+            },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 10,
+          },
+          tabBarActiveTintColor: '#007AFF',
+          tabBarInactiveTintColor: '#8E8E93',
+          tabBarShowLabel: false,
+          tabBarBackground: () => <TabBarBackground />,
         }}
-      >
-        <Tabs.Screen
+
+      > */}
+      {/* <Tabs.Screen
           name="index"
           options={{
             title: 'Home',
             tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
           }}
-        />
-        <Tabs.Screen
+        /> */}
+      {/* <Tabs.Screen
           name="circles"
           options={{
             title: 'Direcstory',
@@ -82,13 +96,15 @@ export default function TabLayout() {
             title: 'Profile',
             tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
           }}
-        />
+        /> */}
 
 
-      </Tabs >
-      <TouchableOpacity style={styles.centerButton} activeOpacity={0.8}>
+      {/* </Tabs > */}
+      <BottomView />
+      {/* Uncomment the following line to add a center button */}
+      {/* <TouchableOpacity style={styles.centerButton} activeOpacity={0.8}>
         <Plus color="#ffffff" size={28} strokeWidth={2.5} />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 }
@@ -99,7 +115,7 @@ const styles = StyleSheet.create({
   },
   centerButton: {
     position: 'absolute',
-    bottom: 70,
+    bottom: 50,
     alignSelf: 'center',
     width: 60,
     height: 60,
