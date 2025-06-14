@@ -43,12 +43,13 @@ const userSchema = new Schema<IUser>({
 
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
-  this.password = await bcrypt.hash(this.password, 10);
+  //this.password = await bcrypt.hash(this.password, 10); --convert password into hash
   next();
 });
 
 userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
-  return bcrypt.compare(candidatePassword, this.password);
+  //return bcrypt.compare(candidatePassword, this.password);
+  return candidatePassword === this.password;
 };
 
 export const User = mongoose.model<IUser>('User', userSchema);
