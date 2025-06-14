@@ -37,7 +37,7 @@ export const register = async (req: Request, res: Response): Promise<any> => {
       businessName,
       phone,
       location,
-      businessType,
+      businessType
     });
 
     await user.save();
