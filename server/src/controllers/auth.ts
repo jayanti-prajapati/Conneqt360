@@ -1,16 +1,20 @@
 import { NextFunction, Request, Response } from "express";
 import { User } from '../models/User';
+const admin = require('firebase-admin');
 import { z } from "zod";
-
+// OTP sending
+const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+import { sendOTP } from '../services/otpService';
 const jwt = require("jsonwebtoken");
 
 export const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
-  businessName: z.string().min(2),
+  confirmPassword: z.string().min(6),
+  // businessName: z.string().min(2),
   phone: z.string().min(10),
-  location: z.string(),
-  businessType: z.string()
+  // location: z.string(),
+  // businessType: z.string()
 });
 
 export const loginSchema = z.object({
@@ -21,7 +25,7 @@ export const loginSchema = z.object({
 
 export const register = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { email, password, businessName, phone, location, businessType } = req.body;
+    const { email, password, confirmPassword, phone } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -34,10 +38,10 @@ export const register = async (req: Request, res: Response): Promise<any> => {
     const user = new User({
       email,
       password: password,
-      businessName,
+      confirmPassword: confirmPassword,
       phone,
-      location,
-      businessType
+      // location,
+      // businessType
     });
 
     await user.save();
@@ -63,7 +67,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     const user = await User.findOne({ email });
     console.log("user", user);
-    
+
     if (!user) {
       res.status(401).json({ message: "Invalid User" });
       return;
@@ -75,7 +79,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-     const token = jwt.sign(
+    const token = jwt.sign(
       { email: user.email },
       process.env.JWT_SECRET_KEY,
       {
@@ -83,10 +87,10 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       }
     );
 
-  
- res.cookie("authToken", token, {
+
+    res.cookie("authToken", token, {
       httpOnly: true,
-      secure: true, 
+      secure: true,
       maxAge: 24 * 60 * 60 * 1000,
       sameSite: "none",
       path: "/",
@@ -97,12 +101,12 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       user: {
         id: user._id,
         email: user.email,
-        businessName: user.businessName,
+        // businessName: user.businessName,
         phone: user.phone,
-        location: user.location,
-        businessType: user.businessType,
+        // location: user.location,
+        // businessType: user.businessType,
         verified: user.verified,
-        token : token
+        token: token
       },
     });
   } catch (error: any) {
@@ -119,34 +123,56 @@ interface OTPEntry {
 export const otpStore: { [phone: string]: OTPEntry } = {};
 
 
-// OTP sending
-const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+// Adjust the import path as necessary
 
 export const otpLogin = async (req: Request, res: Response) => {
-  try {
-    const { phone } = req.body;
 
-    const user = await User.findOne({ phone });
-    if (!user) {
-      return res.status(404).json({ message: "Mobile number not registered" });
-    }
+  const serviceAccount = require('./firebaseServiceAccountKey.json');
 
-    //const otp = generateOTP();
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+  });
 
-     const otp = "12345";
+  const { phone } = req.body;
 
-    otpStore[phone] = {
-      otp,
-      expiry: Infinity,  //Date.now() + 5 * 60 * 1000, //5 min expiry
-    };
+  if (!phone) return res.status(400).json({ error: 'Phone number is required' });
 
-    console.log(`Otp for ${phone}: ${otp}`);
-     res.status(200).json({ message: "OTP sent to your mobile number" });
+  res.status(200).json({ message: 'OTP request initiated on client', phone });
+  // try {
 
-  } catch (error: any) {
-    console.error("sendOtp error:", error);
-    res.status(500).json({ message: "Failed to send OTP", error: error.message });
-  }
+
+  // const user = await User.findOne({ phone });
+  // if (!user) {
+  //   return res.status(404).json({ message: "Mobile number not registered" });
+  // }
+
+  //const otp = generateOTP();
+
+  //   const otp = "12345";
+
+  //   otpStore[phone] = {
+  //     otp,
+  //     expiry: Infinity,  //Date.now() + 5 * 60 * 1000, //5 min expiry
+  //   };
+
+  //   console.log(`Otp for ${phone}: ${otp}`);
+  //   res.status(200).json({ message: "OTP sent to your mobile number" });
+
+  // } catch (error: any) {
+  //   console.error("sendOtp error:", error);
+  //   res.status(500).json({ message: "Failed to send OTP", error: error.message });
+  // }
+  // const { phone } = req.body;
+
+  // if (!phone) return res.status(400).json({ error: 'Phone number is required' });
+
+  // const otp = generateOTP();
+  // try {
+  //   sendOTP(phone, parseInt(otp));
+  //   res.status(200).json({ message: 'OTP sent successfully', otp }); // Return OTP only for dev/debug
+  // } catch (error) {
+  //   res.status(500).json({ error: 'Failed to send OTP' });
+  // }
 };
 
 export const verifyOtp = async (req: Request, res: Response) => {
@@ -162,7 +188,7 @@ export const verifyOtp = async (req: Request, res: Response) => {
     if (
       !storedEntry ||
       storedEntry.otp !== otp) {
-      return res.status(401).json({ message: "Invalid or expired OTP"});
+      return res.status(401).json({ message: "Invalid or expired OTP" });
     }
 
     //clear otp after use
@@ -177,15 +203,15 @@ export const verifyOtp = async (req: Request, res: Response) => {
     );
 
 
-  res.cookie("authToken", token, {
-     httpOnly: true,
+    res.cookie("authToken", token, {
+      httpOnly: true,
       secure: true,
       sameSite: "none",
       path: "/",
       maxAge: 24 * 60 * 60 * 1000,
-  });
+    });
 
-   res.status(200).json({
+    res.status(200).json({
       message: "Login successful",
       user: {
         id: user._id,

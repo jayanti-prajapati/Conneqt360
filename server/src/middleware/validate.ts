@@ -7,6 +7,8 @@ export const validate = (schema: ZodSchema) => {
       await schema.parseAsync(req.body);
       next();
     } catch (error: any) {
+      console.log('Validation error:', error);
+
       res.status(400).json({ error: error.errors });
     }
   };

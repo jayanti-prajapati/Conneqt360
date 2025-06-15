@@ -12,22 +12,26 @@ const userSchema = new Schema<IUser>({
     type: String,
     required: true,
   },
-  businessName: {
+  confirmPassword: {
     type: String,
     required: true,
   },
+  // businessName: {
+  //   type: String,
+  //   required: true,
+  // },
   phone: {
     type: String,
     required: true,
   },
-  location: {
-    type: String,
-    required: true,
-  },
-  businessType: {
-    type: String,
-    required: true,
-  },
+  // location: {
+  //   type: String,
+  //   required: true,
+  // },
+  // businessType: {
+  //   type: String,
+  //   required: true,
+  // },
   verified: {
     type: Boolean,
     default: false,
@@ -41,15 +45,16 @@ const userSchema = new Schema<IUser>({
   },
 });
 
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   //this.password = await bcrypt.hash(this.password, 10); --convert password into hash
   next();
 });
 
-userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
+userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
   //return bcrypt.compare(candidatePassword, this.password);
   return candidatePassword === this.password;
 };
 
 export const User = mongoose.model<IUser>('User', userSchema);
+export const Register = mongoose.model<IUser>('register', userSchema);
