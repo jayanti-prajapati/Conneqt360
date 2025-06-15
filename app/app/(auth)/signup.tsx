@@ -1,18 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
+  BackHandler,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
-import Spacing from '@/constants/Spacing';
+import useAuthStore from '@/store/useAuthStore';
 
 type FormData = {
   email: string;
@@ -30,7 +29,7 @@ export default function RegisterScreen() {
     password: '',
     confirmPassword: '',
   });
-
+  const { register, loading, error, response, reset } = useAuthStore();
   const [errors, setErrors] = useState<FormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
@@ -52,6 +51,26 @@ export default function RegisterScreen() {
     }
   };
 
+  useEffect(() => {
+    reset(); // clear Zustand store on mount
+    const backAction = () => {
+      reset(); // clear Zustand store
+      setFormData({
+        email: '',
+        phone: '',
+        password: '',
+        confirmPassword: '',
+      });
+      return false; // allow default back behavior (exit screen)
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+  }, [reset]);
+
+
   const handleChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
 
@@ -60,7 +79,9 @@ export default function RegisterScreen() {
     setErrors(prev => ({ ...prev, [field]: error }));
   };
 
-  const handleRegister = () => {
+
+
+  const handleRegister = async () => {
     const newErrors: FormErrors = {};
 
     (Object.keys(formData) as (keyof FormData)[]).forEach(field => {
@@ -72,11 +93,22 @@ export default function RegisterScreen() {
       setErrors(newErrors);
     } else {
       setErrors({});
-      router.push('/(auth)/otp');
+
+      const data = await register(formData);
+
+      console.log('Register response:', data);
+      //@ts-ignore
+      if (data?.status === 200 || data?.status === 201) {
+
+        router.push('/(auth)/otp')
+      }
+
+      ;
     }
   };
 
   return (
+
     <View style={styles.container}>
       <View style={styles.card}>
         <View style={styles.iconContainer}>
@@ -157,6 +189,7 @@ export default function RegisterScreen() {
             <Text style={styles.buttonText}>Register</Text>
           </LinearGradient>
         </TouchableOpacity>
+        {error && <Text style={styles.errorText}>{error}</Text>}
 
         {/* Footer */}
         <View style={styles.footer}>

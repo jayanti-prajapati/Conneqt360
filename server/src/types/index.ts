@@ -5,10 +5,13 @@ export interface IUser extends Document {
   password: string;
   businessName: string;
   phone: string;
-  location: string;
-  businessType: string;
+  // location?: string;
+  businessType?: string;
   verified: boolean;
   gstNumber?: string;
+  confirmPassword: String,
+
+
   udyamNumber?: string;
   interests: string[];
   createdAt: Date;

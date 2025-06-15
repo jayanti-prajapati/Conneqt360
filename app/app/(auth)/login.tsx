@@ -1,22 +1,70 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Platform, KeyboardAvoidingView } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Platform, KeyboardAvoidingView, BackHandler } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AntDesign, Feather, FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
+
 import Spacing from '@/constants/Spacing';
+import useAuthStore from '@/store/useAuthStore';
 export default function LoginScreen() {
+  const recaptchaVerifier = useRef(null);
   const [isEmailLogin, setIsEmailLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
   const router = useRouter();
   const [phone, setPhone] = useState('');
+  const { login, loading, error, response, reset } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
-  const handleLogin = () => {
-    console.log('Logging in with:', { email, password });
 
+
+  // useEffect(() => {
+  //   // Reset form fields on component mount
+  //   setEmail('');
+  //   setPassword('');
+  //   setPhone('');
+  // }, []);
+  useEffect(() => {
+    reset(); // clear Zustand store on mount
+    const backAction = () => {
+      reset(); // clear Zustand store
+      setEmail('');
+      setPassword('');
+      setPhone('');
+      return false; // allow default back behavior (exit screen)
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, [reset]);
+
+
+  const handleLogin = async () => {
+
+    if (isEmailLogin) {
+      if (email && password) {
+        const data = await login({ email, password });
+        //@ts-ignore
+        if (data?.status === 200 || data?.status === 201) {
+          console.log('Login successful:', data);
+          router.push('/(tabs)');
+        }
+
+
+      } else {
+        console.error('Email and password are required for email login');
+      }
+    } else {
+
+      router.push('/(auth)/otp');
+    }
     // In a real app, implement actual authentication
-    router.push('/(auth)/otp');
+
   };
 
   const handleSignUp = () => {
@@ -30,6 +78,7 @@ export default function LoginScreen() {
   return (
 
     <View style={styles.container}>
+
       <View style={styles.card}>
         <View style={styles.iconContainer}>
           <LinearGradient
@@ -102,6 +151,10 @@ export default function LoginScreen() {
             <Text style={styles.buttonText}>{isEmailLogin ? "Login" : "Send OTP"}</Text>
           </LinearGradient>
         </TouchableOpacity>
+
+        {error && (
+          <Text style={{ color: 'red', textAlign: 'center' }}>{error}</Text>
+        )}
 
         <TouchableOpacity style={styles.toggleMethodButton} onPress={toggleLoginMethod}>
           <Text style={styles.forgotText}>  {isEmailLogin
