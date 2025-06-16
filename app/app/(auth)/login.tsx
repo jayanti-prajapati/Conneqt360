@@ -19,12 +19,6 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
 
 
-  // useEffect(() => {
-  //   // Reset form fields on component mount
-  //   setEmail('');
-  //   setPassword('');
-  //   setPhone('');
-  // }, []);
   useEffect(() => {
     reset(); // clear Zustand store on mount
     const backAction = () => {
