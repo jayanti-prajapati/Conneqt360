@@ -65,5 +65,5 @@ jobs:
           #EOF
           
           # Optional: clean up the SSH key after use
-          rm /tmp/private_key
+          #rm /tmp/private_key
    
