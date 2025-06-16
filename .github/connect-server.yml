@@ -1,15 +1,15 @@
-name: Build and Deploy - Connect- 360 Server
-
-
+name: Build and Deploy - Connect 360 Server
 
 on:
   release:
     types: [published]
+
 jobs:
   build:
-    if: startsWith(github.ref, 'refs/tags/connect360-server-')  # Check specific tag pattern
+    if: startsWith(github.event.release.tag_name, 'connect360-server-')
     name: Deploy Application
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -17,7 +17,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'  # Specify the version of Node.js you need
+          node-version: '20'
 
       - name: Install dependencies
         run: yarn install
@@ -35,36 +35,15 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}  # Default to 22 if SSH_PORT is not set
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
         run: |
-          # Create the SSH key file for authentication
           echo "$SSH_PRIVATE_KEY" > /tmp/private_key
           chmod 600 /tmp/private_key
 
-          # Use scp to copy the dist folder to the remote server, with host key checking disabled
           scp -o StrictHostKeyChecking=no -i /tmp/private_key -P $SSH_PORT -r server/dist/ $SSH_USER@$SSH_HOST:apps/connect360
-          
-        
-          #Run commands on the server (e.g., build and restart Docker)
+
           ssh -o StrictHostKeyChecking=no -i /tmp/private_key -p $SSH_PORT $SSH_USER@$SSH_HOST << 'EOF'
-           # cd /root/apps/
-           # docker-compose stop connect360 || true
-            #docker-compose rm -f connect360 || true
+            echo "You can run post-deploy commands here"
+          EOF
 
-            # pulled latest images
-            #docker-compose pull connect360 || true
-
-            #Removing  unused Docker resources
-            #docker system prune -af --volumes
-            #docker network prune -f
-            #docker volume prune -f
-
-            # build backend
-            #docker-compose up -d --build connect360
-
-            #exit
-          #EOF
-          
-          # Optional: clean up the SSH key after use
           rm /tmp/private_key
-   
