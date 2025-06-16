@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    if: startsWith(github.event.release.tag_name, 'connect360-server-')
+    #if: startsWith(github.event.release.tag_name, 'connect360-server-')
     name: Deploy Application
     runs-on: ubuntu-latest
 
