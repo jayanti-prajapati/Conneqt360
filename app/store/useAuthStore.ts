@@ -5,7 +5,7 @@ import { create } from 'zustand';
 import axios from 'axios';
 import { LoginPayload, RegisterPayload } from './type';
 
-const API_URL = "http://192.168.1.2:5001/api"
+const API_URL = "http://84.247.177.87/api"   // change this to your testing API URL
 interface AuthStore {
     loading: boolean;
     error: string | null;
