@@ -6,55 +6,20 @@ import {
     TouchableOpacity,
     KeyboardAvoidingView,
     Platform,
-    Keyboard,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
-import Spacing from '@/constants/Spacing'; // use if you use spacing constants
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import useAuthStore from '@/store/useAuthStore';
+import ResendOtp from '@/components/resendOtp';
 
 export default function OTPScreen() {
     const inputRefs = useRef<Array<TextInput | null>>([]);
     const router = useRouter();
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const { phone } = useLocalSearchParams();
-    const { loading, error, response, reset, sendOtp, verifyOtp, otpNumber } = useAuthStore();
-    const [timer, setTimer] = useState(60);
-    const [isActive, setIsActive] = useState(true); // prevent initial send
-
-    useEffect(() => {
-        let interval: NodeJS.Timeout | any;
-
-        if (isActive && timer > 0) {
-            interval = setInterval(() => {
-                setTimer((prev) => prev - 1);
-            }, 1000);
-        }
-
-        if (timer === 0) {
-            setIsActive(false);
-            clearInterval(interval);
-        }
-
-        return () => clearInterval(interval);
-    }, [isActive, timer]);
-
-    const handleResend = async () => {
-        if (!isActive) {
-            const resendOtp = await sendOtp({ phone: phone as string });
-            if (resendOtp.status === 200 || resendOtp.status === 201) {
-                console.log('OTP resent successfully');
-                setTimer(60);
-                setIsActive(true);
-                Keyboard.dismiss();
-            } else {
-                console.error('Failed to resend OTP');
-
-            }
-        };
-    }
+    const { verifyOtp, otpNumber } = useAuthStore();
 
 
     console.log('Received data:', otpNumber, phone);
@@ -133,7 +98,10 @@ export default function OTPScreen() {
                 {/* <TouchableOpacity onPress={Keyboard.dismiss}>
                     <Text style={styles.resendText}>Resend OTP</Text>
                 </TouchableOpacity> */}
-                <TouchableOpacity onPress={handleResend} disabled={isActive}>
+                <ResendOtp
+                    setOtp={setOtp}
+                    inputRefs={inputRefs} />
+                {/* <TouchableOpacity onPress={handleResend} disabled={isActive}>
                     <Text style={[styles.resendText, isActive && styles.disabledText]}>
                         {isActive ? `Resend OTP in ${timer}s` : 'Resend OTP'}
                     </Text>
@@ -141,7 +109,7 @@ export default function OTPScreen() {
 
                 <Text style={styles.testText}>
                     Your OTP - <Text style={{ fontWeight: 'bold' }}>{otpNumber}</Text>
-                </Text>
+                </Text> */}
             </View>
         </KeyboardAvoidingView>
     );
