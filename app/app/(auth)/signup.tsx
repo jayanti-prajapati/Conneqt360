@@ -29,7 +29,7 @@ export default function RegisterScreen() {
     password: '',
     confirmPassword: '',
   });
-  const { register, loading, error, response, reset } = useAuthStore();
+  const { register, loading, error, response, reset, sendOtp } = useAuthStore();
   const [errors, setErrors] = useState<FormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
@@ -99,8 +99,16 @@ export default function RegisterScreen() {
       console.log('Register response:', data);
       //@ts-ignore
       if (data?.status === 200 || data?.status === 201) {
+        const data = await sendOtp({ phone: formData.phone });
+        //@ts-ignore
+        if (data?.status === 200 || data?.status === 201) {
+          router.push({
+            pathname: '/(auth)/otp',
+            params: { phone: formData.phone },
+          });
 
-        router.push('/(auth)/otp')
+        }
+        // router.push('/(auth)/otp')
       }
 
       ;

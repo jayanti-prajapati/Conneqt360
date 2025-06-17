@@ -15,7 +15,7 @@ export default function LoginScreen() {
 
   const router = useRouter();
   const [phone, setPhone] = useState('');
-  const { login, loading, error, response, reset } = useAuthStore();
+  const { login, loading, error, response, reset, sendOtp } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
 
 
@@ -54,8 +54,22 @@ export default function LoginScreen() {
         console.error('Email and password are required for email login');
       }
     } else {
+      if (phone) {
+        const data = await sendOtp({ phone });
+        //@ts-ignore
+        if (data?.status === 200 || data?.status === 201) {
+          router.push({
+            pathname: '/(auth)/otp',
+            params: { rotp: data.data.otp, phone: phone },
+          });
 
-      router.push('/(auth)/otp');
+        }
+
+
+      } else {
+        console.error('Phone Number is required for login');
+      }
+
     }
     // In a real app, implement actual authentication
 
@@ -121,8 +135,8 @@ export default function LoginScreen() {
               <Feather name="phone" size={20} color="#aaa" style={styles.inputIcon} />
               <TextInput
                 placeholder="Phone Number"
-                value={email}
-                onChangeText={setEmail}
+                value={phone}
+                onChangeText={setPhone}
                 style={styles.input}
                 keyboardType="phone-pad"
                 autoCapitalize="none"
@@ -133,9 +147,9 @@ export default function LoginScreen() {
           </>
         }
 
-        <TouchableOpacity style={styles.forgotPassword}>
+        {/* <TouchableOpacity style={styles.forgotPassword}>
           <Text style={styles.forgotText}>Forgot password?</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <TouchableOpacity style={styles.button} onPress={handleLogin} >
           <LinearGradient colors={['#1F73C6', '#F7941E']}

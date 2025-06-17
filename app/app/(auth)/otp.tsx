@@ -9,16 +9,55 @@ import {
     Keyboard,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import Spacing from '@/constants/Spacing'; // use if you use spacing constants
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import useAuthStore from '@/store/useAuthStore';
 
 export default function OTPScreen() {
     const inputRefs = useRef<Array<TextInput | null>>([]);
     const router = useRouter();
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
+    const { phone } = useLocalSearchParams();
+    const { loading, error, response, reset, sendOtp, verifyOtp, otpNumber } = useAuthStore();
+    const [timer, setTimer] = useState(60);
+    const [isActive, setIsActive] = useState(true); // prevent initial send
 
+    useEffect(() => {
+        let interval: NodeJS.Timeout | any;
+
+        if (isActive && timer > 0) {
+            interval = setInterval(() => {
+                setTimer((prev) => prev - 1);
+            }, 1000);
+        }
+
+        if (timer === 0) {
+            setIsActive(false);
+            clearInterval(interval);
+        }
+
+        return () => clearInterval(interval);
+    }, [isActive, timer]);
+
+    const handleResend = async () => {
+        if (!isActive) {
+            const resendOtp = await sendOtp({ phone: phone as string });
+            if (resendOtp.status === 200 || resendOtp.status === 201) {
+                console.log('OTP resent successfully');
+                setTimer(60);
+                setIsActive(true);
+                Keyboard.dismiss();
+            } else {
+                console.error('Failed to resend OTP');
+
+            }
+        };
+    }
+
+
+    console.log('Received data:', otpNumber, phone);
     const handleChange = (text: string, index: number) => {
         if (/^\d$/.test(text)) {
             const updatedOtp = [...otp];
@@ -34,10 +73,21 @@ export default function OTPScreen() {
         }
     };
 
-    const handleVerify = () => {
+    const handleVerify = async () => {
         const code = otp.join('');
         console.log('Verifying OTP:', code);
-        router.push('/(tabs)');
+        if (code === otpNumber) {
+            const response = await verifyOtp({ phone: phone as string, otp: code });
+            if (response?.status === 200 || response?.status === 201) {
+                console.log('OTP verified successfully');
+                router.push('/(tabs)');
+            }
+
+        }
+        else {
+            console.error('Invalid OTP');
+        }
+
 
 
     };
@@ -80,12 +130,17 @@ export default function OTPScreen() {
                     </LinearGradient>
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={Keyboard.dismiss}>
+                {/* <TouchableOpacity onPress={Keyboard.dismiss}>
                     <Text style={styles.resendText}>Resend OTP</Text>
+                </TouchableOpacity> */}
+                <TouchableOpacity onPress={handleResend} disabled={isActive}>
+                    <Text style={[styles.resendText, isActive && styles.disabledText]}>
+                        {isActive ? `Resend OTP in ${timer}s` : 'Resend OTP'}
+                    </Text>
                 </TouchableOpacity>
 
                 <Text style={styles.testText}>
-                    For testing: <Text style={{ fontWeight: 'bold' }}>123456</Text>
+                    Your OTP - <Text style={{ fontWeight: 'bold' }}>{otpNumber}</Text>
                 </Text>
             </View>
         </KeyboardAvoidingView>
@@ -159,5 +214,8 @@ const styles = StyleSheet.create({
         color: '#666',
         marginTop: 12,
         textAlign: 'center',
+    },
+    disabledText: {
+        color: '#aaa',
     },
 });
