@@ -127,42 +127,35 @@ export const otpStore: { [phone: string]: OTPEntry } = {};
 
 export const otpLogin = async (req: Request, res: Response) => {
 
-  const serviceAccount = require('./firebaseServiceAccountKey.json');
+  // const serviceAccount = require('./firebaseServiceAccountKey.json');
 
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-  });
+  // admin.initializeApp({
+  //   credential: admin.credential.cert(serviceAccount)
+  // });
 
   const { phone } = req.body;
 
+  // if (!phone) return res.status(400).json({ error: 'Phone number is required' });
+
+  // res.status(200).json({ message: 'OTP request initiated on client', phone });
+
+
   if (!phone) return res.status(400).json({ error: 'Phone number is required' });
 
-  res.status(200).json({ message: 'OTP request initiated on client', phone });
-  // try {
+  const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+
+  try {
+    // sendOTP(phone, parseInt(otp));
+    otpStore[phone] = {
+      otp,
+      expiry: Infinity,  //Date.now() + 5 * 60 * 1000, //5 min expiry
+    };
+    res.status(200).json({ message: 'OTP sent successfully', otp }); // Return OTP only for dev/debug
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to send OTP' });
+  }
 
 
-  // const user = await User.findOne({ phone });
-  // if (!user) {
-  //   return res.status(404).json({ message: "Mobile number not registered" });
-  // }
-
-  //const otp = generateOTP();
-
-  //   const otp = "12345";
-
-  //   otpStore[phone] = {
-  //     otp,
-  //     expiry: Infinity,  //Date.now() + 5 * 60 * 1000, //5 min expiry
-  //   };
-
-  //   console.log(`Otp for ${phone}: ${otp}`);
-  //   res.status(200).json({ message: "OTP sent to your mobile number" });
-
-  // } catch (error: any) {
-  //   console.error("sendOtp error:", error);
-  //   res.status(500).json({ message: "Failed to send OTP", error: error.message });
-  // }
-  // const { phone } = req.body;
 
   // if (!phone) return res.status(400).json({ error: 'Phone number is required' });
 
@@ -183,6 +176,8 @@ export const verifyOtp = async (req: Request, res: Response) => {
     if (!user) {
       return res.status(401).json({ message: "Mobile number not registered" });
     }
+    console.log(otpStore);
+
 
     const storedEntry = otpStore[phone];
     if (
