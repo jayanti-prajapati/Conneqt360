@@ -102,10 +102,7 @@ export default function RegisterScreen() {
         const data = await sendOtp({ phone: formData.phone });
         //@ts-ignore
         if (data?.status === 200 || data?.status === 201) {
-          router.push({
-            pathname: '/(auth)/otp',
-            params: { phone: formData.phone },
-          });
+          router.push('/(auth)/otp');
 
         }
         // router.push('/(auth)/otp')
