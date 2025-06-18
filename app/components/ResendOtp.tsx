@@ -35,7 +35,7 @@ export default function ResendOtp({ setOtp, inputRefs }: {
         }
 
         return () => clearInterval(interval);
-    }, [isActive, timer]);
+    }, []);
 
     const handleResend = async () => {
         if (!isActive) {
