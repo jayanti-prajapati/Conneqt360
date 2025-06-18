@@ -12,7 +12,7 @@ import { useRef, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import useAuthStore from '@/store/useAuthStore';
-import ResendOtp from '@/components/resendOtp';
+import ResendOtp from '@/components/ResendOtp';
 
 export default function OTPScreen() {
     const inputRefs = useRef<Array<TextInput | null>>([]);
