@@ -11,6 +11,7 @@ interface AuthStore {
     error: string | null;
     response: any;
     otpNumber: string | null;
+    phone: string | null;
 
     register: (data: RegisterPayload) => {};
     login: (data: LoginPayload) => {};
@@ -29,6 +30,7 @@ const useAuthStore = create<AuthStore>((set) => ({
     error: null,
     response: null,
     otpNumber: null,
+    phone: null,
 
     register: async (data) => {
         set({ loading: true, error: null, response: null });
@@ -64,7 +66,7 @@ const useAuthStore = create<AuthStore>((set) => ({
         try {
             const res = await axios.post(API_URL + '/auth/send-otp', data);
 
-            set({ response: res.data, loading: false, otpNumber: res.data.otp });
+            set({ response: res.data, loading: false, otpNumber: res.data.otp, phone: data.phone });
             console.log('Register response:', res.data);
             return res;
         } catch (err: any) {
