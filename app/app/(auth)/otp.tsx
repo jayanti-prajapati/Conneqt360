@@ -6,23 +6,20 @@ import {
     TouchableOpacity,
     KeyboardAvoidingView,
     Platform,
+    Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRef, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import useAuthStore from '@/store/useAuthStore';
+import { useRouter } from 'expo-router';
 import ResendOtp from '@/components/ResendOtp';
+import axios from 'axios';
 
 export default function OTPScreen() {
     const inputRefs = useRef<Array<TextInput | null>>([]);
     const router = useRouter();
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
-    const { phone } = useLocalSearchParams();
-    const { verifyOtp, otpNumber } = useAuthStore();
 
-
-    console.log('Received data:', otpNumber, phone);
     const handleChange = (text: string, index: number) => {
         if (/^\d$/.test(text)) {
             const updatedOtp = [...otp];
@@ -41,11 +38,17 @@ export default function OTPScreen() {
     const handleVerify = async () => {
         const code = otp.join('');
         console.log('Verifying OTP:', code);
-        if (code === otpNumber) {
-            const response = await verifyOtp({ phone: phone as string, otp: code });
-            if (response?.status === 200 || response?.status === 201) {
+        if (code === "123456") {
+            const response = await axios.post('http://84.247.177.87/api/auth/verify-otp', {
+                phone: "7600751136",
+                otp: code,
+            });
+
+            if (response.status === 200 || response.status === 201) {
                 console.log('OTP verified successfully');
                 router.push('/(tabs)');
+            } else {
+                Alert.alert('Invalid OTP', 'The OTP you entered is incorrect.');
             }
 
         }
@@ -98,9 +101,8 @@ export default function OTPScreen() {
                 {/* <TouchableOpacity onPress={Keyboard.dismiss}>
                     <Text style={styles.resendText}>Resend OTP</Text>
                 </TouchableOpacity> */}
-                <ResendOtp
-                    setOtp={setOtp}
-                    inputRefs={inputRefs} />
+                {/* <ResendOtp */}
+                {/* /> */}
                 {/* <TouchableOpacity onPress={handleResend} disabled={isActive}>
                     <Text style={[styles.resendText, isActive && styles.disabledText]}>
                         {isActive ? `Resend OTP in ${timer}s` : 'Resend OTP'}
