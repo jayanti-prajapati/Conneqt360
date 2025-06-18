@@ -61,49 +61,49 @@ export default function OTPScreen() {
     };
 
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.container}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
-        >
-            <View style={styles.card}>
-                <Ionicons name="shield-checkmark-outline" size={48} color="#1F73C6" />
-                <Text style={styles.title}>Enter Verification Code</Text>
-                <Text style={styles.subtitle}>
-                    We've sent a 6-digit code to your registered number.
-                </Text>
+        // <KeyboardAvoidingView
+        //     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        //     style={styles.container}
+        //     keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+        // >
+        <View style={styles.card}>
+            <Ionicons name="shield-checkmark-outline" size={48} color="#1F73C6" />
+            <Text style={styles.title}>Enter Verification Code</Text>
+            <Text style={styles.subtitle}>
+                We've sent a 6-digit code to your registered number.
+            </Text>
 
-                <View style={styles.otpContainer}>
-                    {otp.map((digit, idx) => (
-                        <TextInput
-                            key={idx}
-                            ref={(ref) => {
-                                inputRefs.current[idx] = ref;
-                            }}
-                            style={styles.otpInput}
-                            maxLength={1}
-                            keyboardType="numeric"
-                            value={digit}
-                            onChangeText={(text) => handleChange(text, idx)}
-                            returnKeyType="done"
-                        />
-                    ))}
-                </View>
+            <View style={styles.otpContainer}>
+                {otp.map((digit, idx) => (
+                    <TextInput
+                        key={idx}
+                        ref={(ref) => {
+                            inputRefs.current[idx] = ref;
+                        }}
+                        style={styles.otpInput}
+                        maxLength={1}
+                        keyboardType="numeric"
+                        value={digit}
+                        onChangeText={(text) => handleChange(text, idx)}
+                        returnKeyType="done"
+                    />
+                ))}
+            </View>
 
-                <TouchableOpacity onPress={handleVerify} style={styles.button}>
-                    <LinearGradient colors={['#1F73C6', '#F7941E']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }} style={styles.button}>
-                        <Text style={styles.buttonText}>Verify OTP</Text>
-                    </LinearGradient>
-                </TouchableOpacity>
+            <TouchableOpacity onPress={handleVerify} style={styles.button}>
+                <LinearGradient colors={['#1F73C6', '#F7941E']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }} style={styles.button}>
+                    <Text style={styles.buttonText}>Verify OTP</Text>
+                </LinearGradient>
+            </TouchableOpacity>
 
-                {/* <TouchableOpacity onPress={Keyboard.dismiss}>
+            {/* <TouchableOpacity onPress={Keyboard.dismiss}>
                     <Text style={styles.resendText}>Resend OTP</Text>
                 </TouchableOpacity> */}
-                {/* <ResendOtp */}
-                {/* /> */}
-                {/* <TouchableOpacity onPress={handleResend} disabled={isActive}>
+            {/* <ResendOtp */}
+            {/* /> */}
+            {/* <TouchableOpacity onPress={handleResend} disabled={isActive}>
                     <Text style={[styles.resendText, isActive && styles.disabledText]}>
                         {isActive ? `Resend OTP in ${timer}s` : 'Resend OTP'}
                     </Text>
@@ -112,8 +112,8 @@ export default function OTPScreen() {
                 <Text style={styles.testText}>
                     Your OTP - <Text style={{ fontWeight: 'bold' }}>{otpNumber}</Text>
                 </Text> */}
-            </View>
-        </KeyboardAvoidingView>
+        </View>
+
     );
 }
 
@@ -125,9 +125,12 @@ const styles = StyleSheet.create({
         padding: 16,
     },
     card: {
+        justifyContent: 'center',
         backgroundColor: 'white',
         borderRadius: 16,
-        padding: 24,
+        padding: 16,
+        flex: 1,
+        // padding: 24,
         alignItems: 'center',
         elevation: 4,
         shadowColor: '#000',
