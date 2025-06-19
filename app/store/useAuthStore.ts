@@ -36,8 +36,12 @@ const useAuthStore = create<AuthStore>((set) => ({
     try {
       const res = await axios.post(`${API_URL}/auth/register`, data);
       set({ response: res.data, loading: false });
+      console.log(res.data);
+
+      return res;
     } catch (err: any) {
       set({ error: err?.response?.data?.message || 'Registration failed', loading: false });
+      return err?.response;
     }
   },
 

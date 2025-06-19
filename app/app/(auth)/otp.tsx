@@ -10,7 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRef, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import useAuthStore from '@/store/useAuthStore';
 import ResendOtp from '@/components/ResendOtp';
 
@@ -60,6 +60,7 @@ export default function OTPScreen() {
 
     };
 
+
     return (
         <View style={styles.container}>
             <View style={styles.card}>
@@ -82,6 +83,19 @@ export default function OTPScreen() {
                             value={digit}
                             onChangeText={(text) => handleChange(text, idx)}
                             returnKeyType="done"
+                            onKeyPress={({ nativeEvent }) => {
+                                if (nativeEvent.key === 'Backspace') {
+                                    if (otp[idx] === '') {
+                                        if (idx > 0) {
+                                            inputRefs.current[idx - 1]?.focus();
+                                        }
+                                    } else {
+                                        const updatedOtp = [...otp];
+                                        updatedOtp[idx] = '';
+                                        setOtp(updatedOtp);
+                                    }
+                                }
+                            }}
                         />
                     ))}
                 </View>
