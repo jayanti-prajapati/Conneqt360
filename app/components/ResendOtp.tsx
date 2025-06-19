@@ -7,12 +7,16 @@ import {
     Keyboard,
 } from 'react-native';
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import useAuthStore from '@/store/useAuthStore';
 
-export default function ResendOtp() {
+export default function ResendOtp({ setOtp, inputRefs }: {
+    setOtp: React.Dispatch<React.SetStateAction<string[]>>;
+    inputRefs: React.MutableRefObject<Array<TextInput | null>>;
+}) {
 
-    const { sendOtp } = useAuthStore();
+    const { phone } = useLocalSearchParams();
+    const { sendOtp, otpNumber } = useAuthStore();
     const [timer, setTimer] = useState(60);
     const [isActive, setIsActive] = useState(true); // prevent initial send
 
@@ -31,15 +35,17 @@ export default function ResendOtp() {
         }
 
         return () => clearInterval(interval);
-    }, [isActive, timer]);
+    }, []);
 
     const handleResend = async () => {
         if (!isActive) {
-            const resendOtp = await sendOtp({ phone: "7600751136" as string });
+            const resendOtp = await sendOtp({ phone: phone as string });
             if (resendOtp.status === 200 || resendOtp.status === 201) {
                 console.log('OTP resent successfully');
                 setTimer(60);
                 setIsActive(true);
+                setOtp(['', '', '', '', '', '']); // Reset OTP input
+                inputRefs.current[0]?.focus(); // Focus the first input{
                 Keyboard.dismiss();
             } else {
                 console.error('Failed to resend OTP');
@@ -63,7 +69,7 @@ export default function ResendOtp() {
             </TouchableOpacity>
 
             <Text style={styles.testText}>
-                Your OTP - <Text style={{ fontWeight: 'bold' }}>{"123456"}</Text>
+                Your OTP - <Text style={{ fontWeight: 'bold' }}>{otpNumber}</Text>
             </Text>
         </View>
 

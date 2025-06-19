@@ -58,9 +58,10 @@ export default function LoginScreen() {
         const data = await sendOtp({ phone });
         //@ts-ignore
         if (data?.status === 200 || data?.status === 201) {
-          router.push(
-            '/(auth)/otp'
-          );
+          router.push({
+            pathname: '/(auth)/otp',
+            params: { rotp: data.data.otp, phone: phone },
+          });
 
         }
 
