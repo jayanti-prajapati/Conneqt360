@@ -76,14 +76,14 @@ export class AuthController {
       return res.status(400).json({
         statusCode: 400,
         message: "failed",
-         error: error.message,
+        error: error.message,
       });
     }
   };
 
   async getAll(req: Request, res: Response) {
     try {
-      
+
       const users = await User.find().select("-password -confirmPassword");
       return res.status(200).json({
         statusCode: 200,
@@ -91,10 +91,10 @@ export class AuthController {
         data: users
       });
     } catch (error: any) {
-     return res.status(400).json({
+      return res.status(400).json({
         statusCode: 400,
         message: "failed",
-         error: error.message,
+        error: error.message,
       });
     }
   };
@@ -103,17 +103,17 @@ export class AuthController {
     try {
       const phone = req.params.phone;
 
-      console.log("Searching for phone:", phone); 
+      console.log("Searching for phone:", phone);
 
       const phoneData = await User.findByPhone(phone);
 
-       if (!phoneData) {
-      return res.status(404).json({
-        statusCode: 404,
-        message: "Phone number not found",
-      });
-    }
-       return res.status(200).json({
+      if (!phoneData) {
+        return res.status(404).json({
+          statusCode: 404,
+          message: "Phone number not found",
+        });
+      }
+      return res.status(200).json({
         statusCode: 200,
         message: "success",
         data: phoneData
@@ -122,7 +122,7 @@ export class AuthController {
       return res.status(400).json({
         statusCode: 400,
         message: "failed",
-         error: error.message,
+        error: error.message,
       });
     }
   }
@@ -176,57 +176,57 @@ export class AuthController {
       return res.status(400).json({
         statusCode: 400,
         message: "failed",
-        error: error.message, 
+        error: error.message,
       });
     }
   }
 
 
-  
-async otpLogin  (req: Request, res: Response)  {
 
-  // const serviceAccount = require('./firebaseServiceAccountKey.json');
+  async otpLogin(req: Request, res: Response) {
 
-  // admin.initializeApp({
-  //   credential: admin.credential.cert(serviceAccount)
-  // });
+    // const serviceAccount = require('./firebaseServiceAccountKey.json');
 
-  const { phone } = req.body;
+    // admin.initializeApp({
+    //   credential: admin.credential.cert(serviceAccount)
+    // });
 
-
-  if (!phone) return res.status(400).json({ error: 'Phone number is required' });
+    const { phone } = req.body;
 
 
-    const user = await User.findOne({ phone });
-  if (!user) {
-    return res.status(404).json({ message: "Phone number not registered" });
-  }
-
-  const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
-
-  try {
-    // sendOTP(phone, parseInt(otp));
-    otpStore[phone] = {
-      otp,
-      expiry: Infinity,  //Date.now() + 5 * 60 * 1000, //5 min expiry
-    };
-    res.status(200).json({ message: 'OTP sent successfully', otp }); // Return OTP only for dev/debug
-  } catch (error) {
-    res.status(400).json({ error: 'Failed to send OTP' });
-  }
+    if (!phone) return res.status(400).json({ error: 'Phone number is required' });
 
 
+    //   const user = await User.findOne({ phone });
+    // if (!user) {
+    //   return res.status(404).json({ message: "Phone number not registered" });
+    // }
 
-  // if (!phone) return res.status(400).json({ error: 'Phone number is required' });
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
 
-  // const otp = generateOTP();
-  // try {
-  //   sendOTP(phone, parseInt(otp));
-  //   res.status(200).json({ message: 'OTP sent successfully', otp }); // Return OTP only for dev/debug
-  // } catch (error) {
-  //   res.status(500).json({ error: 'Failed to send OTP' });
-  // }
-};
+    try {
+      // sendOTP(phone, parseInt(otp));
+      otpStore[phone] = {
+        otp,
+        expiry: Infinity,  //Date.now() + 5 * 60 * 1000, //5 min expiry
+      };
+      res.status(200).json({ message: 'OTP sent successfully', otp }); // Return OTP only for dev/debug
+    } catch (error) {
+      res.status(400).json({ error: 'Failed to send OTP' });
+    }
+
+
+
+    // if (!phone) return res.status(400).json({ error: 'Phone number is required' });
+
+    // const otp = generateOTP();
+    // try {
+    //   sendOTP(phone, parseInt(otp));
+    //   res.status(200).json({ message: 'OTP sent successfully', otp }); // Return OTP only for dev/debug
+    // } catch (error) {
+    //   res.status(500).json({ error: 'Failed to send OTP' });
+    // }
+  };
 
 
 
@@ -234,14 +234,16 @@ async otpLogin  (req: Request, res: Response)  {
     try {
       const { phone, otp } = req.body;
 
-      const user = await User.findOne({ phone });
-      if (!user) {
-        throw {
-          message: "Mobile number not registered",
-          data: "Mobile number not registered",
-          status: 400,
-        };
-      }
+      let existingUser = await User.findOne({ phone });
+
+      if (!existingUser) {
+        existingUser = await this.authService.register({
+          phone: phone,
+          verified: true
+        })
+      };
+
+
 
       const storedEntry = otpStore[phone];
       if (!storedEntry || storedEntry.otp !== otp) {
@@ -252,7 +254,7 @@ async otpLogin  (req: Request, res: Response)  {
       delete otpStore[phone];
 
       const token = jwt.sign(
-        { email: user.email },
+        { phone: existingUser.phone },
         process.env.JWT_SECRET_KEY,
         {
           expiresIn: "24h",
@@ -270,19 +272,16 @@ async otpLogin  (req: Request, res: Response)  {
       res.status(200).json({
         message: "success",
         user: {
-          id: user._id,
-          email: user.email,
-          phone: user.phone,
-          businessName: user.businessName,
-          businessType: user.businessType,
+          id: existingUser._id,
+          phone: existingUser.phone,
           token,
         },
       });
     } catch (error: any) {
-     return res.status(400).json({
+      return res.status(400).json({
         statusCode: 400,
         message: "failed",
-         error: error.message,
+        error: error.message,
       });
     }
   }

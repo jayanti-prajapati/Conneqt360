@@ -5,7 +5,7 @@ import { AuthRepository } from "./auth.repository";
 export class AuthService {
     private authRepo = new AuthRepository();
 
-    async register(registerData: {email: string, password: string, confirmPassword: string, phone: string}) {
+    async register(registerData: any) {
         return this.authRepo.create(registerData);
     }
 

@@ -136,12 +136,14 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#f5f7ff',
         justifyContent: 'center',
-        padding: 16,
+        // padding: 16,
     },
     card: {
         backgroundColor: 'white',
         borderRadius: 16,
         padding: 24,
+        flex: 1,
+        justifyContent: 'center',
 
         alignItems: 'center',
         elevation: 4,

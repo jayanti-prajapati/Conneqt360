@@ -7,10 +7,9 @@ import { useRouter } from 'expo-router';
 
 import Spacing from '@/constants/Spacing';
 import useAuthStore from '@/store/useAuthStore';
-import { getAuthData } from '@/services/secureStore';
+
 export default function LoginScreen() {
-  const recaptchaVerifier = useRef(null);
-  const [isEmailLogin, setIsEmailLogin] = useState(true);
+  const [isEmailLogin, setIsEmailLogin] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -70,7 +69,7 @@ export default function LoginScreen() {
           // Clear any previous error
 
         } else {
-          setError('We couldn’t find your account. Please sign up to continue.');
+          setError('Something went wrong Please try again later.');
         }
 
 
@@ -111,7 +110,7 @@ export default function LoginScreen() {
           </LinearGradient>
         </View>
 
-        <Text style={styles.title}>Welcome back</Text>
+        <Text style={styles.title}>Welcome</Text>
         <Text style={styles.subtitle}> Login to your business account</Text>
         {isEmailLogin ?
           <>
@@ -175,11 +174,11 @@ export default function LoginScreen() {
           <Text style={{ color: 'red', textAlign: 'center' }}>{error}</Text>
         )}
 
-        <TouchableOpacity style={styles.toggleMethodButton} onPress={toggleLoginMethod}>
+        {/* <TouchableOpacity style={styles.toggleMethodButton} onPress={toggleLoginMethod}>
           <Text style={styles.forgotText}>  {isEmailLogin
             ? "Login with Phone Number"
             : "Login with Email & Password"}</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {/* <Text style={styles.orText}>Or continue with</Text>
 
@@ -195,14 +194,14 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View> */}
 
-        <View style={styles.footer}>
+        {/* <View style={styles.footer}>
           <View style={{ flexDirection: 'row' }}>
             <Text style={styles.footerText}>Don't have an account? </Text>
             <TouchableOpacity onPress={handleSignUp}>
               <Text style={styles.linkText}>Sign Up</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </View> */}
       </View>
     </View>
 
@@ -214,12 +213,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f7ff',
     justifyContent: 'center',
-    padding: 16,
+    // padding: 16,
   },
   card: {
     backgroundColor: 'white',
     borderRadius: 16,
     padding: 24,
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
     elevation: 4,
     shadowColor: '#000',
