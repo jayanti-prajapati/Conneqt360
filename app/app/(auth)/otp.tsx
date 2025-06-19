@@ -18,8 +18,8 @@ export default function OTPScreen() {
     const inputRefs = useRef<Array<TextInput | null>>([]);
     const router = useRouter();
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
-    const { phone } = useLocalSearchParams();
-    const { verifyOtp, otpNumber } = useAuthStore();
+    // const { phone } = useLocalSearchParams();
+    const { verifyOtp, otpNumber, phone } = useAuthStore();
 
 
     console.log('Received data:', otpNumber, phone);
@@ -58,11 +58,7 @@ export default function OTPScreen() {
     };
 
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.container}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
-        >
+        <View style={styles.container}>
             <View style={styles.card}>
                 <Ionicons name="shield-checkmark-outline" size={48} color="#1F73C6" />
                 <Text style={styles.title}>Enter Verification Code</Text>
@@ -111,7 +107,8 @@ export default function OTPScreen() {
                     Your OTP - <Text style={{ fontWeight: 'bold' }}>{otpNumber}</Text>
                 </Text> */}
             </View>
-        </KeyboardAvoidingView>
+        </View>
+
     );
 }
 
@@ -126,6 +123,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         borderRadius: 16,
         padding: 24,
+
         alignItems: 'center',
         elevation: 4,
         shadowColor: '#000',
