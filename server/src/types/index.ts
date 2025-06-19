@@ -1,8 +1,8 @@
-import mongoose,  { Document, Model } from 'mongoose';
+import mongoose, { Document, Model } from 'mongoose';
 import { Request } from 'express';
 export interface IUser extends Document {
-  email: string;
-  password: string;
+  email?: string;
+  password?: string;
   phone?: string;
   location?: string;
   connections?: number;
@@ -11,6 +11,7 @@ export interface IUser extends Document {
   businessName?: string;
   businessType?: string;
   verified?: boolean;
+  isSkip?: boolean;
   gstNumber?: string;
   confirmPassword: String,
   udyamNumber?: string;
@@ -81,8 +82,8 @@ export interface AuthRequest extends Request {
   userId?: string;
 }
 
-export interface IAuthDocument extends IUser, Document {};
-export interface IUserDocument extends IUser, Document {};
+export interface IAuthDocument extends IUser, Document { };
+export interface IUserDocument extends IUser, Document { };
 
 export interface IAuthModel extends Model<IAuthDocument> {
   findByPhone(phone: string): Promise<IAuthDocument | null>;

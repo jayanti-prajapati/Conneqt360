@@ -10,13 +10,14 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRef, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import useAuthStore from '@/store/useAuthStore';
 import ResendOtp from '@/components/ResendOtp';
 
 export default function OTPScreen() {
     const inputRefs = useRef<Array<TextInput | null>>([]);
     const router = useRouter();
+    const [error, setError] = useState<string | null>(null);
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     // const { phone } = useLocalSearchParams();
     const { verifyOtp, otpNumber, phone } = useAuthStore();
@@ -40,22 +41,25 @@ export default function OTPScreen() {
 
     const handleVerify = async () => {
         const code = otp.join('');
-        console.log('Verifying OTP:', code);
         if (code === otpNumber) {
             const response = await verifyOtp({ phone: phone as string, otp: code });
             if (response?.status === 200 || response?.status === 201) {
                 console.log('OTP verified successfully');
+                setError(null);
                 router.push('/(tabs)');
+            } else {
+                setError('Invalid OTP. Please Enter the correct OTP.');
             }
 
         }
         else {
-            console.error('Invalid OTP');
+            setError('Invalid OTP. Please Enter the correct OTP.');
         }
 
 
 
     };
+
 
     return (
         <View style={styles.container}>
@@ -79,6 +83,19 @@ export default function OTPScreen() {
                             value={digit}
                             onChangeText={(text) => handleChange(text, idx)}
                             returnKeyType="done"
+                            onKeyPress={({ nativeEvent }) => {
+                                if (nativeEvent.key === 'Backspace') {
+                                    if (otp[idx] === '') {
+                                        if (idx > 0) {
+                                            inputRefs.current[idx - 1]?.focus();
+                                        }
+                                    } else {
+                                        const updatedOtp = [...otp];
+                                        updatedOtp[idx] = '';
+                                        setOtp(updatedOtp);
+                                    }
+                                }
+                            }}
                         />
                     ))}
                 </View>
@@ -90,7 +107,9 @@ export default function OTPScreen() {
                         <Text style={styles.buttonText}>Verify OTP</Text>
                     </LinearGradient>
                 </TouchableOpacity>
-
+                {error && (
+                    <Text style={{ color: 'red', textAlign: 'center' }}>{error}</Text>
+                )}
                 {/* <TouchableOpacity onPress={Keyboard.dismiss}>
                     <Text style={styles.resendText}>Resend OTP</Text>
                 </TouchableOpacity> */}
@@ -117,12 +136,14 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#f5f7ff',
         justifyContent: 'center',
-        padding: 16,
+        // padding: 16,
     },
     card: {
         backgroundColor: 'white',
         borderRadius: 16,
         padding: 24,
+        flex: 1,
+        justifyContent: 'center',
 
         alignItems: 'center',
         elevation: 4,

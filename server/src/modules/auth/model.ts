@@ -1,11 +1,11 @@
-import mongoose, { Schema, Model , Document  } from 'mongoose';
+import mongoose, { Schema, Model, Document } from 'mongoose';
 import { IUser, IAuthDocument, IAuthModel } from '../../types';
 
 
 const authSchema = new Schema<IUser>({
   email: {
     type: String,
-    required: true,
+    required: false,
     unique: true,
     trim: true,
   },
@@ -34,34 +34,34 @@ const authSchema = new Schema<IUser>({
     type: String,
     required: false,
   },
-   connections: {
-        type: Number,
-        required: false
-    },
-    products: {
-        type: Number,
-        required: false
-    },
-    rating: {
-        type: Number,
-        required: false
-    },
+  connections: {
+    type: Number,
+    required: false
+  },
+  products: {
+    type: Number,
+    required: false
+  },
+  rating: {
+    type: Number,
+    required: false
+  },
   verified: {
     type: Boolean,
     default: false,
   },
-gstNumber: {
-        type: String,
-        required: false
-    },
-    udyamNumber: {
-        type: String,
-        required: false
-    },
-    aboutUs: {
-        type: String,
-        required: false
-    },
+  gstNumber: {
+    type: String,
+    required: false
+  },
+  udyamNumber: {
+    type: String,
+    required: false
+  },
+  aboutUs: {
+    type: String,
+    required: false
+  },
   interests: [String],
   createdAt: {
     type: Date,

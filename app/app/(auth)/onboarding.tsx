@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { use, useEffect } from 'react';
 import { StyleSheet, View, Text, Image, Dimensions, TouchableOpacity, ImageBackground } from 'react-native';
 import { useRouter } from 'expo-router';
 import Button from '@/components/common/Button';
@@ -6,16 +6,34 @@ import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
 import Spacing from '@/constants/Spacing';
 import { LinearGradient } from 'expo-linear-gradient';
+import { getAuthData } from '@/services/secureStore';
 
 const { width } = Dimensions.get('window');
 
 export default function OnboardingScreen() {
   const router = useRouter();
 
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const authData = await getAuthData();
+        console.log('Auth Data:', authData);
+
+        if (authData?.userData) {
+          router.replace('/(tabs)');
+        }
+      } catch (err) {
+        console.error('Error checking auth:', err);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
   const handleGetStarted = () => {
     router.push('/(auth)/login');
   };
-
   return (
 
     <View style={styles.container}>

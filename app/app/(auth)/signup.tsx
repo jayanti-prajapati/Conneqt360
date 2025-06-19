@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
   errorText: {
     color: 'red',
     fontSize: 12,
-    alignSelf: 'flex-start',
+    textAlign: 'center',
     marginTop: -8,
     marginBottom: 8,
     marginLeft: 4,

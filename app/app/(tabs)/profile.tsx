@@ -1,14 +1,14 @@
 import React from 'react';
-import { 
-  StyleSheet, 
-  View, 
-  Text, 
+import {
+  StyleSheet,
+  View,
+  Text,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView 
+  SafeAreaView
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Settings, Share2 } from 'lucide-react-native';
+import { LogOut, Settings, Share2 } from 'lucide-react-native';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
@@ -16,6 +16,7 @@ import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
 import Spacing from '@/constants/Spacing';
 import { User } from '@/types';
+import { clearAuthData } from '@/services/secureStore';
 
 // Mock user data
 const mockUser: User = {
@@ -51,6 +52,12 @@ export default function ProfileScreen() {
     console.log('Share profile');
     // In a full implementation, open share dialog
   };
+  const handleLogout = () => {
+    console.log('Logout profile');
+    clearAuthData();
+    router.replace('/(auth)/login');
+    // In a full implementation, open share dialog
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -60,6 +67,9 @@ export default function ProfileScreen() {
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconButton} onPress={handleShare}>
           <Share2 size={24} color={Colors.gray[700]} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.iconButton} onPress={handleLogout}>
+          <LogOut size={24} color={Colors.gray[700]} />
         </TouchableOpacity>
       </View>
 
@@ -95,8 +105,8 @@ export default function ProfileScreen() {
           <Text style={styles.sectionTitle}>About Us</Text>
           <Card padding="medium">
             <Text style={styles.aboutText}>
-              TextileCraft Industries is a leading manufacturer and exporter of high-quality textile products. 
-              Established in 2005, we specialize in cotton fabrics, synthetic blends, and eco-friendly textiles 
+              TextileCraft Industries is a leading manufacturer and exporter of high-quality textile products.
+              Established in 2005, we specialize in cotton fabrics, synthetic blends, and eco-friendly textiles
               for fashion and home decor industries.
             </Text>
           </Card>
@@ -122,8 +132,8 @@ export default function ProfileScreen() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Featured Products</Text>
-          <ScrollView 
-            horizontal 
+          <ScrollView
+            horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.productsList}
           >
@@ -146,15 +156,15 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.actionButtons}>
-          <Button 
-            title="Download Business Card" 
+          <Button
+            title="Download Business Card"
             variant="outline"
             size="medium"
             onPress={() => console.log('Download business card')}
             style={styles.button}
           />
-          <Button 
-            title="View Trust Score" 
+          <Button
+            title="View Trust Score"
             variant="primary"
             size="medium"
             onPress={() => console.log('View trust score')}
