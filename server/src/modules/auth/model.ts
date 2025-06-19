@@ -1,32 +1,8 @@
 import mongoose, { Schema, Model , Document  } from 'mongoose';
-import { IUser, IUserDocument, IUserModel } from '../../types';
+import { IUser, IAuthDocument, IAuthModel } from '../../types';
 
 
-
-// export interface IUser extends Document {
-//   email: string;
-//   password: string;
-//   businessName: string;
-//   phone: string;
-//   // location?: string;
-//   businessType?: string;
-//   verified: boolean;
-//   gstNumber?: string;
-//   confirmPassword: String,
-
-
-//   udyamNumber?: string;
-//   interests: string[];
-//   createdAt: Date;
-//   comparePassword(candidatePassword: string): Promise<boolean>;
-// }
-
-
-
-
-
-
-const userSchema = new Schema<IUser>({
+const authSchema = new Schema<IUser>({
   email: {
     type: String,
     required: true,
@@ -70,24 +46,26 @@ const userSchema = new Schema<IUser>({
   },
 });
 
-userSchema.pre('save', async function (next) {
+authSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   //this.password = await bcrypt.hash(this.password, 10); --convert password into hash
   next();
 });
 
-userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
+authSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
   //return bcrypt.compare(candidatePassword, this.password);
   return candidatePassword === this.password;
 };
 
 
 
-userSchema.statics.findByPhone = function (phone: string) {
+authSchema.statics.findByPhone = function (phone: string) {
   return this.findOne({ phone });
 };
 
 //export const User = mongoose.model<IUser>('User', userSchema);
-export const Register = mongoose.model<IUser>('register', userSchema);
+export const Register = mongoose.model<IUser>('register', authSchema);
 
-export const User = mongoose.model<IUserDocument, IUserModel>("User", userSchema);
+// export const User = mongoose.model<IUserDocument, IUserModel>("User", authSchema);
+
+export const Auth = mongoose.model<IAuthDocument, IAuthModel>("Auth", authSchema);

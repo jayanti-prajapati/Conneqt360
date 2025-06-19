@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from "express";
-import { JwtPayload } from "jsonwebtoken";
 const admin = require("firebase-admin");
 import { z } from "zod";
-import { User } from "./model";
+
 import { AuthService } from "./service";
-import { sendOTP } from "../../services/test";
+import { Auth } from "./model";
+
 
 const jwt = require("jsonwebtoken");
 
@@ -12,10 +12,7 @@ export const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   confirmPassword: z.string().min(6),
-  // businessName: z.string().min(2),
   phone: z.string().min(10),
-  // location: z.string(),
-  // businessType: z.string()
 });
 
 export const loginSchema = z.object({
@@ -45,13 +42,13 @@ export class AuthController {
     try {
       const { email, password, confirmPassword, phone } = req.body;
 
-      const existingUser = await User.findOne({ email });
+      const existingUser = await Auth.findOne({ email });
       if (existingUser) {
         res.status(400).json({ message: "Email already registered" });
         return;
       }
 
-      const existingPhone = await User.findOne({ phone });
+      const existingPhone = await Auth.findOne({ phone });
       if (existingPhone) {
         res.status(400).json({ message: "Phone number already registered" });
         return;
@@ -88,7 +85,7 @@ export class AuthController {
   async getAll(req: Request, res: Response) {
     try {
       
-      const users = await User.find().select("-password -confirmPassword");
+      const users = await Auth.find().select("-password -confirmPassword");
       return res.status(200).json({
         statusCode: 200,
         message: "success",
@@ -109,7 +106,7 @@ export class AuthController {
 
       console.log("Searching for phone:", phone); 
 
-      const phoneData = await User.findByPhone(phone);
+      const phoneData = await Auth.findByPhone(phone);
 
        if (!phoneData) {
       return res.status(404).json({
@@ -135,7 +132,7 @@ export class AuthController {
     try {
       const { email, password } = req.body;
 
-      const user = await User.findOne({ email });
+      const user = await Auth.findOne({ email });
       console.log("user", user);
 
       if (!user) {
@@ -240,42 +237,13 @@ export class AuthController {
     // }
   }
 
-// async otpLogin (req: Request, res: Response)  {
-//   const { phone } = req.body;
 
-//   if (!phone) {
-//     return res.status(400).json({
-//       statusCode: 400,
-//       message: "Phone number required",
-//     });
-//   }
-
-//   const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
-
-//   try {
-//    await sendOTP(phone, Number(otp));
-
-//     return res.status(200).json({
-//       statusCode: 200,
-//       message: "OTP sent successfully",
-//       data: {
-//         phone,
-//       },
-//     });
-//   } catch (err: any) {
-//     return res.status(500).json({
-//       statusCode: 500,
-//       message: "Failed to send OTP",
-//       error: err.message || "Internal error",
-//     });
-//   }
-// };
 
   async verifyOtp(req: Request, res: Response) {
     try {
       const { phone, otp } = req.body;
 
-      const user = await User.findOne({ phone });
+      const user = await Auth.findOne({ phone });
       if (!user) {
         throw {
           message: "Mobile number not registered",

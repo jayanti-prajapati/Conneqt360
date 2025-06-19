@@ -15,7 +15,7 @@ export interface IUser extends Document {
   confirmPassword: String,
   udyamNumber?: string;
   interests: string[];
-  aboutus?: Text;
+  aboutUs?: Text;
   createdAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
@@ -81,9 +81,10 @@ export interface AuthRequest extends Request {
   userId?: string;
 }
 
-export interface IUserDocument extends IUser, Document {}
+export interface IAuthDocument extends IUser, Document {};
+export interface IUserDocument extends IUser, Document {};
 
-export interface IUserModel extends Model<IUserDocument> {
-  findByPhone(phone: string): Promise<IUserDocument | null>;
+export interface IAuthModel extends Model<IAuthDocument> {
+  findByPhone(phone: string): Promise<IAuthDocument | null>;
 }
 
