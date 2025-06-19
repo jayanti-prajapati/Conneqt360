@@ -1,10 +1,13 @@
 import { useEffect } from 'react';
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
+import { getAuthData } from '@/services/secureStore';
 
 export default function RootLayout() {
   useFrameworkReady();
+
+
 
   return (
     <>

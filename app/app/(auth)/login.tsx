@@ -7,15 +7,17 @@ import { useRouter } from 'expo-router';
 
 import Spacing from '@/constants/Spacing';
 import useAuthStore from '@/store/useAuthStore';
+import { getAuthData } from '@/services/secureStore';
 export default function LoginScreen() {
   const recaptchaVerifier = useRef(null);
   const [isEmailLogin, setIsEmailLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
   const [phone, setPhone] = useState('');
-  const { login, loading, error, response, reset, sendOtp } = useAuthStore();
+  const { login, loading, reset, sendOtp } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
 
 
@@ -43,31 +45,37 @@ export default function LoginScreen() {
     if (isEmailLogin) {
       if (email && password) {
         const data = await login({ email, password });
+        console.log('Login data:', data);
+
         //@ts-ignore
         if (data?.status === 200 || data?.status === 201) {
-          console.log('Login successful:', data);
+          setError(null);
           router.push('/(tabs)');
+        }
+        else {
+          setError('User not found or invalid credentials');
         }
 
 
       } else {
-        console.error('Email and password are required for email login');
+        setError('Email and password are required for email login');
       }
     } else {
       if (phone) {
         const data = await sendOtp({ phone });
         //@ts-ignore
         if (data?.status === 200 || data?.status === 201) {
-          router.push({
-            pathname: '/(auth)/otp',
-            params: { rotp: data.data.otp, phone: phone },
-          });
+          setError(null);
+          router.push('/(auth)/otp');
+          // Clear any previous error
 
+        } else {
+          setError('We couldn’t find your account. Please sign up to continue.');
         }
 
 
       } else {
-        console.error('Phone Number is required for login');
+        setError('Phone Number is required for login');
       }
 
     }
@@ -81,6 +89,9 @@ export default function LoginScreen() {
 
   const toggleLoginMethod = () => {
     setIsEmailLogin(!isEmailLogin);
+    setError('');
+    setEmail('');
+    setPassword('');
   };
 
   return (

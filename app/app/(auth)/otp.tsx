@@ -17,6 +17,7 @@ import ResendOtp from '@/components/ResendOtp';
 export default function OTPScreen() {
     const inputRefs = useRef<Array<TextInput | null>>([]);
     const router = useRouter();
+    const [error, setError] = useState<string | null>(null);
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     // const { phone } = useLocalSearchParams();
     const { verifyOtp, otpNumber, phone } = useAuthStore();
@@ -40,17 +41,19 @@ export default function OTPScreen() {
 
     const handleVerify = async () => {
         const code = otp.join('');
-        console.log('Verifying OTP:', code);
         if (code === otpNumber) {
             const response = await verifyOtp({ phone: phone as string, otp: code });
             if (response?.status === 200 || response?.status === 201) {
                 console.log('OTP verified successfully');
+                setError(null);
                 router.push('/(tabs)');
+            } else {
+                setError('Invalid OTP. Please Enter the correct OTP.');
             }
 
         }
         else {
-            console.error('Invalid OTP');
+            setError('Invalid OTP. Please Enter the correct OTP.');
         }
 
 
@@ -90,7 +93,9 @@ export default function OTPScreen() {
                         <Text style={styles.buttonText}>Verify OTP</Text>
                     </LinearGradient>
                 </TouchableOpacity>
-
+                {error && (
+                    <Text style={{ color: 'red', textAlign: 'center' }}>{error}</Text>
+                )}
                 {/* <TouchableOpacity onPress={Keyboard.dismiss}>
                     <Text style={styles.resendText}>Resend OTP</Text>
                 </TouchableOpacity> */}
