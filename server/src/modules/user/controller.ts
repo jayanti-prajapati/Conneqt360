@@ -21,12 +21,10 @@ export class UserController {
         },
       });
     } catch (error: any) {
-      return res.status(500).json({
-        statusCode: 500,
+     return res.status(400).json({
+        statusCode: 400,
         message: "failed",
-        data: {
-          error: error.message,
-        },
+         error: error.message,
       });
     }
   }
@@ -40,10 +38,10 @@ export class UserController {
         data: users,
       });
     } catch (error: any) {
-      return res.status(500).json({
-        statusCode: 500,
+     return res.status(400).json({
+        statusCode: 400,
         message: "failed",
-        data: error.message,
+         error: error.message,
       });
     }
   }
@@ -66,11 +64,11 @@ export class UserController {
         data: userData
       });
     } catch (error: any) {
-        return res.status(500).json({
-            statusCode: 500,
-            message: 'failed',
-            data: error.message
-        })
+       return res.status(400).json({
+        statusCode: 400,
+        message: "failed",
+         error: error.message,
+      });
     }
   };
 
@@ -91,11 +89,11 @@ export class UserController {
             data: updateUser
         });
     } catch (error: any) {
-        return res.status(500).json({
-            statusCode: 500,
-            message: 'failed',
-            data: error.message
-        });
+       return res.status(400).json({
+        statusCode: 400,
+        message: "failed",
+         error: error.message,
+      });
     }
   };
 
@@ -108,11 +106,11 @@ export class UserController {
             data: deleteUser
         });
     } catch (error: any) {
-        return res.status(500).json({
-            statusCode: 500,
-            message: 'failed',
-            data: error.message
-        });
+       return res.status(400).json({
+        statusCode: 400,
+        message: "failed",
+         error: error.message,
+      });
     }
   }
 

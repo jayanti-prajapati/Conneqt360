@@ -3,18 +3,18 @@ import { Request } from 'express';
 export interface IUser extends Document {
   email: string;
   password: string;
-  phone: string;
+  phone?: string;
   location?: string;
   connections?: number;
   products?: number;
   rating?: number;
-  businessName: string;
+  businessName?: string;
   businessType?: string;
-  verified: boolean;
+  verified?: boolean;
   gstNumber?: string;
   confirmPassword: String,
   udyamNumber?: string;
-  interests: string[];
+  interests?: string[];
   aboutUs?: Text;
   createdAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;

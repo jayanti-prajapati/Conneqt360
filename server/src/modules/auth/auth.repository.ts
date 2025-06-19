@@ -1,16 +1,17 @@
 import { BaseRepository } from "../../shared/base.repository";
 import { IUser } from "../../types";
-import { Auth } from "./model";
+import { User } from "./model";
+
 
 
 
 export class AuthRepository extends BaseRepository<IUser> {
   constructor() {
-    super(Auth);
+    super(User);
   }
 
  async findByPhone(phone: string) {
-    return Auth.findByPhone(phone);
+    return User.findByPhone(phone);
   }
 
 }

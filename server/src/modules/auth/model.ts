@@ -17,28 +17,50 @@ const authSchema = new Schema<IUser>({
     type: String,
     required: false,
   },
-  // businessName: {
-  //   type: String,
-  //   required: true,
-  // },
+  businessName: {
+    type: String,
+    required: false,
+  },
   phone: {
     type: String,
     required: false,
   },
-  // location: {
-  //   type: String,
-  //   required: true,
-  // },
-  // businessType: {
-  //   type: String,
-  //   required: true,
-  // },
+  location: {
+    type: String,
+    required: false,
+  },
+  businessType: {
+    type: String,
+    required: false,
+  },
+   connections: {
+        type: Number,
+        required: false
+    },
+    products: {
+        type: Number,
+        required: false
+    },
+    rating: {
+        type: Number,
+        required: false
+    },
   verified: {
     type: Boolean,
     default: false,
   },
-  gstNumber: String,
-  udyamNumber: String,
+gstNumber: {
+        type: String,
+        required: false
+    },
+    udyamNumber: {
+        type: String,
+        required: false
+    },
+    aboutUs: {
+        type: String,
+        required: false
+    },
   interests: [String],
   createdAt: {
     type: Date,
@@ -68,4 +90,4 @@ export const Register = mongoose.model<IUser>('register', authSchema);
 
 // export const User = mongoose.model<IUserDocument, IUserModel>("User", authSchema);
 
-export const Auth = mongoose.model<IAuthDocument, IAuthModel>("Auth", authSchema);
+export const User = mongoose.model<IAuthDocument, IAuthModel>("User", authSchema);

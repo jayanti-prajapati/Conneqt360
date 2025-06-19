@@ -3,7 +3,8 @@ const admin = require("firebase-admin");
 import { z } from "zod";
 
 import { AuthService } from "./service";
-import { Auth } from "./model";
+import { User } from "./model";
+
 
 
 const jwt = require("jsonwebtoken");
@@ -42,13 +43,13 @@ export class AuthController {
     try {
       const { email, password, confirmPassword, phone } = req.body;
 
-      const existingUser = await Auth.findOne({ email });
+      const existingUser = await User.findOne({ email });
       if (existingUser) {
         res.status(400).json({ message: "Email already registered" });
         return;
       }
 
-      const existingPhone = await Auth.findOne({ phone });
+      const existingPhone = await User.findOne({ phone });
       if (existingPhone) {
         res.status(400).json({ message: "Phone number already registered" });
         return;
@@ -72,12 +73,10 @@ export class AuthController {
         },
       });
     } catch (error: any) {
-      return res.status(500).json({
-        statusCode: 500,
+      return res.status(400).json({
+        statusCode: 400,
         message: "failed",
-        data: {
-          error: error.message,
-        },
+         error: error.message,
       });
     }
   };
@@ -85,18 +84,18 @@ export class AuthController {
   async getAll(req: Request, res: Response) {
     try {
       
-      const users = await Auth.find().select("-password -confirmPassword");
+      const users = await User.find().select("-password -confirmPassword");
       return res.status(200).json({
         statusCode: 200,
         message: "success",
         data: users
       });
     } catch (error: any) {
-      return res.status(500).json({
-        statusCode: 500,
+     return res.status(400).json({
+        statusCode: 400,
         message: "failed",
-        data: error.message
-      })
+         error: error.message,
+      });
     }
   };
 
@@ -106,7 +105,7 @@ export class AuthController {
 
       console.log("Searching for phone:", phone); 
 
-      const phoneData = await Auth.findByPhone(phone);
+      const phoneData = await User.findByPhone(phone);
 
        if (!phoneData) {
       return res.status(404).json({
@@ -120,11 +119,11 @@ export class AuthController {
         data: phoneData
       });
     } catch (error: any) {
-      return res.status(500).json({
-        statusCode: 500,
+      return res.status(400).json({
+        statusCode: 400,
         message: "failed",
-        data: error.message
-      })
+         error: error.message,
+      });
     }
   }
 
@@ -132,7 +131,7 @@ export class AuthController {
     try {
       const { email, password } = req.body;
 
-      const user = await Auth.findOne({ email });
+      const user = await User.findOne({ email });
       console.log("user", user);
 
       if (!user) {
@@ -168,74 +167,66 @@ export class AuthController {
           id: user.id,
           email: user.email,
           phone: user.phone,
-          verified: user.verified,
+          businessName: user.businessName,
+          businessType: user.businessType,
           token: token,
         },
       });
     } catch (error: any) {
-      return res.status(500).json({
-        statusCode: 500,
+      return res.status(400).json({
+        statusCode: 400,
         message: "failed",
-        data: {
-          error: error.message,
-        },
+        error: error.message, 
       });
     }
   }
 
-  async otpLogin(req: Request, res: Response) {
-    const serviceAccount = require("./firebaseServiceAccountKey.json");
 
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-    });
+  
+async otpLogin  (req: Request, res: Response)  {
 
-    const { phone } = req.body;
+  // const serviceAccount = require('./firebaseServiceAccountKey.json');
 
-    if (!phone)
-      throw {
-        message: "Phone number is required",
-        data: "Phone number is required",
-        status: 400,
-      };
-    //return res.status(400).json({ error: "Phone number is required" });
+  // admin.initializeApp({
+  //   credential: admin.credential.cert(serviceAccount)
+  // });
 
-    res.status(200).json({ message: "OTP request initiated on client", phone });
-    // try {
+  const { phone } = req.body;
 
-    // const user = await User.findOne({ phone });
-    // if (!user) {
-    //   return res.status(404).json({ message: "Mobile number not registered" });
-    // }
 
-    //const otp = generateOTP();
+  if (!phone) return res.status(400).json({ error: 'Phone number is required' });
 
-    //   const otp = "12345";
 
-    //   otpStore[phone] = {
-    //     otp,
-    //     expiry: Infinity,  //Date.now() + 5 * 60 * 1000, //5 min expiry
-    //   };
-
-    //   console.log(`Otp for ${phone}: ${otp}`);
-    //   res.status(200).json({ message: "OTP sent to your mobile number" });
-
-    // } catch (error: any) {
-    //   console.error("sendOtp error:", error);
-    //   res.status(500).json({ message: "Failed to send OTP", error: error.message });
-    // }
-    // const { phone } = req.body;
-
-    // if (!phone) return res.status(400).json({ error: 'Phone number is required' });
-
-    // const otp = generateOTP();
-    // try {
-    //   sendOTP(phone, parseInt(otp));
-    //   res.status(200).json({ message: 'OTP sent successfully', otp }); // Return OTP only for dev/debug
-    // } catch (error) {
-    //   res.status(500).json({ error: 'Failed to send OTP' });
-    // }
+    const user = await User.findOne({ phone });
+  if (!user) {
+    return res.status(404).json({ message: "Phone number not registered" });
   }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+
+  try {
+    // sendOTP(phone, parseInt(otp));
+    otpStore[phone] = {
+      otp,
+      expiry: Infinity,  //Date.now() + 5 * 60 * 1000, //5 min expiry
+    };
+    res.status(200).json({ message: 'OTP sent successfully', otp }); // Return OTP only for dev/debug
+  } catch (error) {
+    res.status(400).json({ error: 'Failed to send OTP' });
+  }
+
+
+
+  // if (!phone) return res.status(400).json({ error: 'Phone number is required' });
+
+  // const otp = generateOTP();
+  // try {
+  //   sendOTP(phone, parseInt(otp));
+  //   res.status(200).json({ message: 'OTP sent successfully', otp }); // Return OTP only for dev/debug
+  // } catch (error) {
+  //   res.status(500).json({ error: 'Failed to send OTP' });
+  // }
+};
 
 
 
@@ -243,7 +234,7 @@ export class AuthController {
     try {
       const { phone, otp } = req.body;
 
-      const user = await Auth.findOne({ phone });
+      const user = await User.findOne({ phone });
       if (!user) {
         throw {
           message: "Mobile number not registered",
@@ -277,20 +268,22 @@ export class AuthController {
       });
 
       res.status(200).json({
-        message: "Login successful",
+        message: "success",
         user: {
           id: user._id,
           email: user.email,
           phone: user.phone,
           businessName: user.businessName,
           businessType: user.businessType,
-          verified: user.verified,
           token,
         },
       });
     } catch (error: any) {
-      console.error("verifyOtp error:", error);
-      res.status(500).json({ message: "Login failed", error: error.message });
+     return res.status(400).json({
+        statusCode: 400,
+        message: "failed",
+         error: error.message,
+      });
     }
   }
 
