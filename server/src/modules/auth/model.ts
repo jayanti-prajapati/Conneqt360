@@ -11,7 +11,7 @@ const authSchema = new Schema<IUser>({
   },
   password: {
     type: String,
-    required: true,
+    required: false,
   },
   confirmPassword: {
     type: String,
@@ -24,6 +24,7 @@ const authSchema = new Schema<IUser>({
   phone: {
     type: String,
     required: false,
+    unique: true,
   },
   location: {
     type: String,
