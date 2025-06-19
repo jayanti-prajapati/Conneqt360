@@ -1,6 +1,31 @@
-import mongoose, { Schema } from 'mongoose';
-import bcrypt from 'bcryptjs';
-import { IUser } from '../types';
+import mongoose, { Schema, Model , Document  } from 'mongoose';
+import { IUser, IUserDocument, IUserModel } from '../../types';
+
+
+
+// export interface IUser extends Document {
+//   email: string;
+//   password: string;
+//   businessName: string;
+//   phone: string;
+//   // location?: string;
+//   businessType?: string;
+//   verified: boolean;
+//   gstNumber?: string;
+//   confirmPassword: String,
+
+
+//   udyamNumber?: string;
+//   interests: string[];
+//   createdAt: Date;
+//   comparePassword(candidatePassword: string): Promise<boolean>;
+// }
+
+
+
+
+
+
 const userSchema = new Schema<IUser>({
   email: {
     type: String,
@@ -14,7 +39,7 @@ const userSchema = new Schema<IUser>({
   },
   confirmPassword: {
     type: String,
-    required: true,
+    required: false,
   },
   // businessName: {
   //   type: String,
@@ -22,7 +47,7 @@ const userSchema = new Schema<IUser>({
   // },
   phone: {
     type: String,
-    required: true,
+    required: false,
   },
   // location: {
   //   type: String,
@@ -56,5 +81,13 @@ userSchema.methods.comparePassword = async function (candidatePassword: string):
   return candidatePassword === this.password;
 };
 
-export const User = mongoose.model<IUser>('User', userSchema);
+
+
+userSchema.statics.findByPhone = function (phone: string) {
+  return this.findOne({ phone });
+};
+
+//export const User = mongoose.model<IUser>('User', userSchema);
 export const Register = mongoose.model<IUser>('register', userSchema);
+
+export const User = mongoose.model<IUserDocument, IUserModel>("User", userSchema);

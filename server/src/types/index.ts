@@ -1,19 +1,21 @@
-import { Document } from 'mongoose';
+import mongoose,  { Document, Model } from 'mongoose';
 import { Request } from 'express';
 export interface IUser extends Document {
   email: string;
   password: string;
-  businessName: string;
   phone: string;
-  // location?: string;
+  location?: string;
+  connections?: number;
+  products?: number;
+  rating?: number;
+  businessName: string;
   businessType?: string;
   verified: boolean;
   gstNumber?: string;
   confirmPassword: String,
-
-
   udyamNumber?: string;
   interests: string[];
+  aboutus?: Text;
   createdAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
@@ -78,3 +80,10 @@ export interface IChat extends Document {
 export interface AuthRequest extends Request {
   userId?: string;
 }
+
+export interface IUserDocument extends IUser, Document {}
+
+export interface IUserModel extends Model<IUserDocument> {
+  findByPhone(phone: string): Promise<IUserDocument | null>;
+}
+
