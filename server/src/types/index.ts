@@ -1,6 +1,7 @@
 import mongoose, { Document, Model } from 'mongoose';
 import { Request } from 'express';
 export interface IUser extends Document {
+  username?: string;
   email?: string;
   password?: string;
   phone?: string;
@@ -17,21 +18,26 @@ export interface IUser extends Document {
   udyamNumber?: string;
   interests?: string[];
   aboutUs?: Text;
+  profileUrl?: string;
+  thumbnail?: string;
   createdAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
 export interface IPost extends Document {
-  type: 'product' | 'deal' | 'help' | 'success';
-  content: string;
+  //type: 'product' | 'deal' | 'help' | 'success';
+  content: Text;
   imageUrl?: string;
-  userId: IUser['_id'];
+  videoUrl?: string;
+  user: IUser['_id'];
   likes: IUser['_id'][];
   comments: {
     userId: IUser['_id'];
-    content: string;
+    content: Text;
     createdAt: Date;
   }[];
+  description?: Text;
+  share?: string;
   circle?: ICircle['_id'];
   createdAt: Date;
 }

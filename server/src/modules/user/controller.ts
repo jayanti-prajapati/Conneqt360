@@ -11,8 +11,7 @@ export class UserController {
   async create(req: Request, res: Response) {
     try {
       const user = await this.userService.create(req.body);
-      console.log("user", user);
-      
+  
       return res.status(200).json({
         statusCode: 200,
         message: "success",
