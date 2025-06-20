@@ -7,11 +7,11 @@ export class BaseRepository<T extends Document> {
     return this.model.create(data);
   }
 
-  async findById(id: string) {
+   findById(id: string) {
     return this.model.findById(id);
   }
 
-  async findAll(filter: Partial<T> = {}) {
+   findAll(filter: Partial<T> = {}) {
     return this.model.find(filter as any);
   }
 
@@ -22,4 +22,5 @@ export class BaseRepository<T extends Document> {
   async delete(id: string) {
     return this.model.findByIdAndDelete(id);
   }
+
 }
