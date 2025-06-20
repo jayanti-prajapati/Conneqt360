@@ -6,15 +6,19 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
-  TextInput
+  TextInput,
+  Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Search, Bell, Plus } from 'lucide-react-native';
-import FeedCard, { PostType } from '@/components/home/FeedCard';
+import FeedCard from '@/components/home/FeedCard';
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
 import Spacing from '@/constants/Spacing';
 import { Post } from '@/types';
+import Form from '@/components/profile/Form';
+
 
 // Mock data for posts
 const mockPosts: Post[] = [
@@ -70,101 +74,99 @@ const mockPosts: Post[] = [
   },
 ];
 
+
+// ... mockPosts remains unchanged
+
 export default function HomeScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const handlePostPress = (id: string) => {
-    console.log(`Post ${id} pressed`);
-    // In a full implementation, navigate to post details
-  };
-
-  const handleLike = (id: string) => {
-    console.log(`Liked post ${id}`);
-  };
-
-  const handleComment = (id: string) => {
-    console.log(`Comment on post ${id}`);
-  };
-
-  const handleShare = (id: string) => {
-    console.log(`Share post ${id}`);
-  };
-
-  const handleMoreOptions = (id: string) => {
-    console.log(`More options for post ${id}`);
-  };
-
-  const handleNewPost = () => {
-    console.log('Create new post');
-    // In a full implementation, navigate to create post screen
-  };
+  const handlePostPress = (id: string) => console.log(`Post ${id} pressed`);
+  const handleLike = (id: string) => console.log(`Liked post ${id}`);
+  const handleComment = (id: string) => console.log(`Comment on post ${id}`);
+  const handleShare = (id: string) => console.log(`Share post ${id}`);
+  const handleMoreOptions = (id: string) => console.log(`More options for post ${id}`);
+  const handleNewPost = () => console.log('Create new post');
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.searchBar}>
-          <Search size={20} color={Colors.gray[500]} style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search businesses, products..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-        </View>
-        <TouchableOpacity style={styles.notificationButton}>
-          <Bell size={24} color={Colors.gray[700]} />
-          <View style={styles.notificationBadge}>
-            <Text style={styles.notificationBadgeText}>3</Text>
-          </View>
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
+    <SafeAreaView style={styles.safeArea} >
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <View style={styles.feedHeaderContainer}>
-          <Text style={styles.feedHeader}>Your Business Feed</Text>
+        <View style={styles.header}>
+          <View style={styles.searchBar}>
+            <Search size={20} color={Colors.gray[500]} style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search businesses, products..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
+          <TouchableOpacity style={styles.notificationButton}>
+            <Bell size={24} color={Colors.gray[700]} />
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationBadgeText}>3</Text>
+            </View>
+          </TouchableOpacity>
         </View>
 
-        {mockPosts.map((post) => (
-          <FeedCard
-            key={post.id}
-            id={post.id}
-            type={post.type as PostType}
-            username={post.username}
-            businessName={post.businessName}
-            timestamp={post.timestamp}
-            content={post.content}
-            imageUrl={post.imageUrl}
-            likes={post.likes}
-            comments={post.comments}
-            onLike={handleLike}
-            onComment={handleComment}
-            onShare={handleShare}
-            onMoreOptions={handleMoreOptions}
-            onPress={handlePostPress}
-            verified={post.verified}
-          />
-        ))}
-      </ScrollView>
-      {/* 
-      <TouchableOpacity style={styles.floatingButton} onPress={handleNewPost}>
-        <Plus size={24} color={Colors.white} />
-      </TouchableOpacity> */}
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <Form />
+
+          <View style={styles.feedHeaderContainer}>
+            <Text style={styles.feedHeader}>Your Business Feed</Text>
+          </View>
+
+          {mockPosts.map((post) => (
+            <FeedCard
+              key={post.id}
+              id={post.id}
+              username={post.username}
+              businessName={post.businessName}
+              timestamp={post.timestamp}
+              content={post.content}
+              imageUrl={post.imageUrl}
+              likes={post.likes}
+              comments={post.comments}
+              onLike={handleLike}
+              onComment={handleComment}
+              onShare={handleShare}
+              onMoreOptions={handleMoreOptions}
+              onPress={handlePostPress}
+              verified={post.verified}
+            />
+          ))}
+        </ScrollView>
+
+        {/* <TouchableOpacity style={styles.floatingButton} onPress={handleNewPost}>
+          <Plus size={24} color={Colors.white} />
+        </TouchableOpacity> */}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+
+    backgroundColor: Colors.gray[100],
+  },
   container: {
     flex: 1,
-    backgroundColor: Colors.gray[100],
+  },
+  scrollContent: {
+    paddingBottom: Spacing.xl + 72, // Leave space for floating button & bottom safe area
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingTop: Spacing.xxl,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.md,
     backgroundColor: Colors.white,
@@ -207,9 +209,6 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: 10,
     fontWeight: Typography.weight.bold as any,
-  },
-  scrollView: {
-    flex: 1,
   },
   feedHeaderContainer: {
     paddingHorizontal: Spacing.lg,

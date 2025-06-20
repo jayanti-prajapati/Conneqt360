@@ -76,14 +76,14 @@ const BottomView: React.FC = () => {
 
     return (
         // <NavigationContainer >
-
+        //@ts-ignore
         <CurvedBottomBarExpo.Navigator
             id="main-bottom-bar"
             type="DOWN"
             style={styles.bottomBar}
             shadowStyle={styles.shadow}
             width={0}
-            height={50 + insets.bottom}// ⬅️ Increase this value to make the bottom bar taller
+            // height={50 + insets.bottom}// ⬅️ Increase this value to make the bottom bar taller
             circleWidth={64} // ⬅️ Make this match the central button size / arc
             borderColor="#e0e0e0"
             borderWidth={1}
@@ -98,7 +98,7 @@ const BottomView: React.FC = () => {
                     borderTopWidth: 1,
                     borderTopColor: '#f0f0f0',
                     height: 90,
-                    paddingBottom: 10,
+                    // paddingBottom: 10,
                     paddingTop: 20,
                     position: 'absolute',
                     bottom: 0,
@@ -122,7 +122,7 @@ const BottomView: React.FC = () => {
             }}
 
             renderCircle={() => (
-                <Animated.View style={[styles.btnCircleUp, { bottom: 15 }]}>
+                <Animated.View style={[styles.btnCircleUp, { bottom: 25 }]}>
                     <TouchableOpacity
                         style={styles.button}
                         onPress={() => Alert.alert('Add pressed')}

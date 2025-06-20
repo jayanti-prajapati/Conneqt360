@@ -12,7 +12,7 @@ export type PostType = 'product' | 'deal' | 'help' | 'success';
 
 interface FeedCardProps {
   id: string;
-  type: PostType;
+  // type: PostType;
   username: string;
   businessName: string;
   timestamp: string;
@@ -30,7 +30,6 @@ interface FeedCardProps {
 
 export default function FeedCard({
   id,
-  type,
   username,
   businessName,
   timestamp,
@@ -45,7 +44,7 @@ export default function FeedCard({
   onPress,
   verified = false,
 }: FeedCardProps) {
-  
+
   const getPostTypeLabel = (type: PostType) => {
     switch (type) {
       case 'product': return 'New Product';
@@ -84,48 +83,48 @@ export default function FeedCard({
               <Text style={styles.username}>@{username} • {timestamp}</Text>
             </View>
           </View>
-          
+
           <View style={styles.headerRight}>
-            <View style={[styles.postTypeTag, { backgroundColor: getPostTypeColor(type) }]}>
+            {/* <View style={[styles.postTypeTag, { backgroundColor: getPostTypeColor(type) }]}>
               <Text style={styles.postTypeText}>{getPostTypeLabel(type)}</Text>
-            </View>
+            </View> */}
             <TouchableOpacity onPress={() => onMoreOptions(id)} hitSlop={10}>
               <MoreVertical size={20} color={Colors.gray[600]} />
             </TouchableOpacity>
           </View>
         </View>
-        
+
         <View style={styles.content}>
           <Text style={styles.contentText}>{content}</Text>
         </View>
-        
+
         {imageUrl && (
-          <Image 
-            source={{ uri: imageUrl }} 
-            style={styles.image} 
+          <Image
+            source={{ uri: imageUrl }}
+            style={styles.image}
             resizeMode="cover"
           />
         )}
-        
+
         <View style={styles.actions}>
-          <TouchableOpacity 
-            style={styles.actionButton} 
+          <TouchableOpacity
+            style={styles.actionButton}
             onPress={() => onLike(id)}
           >
             <Heart size={20} color={Colors.gray[600]} />
             <Text style={styles.actionText}>{likes}</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={styles.actionButton} 
+
+          <TouchableOpacity
+            style={styles.actionButton}
             onPress={() => onComment(id)}
           >
             <MessageSquare size={20} color={Colors.gray[600]} />
             <Text style={styles.actionText}>{comments}</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={styles.actionButton} 
+
+          <TouchableOpacity
+            style={styles.actionButton}
             onPress={() => onShare(id)}
           >
             <Share size={20} color={Colors.gray[600]} />

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { 
-  StyleSheet, 
-  View, 
-  Text, 
-  ScrollView, 
+import {
+  StyleSheet,
+  View,
+  Text,
+  ScrollView,
   TouchableOpacity,
   SafeAreaView,
   TextInput
@@ -120,7 +120,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
@@ -132,7 +132,7 @@ export default function HomeScreen() {
           <FeedCard
             key={post.id}
             id={post.id}
-            type={post.type as PostType}
+
             username={post.username}
             businessName={post.businessName}
             timestamp={post.timestamp}
