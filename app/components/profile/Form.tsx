@@ -4,12 +4,13 @@ import { useModal } from "@/hooks/useModal";
 import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import useAuthStore from "@/store/useAuthStore";
+
+import useUsersStore from "@/store/useUsersStore";
 import { getAuthData } from "@/services/secureStore";
 
 export default function Form() {
     const modal = useModal();
-    const { fetchUserByPhoneNumber } = useAuthStore();
+    const { fetchUserByPhoneNumber, createUser, updateUser } = useUsersStore();
     const [userData, setUserData] = useState<any>(null);
     const [isVisible, setIsVisible] = useState(false);
     const [formData, setFormData] = useState({
@@ -63,7 +64,9 @@ export default function Form() {
 
 
 
-    const handleSkip = () => {
+    const handleSkip = async () => {
+
+
         setErrors({
             email: '',
             username: '',
@@ -73,10 +76,20 @@ export default function Form() {
             gstNumber: '',
             address: '',
         })
-        setIsVisible(false);
+
         modal.close();
+        const resp = await updateUser(userData?._id, { isSkip: true });
+        console.log('Response:', resp);
+        if (resp?.data?.statusCode == 201 || resp?.data?.statusCode == 200) {
+            console.log('User upadted successfully:', resp.data.data);
+            setUserData(resp.data.data);
+            setIsVisible(false);
+        } else {
+            console.error('Error creating user:', resp.data.message);
+
+        }
     }
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         let valid = true;
         let newErrors: typeof errors = {
             email: '',
@@ -98,6 +111,10 @@ export default function Form() {
             valid = false;
         }
 
+        if (!formData.username) {
+            newErrors.username = 'Username is required';
+            valid = false;
+        }
         if (!formData.businessType) {
             newErrors.businessType = 'Business type is required';
             valid = false;
@@ -122,7 +139,17 @@ export default function Form() {
 
         if (valid) {
             console.log('Submitting:', formData);
-            modal.close();
+            const resp = await updateUser(userData?._id, { ...formData, isSkip: true });
+            console.log('Response:', resp);
+            if (resp?.data?.statusCode == 201 || resp?.data?.statusCode == 200) {
+                console.log('User upadted successfully:', resp.data.data);
+                setUserData(resp.data.data);
+                setIsVisible(false);
+            } else {
+                console.error('Error creating user:', resp.data.message);
+
+            }
+            // modal.close();
         }
     };
 
@@ -148,8 +175,8 @@ export default function Form() {
             <View style={styles.inputContainer}>
                 <TextInput
                     placeholder="Username"
-                    value={formData.email}
-                    onChangeText={text => handleChange('email', text)}
+                    value={formData.username}
+                    onChangeText={text => handleChange('username', text)}
                     style={[styles.input, errors.username && { borderColor: 'red' }]}
 
                     autoCapitalize="none"

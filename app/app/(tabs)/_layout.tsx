@@ -1,16 +1,5 @@
 import React from 'react';
-import { Tabs } from 'expo-router';
-import {
-  Chrome as Home,
-  Users,
-  ShoppingBag,
-  MessageSquare,
-  User,
-  Plus,
-} from 'lucide-react-native';
-import Colors from '@/constants/Colors';
-import { TouchableOpacity, StyleSheet, View } from 'react-native';
-import TabBarBackground from '@/components/tabs/TabBarBackground';
+import { StyleSheet, View } from 'react-native';
 import BottomView from '@/components/bottomViewExpo';
 
 export default function TabLayout() {

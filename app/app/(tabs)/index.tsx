@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -9,6 +9,7 @@ import {
   TextInput,
   Platform,
   KeyboardAvoidingView,
+  BackHandler,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Search, Bell, Plus } from 'lucide-react-native';
@@ -88,6 +89,20 @@ export default function HomeScreen() {
   const handleMoreOptions = (id: string) => console.log(`More options for post ${id}`);
   const handleNewPost = () => console.log('Create new post');
 
+
+  useEffect(() => {
+    const backAction = () => {
+      BackHandler.exitApp();
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, []);
   return (
     <SafeAreaView style={styles.safeArea} >
       <KeyboardAvoidingView

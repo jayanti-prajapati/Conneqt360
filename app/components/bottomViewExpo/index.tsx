@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Alert,
     Animated,
@@ -16,10 +16,24 @@ import ChatsScreen from '@/app/(tabs)/chats';
 import CirclesScreen from '@/app/(tabs)/circles';
 import TabBarBackground from '../tabs/TabBarBackground';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+
+import { Redirect, router } from 'expo-router';
+
 
 
 const BottomView: React.FC = () => {
+    const [isFeedOpen, setIsFeedOpen] = useState(false);
     const insets = useSafeAreaInsets();
+
+    // useEffect(() => {
+    //     console.log('BottomView mounted', isFeedOpen);
+
+    //     if (isFeedOpen) {
+    //         router.push("/(tabs)/addfeed");
+    //         // setIsFeedOpen(false); // reset state to avoid loops
+    //     }
+    // }, [isFeedOpen]);
     const renderIcon = (routeName: string, selectedTab: string) => {
         let icon = '';
 
@@ -55,6 +69,8 @@ const BottomView: React.FC = () => {
         );
     };
 
+
+
     const renderTabBar = ({
         routeName,
         selectedTab,
@@ -74,75 +90,91 @@ const BottomView: React.FC = () => {
         );
     };
 
+
+
     return (
         // <NavigationContainer >
         //@ts-ignore
-        <CurvedBottomBarExpo.Navigator
-            id="main-bottom-bar"
-            type="DOWN"
-            style={styles.bottomBar}
-            shadowStyle={styles.shadow}
-            width={0}
-            // height={50 + insets.bottom}// ⬅️ Increase this value to make the bottom bar taller
-            circleWidth={64} // ⬅️ Make this match the central button size / arc
-            borderColor="#e0e0e0"
-            borderWidth={1}
-            bgColor="white"
-            initialRouteName="directory"
-            borderTopLeftRight
-            backBehavior="initialRoute"
-            screenOptions={{
-                headerShown: false,
-                tabBarStyle: {
-                    backgroundColor: '#ffffff',
-                    borderTopWidth: 1,
-                    borderTopColor: '#f0f0f0',
-                    height: 90,
-                    // paddingBottom: 10,
-                    paddingTop: 20,
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    borderTopLeftRadius: 20,
-                    borderTopRightRadius: 20,
-                    shadowColor: '#000',
-                    shadowOffset: {
-                        width: 0,
-                        height: -2,
-                    },
-                    shadowOpacity: 0.1,
-                    shadowRadius: 8,
-                    elevation: 10,
-                },
-                tabBarActiveTintColor: '#007AFF',
-                tabBarInactiveTintColor: '#8E8E93',
-                tabBarShowLabel: false,
-                tabBarBackground: () => <TabBarBackground />,
-            }}
 
-            renderCircle={() => (
-                <Animated.View style={[styles.btnCircleUp, { bottom: 25 }]}>
-                    <TouchableOpacity
-                        style={styles.button}
-                        onPress={() => Alert.alert('Add pressed')}
-                    >
-                        <Ionicons name="add" color="white" size={28} />
-                    </TouchableOpacity>
-                </Animated.View>
-            )}
-            tabBar={renderTabBar}
-            circlePosition="CENTER"
-            screenListeners={{}}
-            defaultScreenOptions={{}}>
-            {/* <CurvedBottomBarExpo.Screen name="home" position="LEFT" component={HomeScreen} /> */}
-            <CurvedBottomBarExpo.Screen name="directory" position="LEFT" component={HomeScreen} />
-            {/* <CurvedBottomBarExpo.Screen name="circles" position="LEFT" component={CirclesScreen} /> */}
-            <CurvedBottomBarExpo.Screen name="circles" position="LEFT" component={MarketplaceScreen} />
-            <CurvedBottomBarExpo.Screen name="chats" position="RIGHT" component={ChatsScreen} />
-            <CurvedBottomBarExpo.Screen name="profile" position="RIGHT" component={ProfileScreen} />
-        </CurvedBottomBarExpo.Navigator>
         // </NavigationContainer >
+
+        <View style={{ flex: 1 }}>
+
+            <CurvedBottomBarExpo.Navigator
+                id="main-bottom-bar"
+                type="DOWN"
+                style={styles.bottomBar}
+                shadowStyle={styles.shadow}
+                width={0}
+                height={64}// ⬅️ Increase this value to make the bottom bar taller
+                circleWidth={64} // ⬅️ Make this match the central button size / arc
+                borderColor="#e0e0e0"
+                borderWidth={1}
+                bgColor="white"
+                initialRouteName="directory"
+                borderTopLeftRight
+                backBehavior="initialRoute"
+                screenOptions={{
+                    headerShown: false,
+                    tabBarStyle: {
+                        backgroundColor: '#ffffff',
+                        borderTopWidth: 1,
+                        borderTopColor: '#f0f0f0',
+                        height: 90,
+                        // paddingBottom: 10,
+                        paddingTop: 20,
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        borderTopLeftRadius: 20,
+                        borderTopRightRadius: 20,
+                        shadowColor: '#000',
+                        shadowOffset: {
+                            width: 0,
+                            height: -2,
+                        },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 8,
+                        elevation: 10,
+                    },
+                    tabBarActiveTintColor: '#007AFF',
+                    tabBarInactiveTintColor: '#8E8E93',
+                    tabBarShowLabel: false,
+                    tabBarBackground: () => <TabBarBackground />,
+                }}
+
+                renderCircle={() => (
+                    <Animated.View style={[styles.btnCircleUp, { bottom: 25 }]}>
+                        <TouchableOpacity onPress={() => {
+                            console.log("Pressed FAB — navigating to /communityfeed");
+                            // router.push("/communityfeed");
+                        }} activeOpacity={0.8}>
+                            <LinearGradient
+                                colors={['#1F73C6', '#F7941E']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                style={styles.gradientButton}
+                            >
+                                <Ionicons key="add-icon" name="add" color="white" size={28} />
+                            </LinearGradient>
+                        </TouchableOpacity>
+                    </Animated.View>
+                )
+                }
+                tabBar={renderTabBar}
+                circlePosition="CENTER"
+                screenListeners={{}}
+                defaultScreenOptions={{}}>
+                {/* <CurvedBottomBarExpo.Screen name="home" position="LEFT" component={HomeScreen} /> */}
+                < CurvedBottomBarExpo.Screen name="directory" position="LEFT" component={HomeScreen} />
+                {/* <CurvedBottomBarExpo.Screen name="circles" position="hide" component={CirclesScreen} /> */}
+                < CurvedBottomBarExpo.Screen name="circles" position="LEFT" component={MarketplaceScreen} />
+                <CurvedBottomBarExpo.Screen name="chats" position="RIGHT" component={ChatsScreen} />
+                <CurvedBottomBarExpo.Screen name="profile" position="RIGHT" component={ProfileScreen} />
+            </CurvedBottomBarExpo.Navigator >
+
+        </View >
     );
 };
 
@@ -167,7 +199,7 @@ const styles = StyleSheet.create({
         borderRadius: 32,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#007AFF',
+        // backgroundColor: '#007AFF',
         bottom: 25,
         shadowColor: '#000',
         shadowOffset: {
@@ -182,6 +214,18 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    gradientButton: {
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
     },
     tabbarItem: {
         flex: 1,

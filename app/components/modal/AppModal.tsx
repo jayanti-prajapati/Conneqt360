@@ -1,11 +1,11 @@
-import React from 'react';
-import { Modal, View, Text, Pressable, StyleSheet } from 'react-native';
-
-type AppModalProps = {
+import React, { ReactNode } from 'react';
+import { Modal, View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
+interface AppModalProps {
     visible: boolean;
     onClose: () => void;
-    children?: React.ReactNode;
-};
+    children: ReactNode;
+
+}
 
 export default function AppModal({ visible, onClose, children }: AppModalProps) {
     return (
@@ -17,8 +17,12 @@ export default function AppModal({ visible, onClose, children }: AppModalProps) 
         >
             <View style={styles.overlay}>
                 <View style={styles.modalView}>
-                    {children}
-
+                    <ScrollView
+                        contentContainerStyle={{ paddingBottom: 20 }}
+                        keyboardShouldPersistTaps="handled"
+                    >
+                        {children}
+                    </ScrollView>
 
                 </View>
             </View>
