@@ -32,7 +32,7 @@ export interface IPost extends Document {
   user: IUser['_id'];
   likes: IUser['_id'][];
   comments: {
-    userId: IUser['_id'];
+    user: IUser['_id'];
     content: Text;
     createdAt: Date;
   }[];

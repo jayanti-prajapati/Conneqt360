@@ -3,7 +3,8 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './modules/auth/routes';
-import userRoutes from './modules/user/routes'
+import userRoutes from './modules/user/routes';
+import communityRoutes from './modules/community-feeds/routes'
 import cookieParser from "cookie-parser";
 dotenv.config();
 
@@ -19,6 +20,7 @@ mongoose.connect(process.env.MONGODB_URI!)
 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/community-feeds', communityRoutes);
 
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
