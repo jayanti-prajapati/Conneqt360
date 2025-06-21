@@ -286,29 +286,5 @@ export class AuthController {
     }
   }
 
-  // async verifyToken(req: AuthenticatedRequest, res: Response, next: NextFunction)  {
-  //         const token = req.cookies.authToken || req.headers.authorization?.split(" ")[1];
-
-  //     if (!token) {
-  //       return res.status(403).json({ message: "Access denied: No token provided" });
-  //     }
-
-  //     try {
-  //       const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY) ;
-
-  //       if (!decoded || typeof decoded !== "object" || !decoded.email) {
-  //         return res.status(401).json({ error: "Invalid token payload" });
-  //       }
-
-  //       req.email = decoded.email;
-  //       next();
-  //     } catch (error) {
-  //       console.error("verifyToken error:", error);
-  //       return res.status(401).json({ error: "Invalid token" });
-  //     }
-  //     };
-
-
-
 
 }
