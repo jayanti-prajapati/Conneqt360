@@ -132,7 +132,7 @@ export default function HomeScreen() {
           <FeedCard
             key={post.id}
             id={post.id}
-
+            videoUrl=''
             username={post.username}
             businessName={post.businessName}
             timestamp={post.timestamp}

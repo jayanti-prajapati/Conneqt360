@@ -1,18 +1,31 @@
-
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-
+import {
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+    Image,
+    SafeAreaView,
+    ScrollView,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { RichEditor, RichToolbar, actions } from 'react-native-pell-rich-editor';
-import * as ImagePicker from 'expo-image-picker';
-import { useRef, useState } from "react";
-
+import * as ImagePicker from "expo-image-picker";
+import { useState } from "react";
+import { Video, ResizeMode } from "expo-av";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import Spacing from "@/constants/Spacing"; // or replace with a number like 32
+import { getAuthData } from "@/services/secureStore";
+import useCommunityFeedsStore from "@/store/useCommunityFeeds";
 
 export default function CommunityFeedScreen() {
+    const router = useRouter();
+    const { createFeed } = useCommunityFeedsStore();
+    const [error, setError] = useState<string | null>(null);
+    const [contentText, setContentText] = useState("");
+    const [imageUrl, setImageUrl] = useState("");
+    const [videoUrl, setVideoUrl] = useState("");
 
-    const richText = useRef<RichEditor>(null);
-    const [contentHtml, setContentHtml] = useState('');
-    const [imageUrl, setImageUrl] = useState('');
-    const [videoUrl, setVideoUrl] = useState('');
 
 
     const pickImage = async () => {
@@ -39,200 +52,223 @@ export default function CommunityFeedScreen() {
         }
     };
 
-
-    const handleclose = async () => {
-
-    }
     const handleSubmit = async () => {
+
+        if (!contentText.trim() && !imageUrl && !videoUrl) {
+            setError('Please enter content, upload an image, or a video.');
+            return;
+        }
+        const userData = await getAuthData()
+        // const users= await 
+        // console.log("User Data:", userData);
         const feedData = {
-            content: contentHtml,
+            content: contentText,
             imageUrl,
             videoUrl,
+            user: userData?.userData?._id
         };
 
-        console.log('Submitting feed:', feedData);
+        console.log("Submitting feed:", feedData);
+        const resp = await createFeed(feedData)
+        console.log("Response:", resp);
+        if (resp?.data?.statusCode == 201 || resp?.data?.statusCode == 200) {
+            // console.log('Post upadted successfully:', resp.data.data);
+            router.push('/(tabs)');
+
+        } else {
+            console.error('Error creating post:', resp.data.message);
+
+        }
 
     };
 
-
-
     return (
-        <View style={{ flex: 1, backgroundColor: '#fff', padding: 20 }}>
-
-            <Text style={styles.title}>Add Feed</Text>
-
-            <View style={styles.formGroup}>
-                <Text style={styles.label}>Content (Rich Text)</Text>
-                <RichEditor
-                    ref={richText}
-                    onChange={(html) => {
-                        console.log("RichEditor content:", html);
-                        setContentHtml(html);
-                    }}
-                    placeholder="Start writing your post..."
-                    style={styles.richEditor}
-                    initialContentHTML=""
-                    initialHeight={200}
-                />
-
-                <RichToolbar
-                    editor={richText}
-                    actions={[
-                        actions.setBold,
-                        actions.setItalic,
-                        actions.setUnderline,
-                        actions.insertBulletsList,
-                        actions.insertOrderedList,
-                        actions.insertLink,
-                    ]}
-                    // iconMap={{
-                    //     [actions.setBold]: () => <Ionicons name="md-bold" size={20} color="black" />,
-                    //     [actions.setItalic]: () => <Ionicons name="md-italic" size={20} color="black" />,
-                    //     [actions.setUnderline]: () => <Ionicons name="md-underline" size={20} color="black" />,
-                    // }}
-                    style={styles.richToolbar}
-                />
-            </View>
-
-            <View style={styles.formGroup}>
-                <Text style={styles.label}>Image</Text>
-                <TextInput
-                    style={styles.input}
-                    value={imageUrl}
-                    onChangeText={setImageUrl}
-                    placeholder="Paste image URL or upload below"
-                />
-                <TouchableOpacity onPress={pickImage} style={styles.uploadButton}>
-                    <Text style={styles.uploadText}>Upload Image</Text>
+        <SafeAreaView style={styles.container}>
+            {/* Top Close Icon */}
+            <View style={styles.topBar}>
+                <TouchableOpacity onPress={() => router.back()}>
+                    <Ionicons name="close" size={28} color="#333" />
                 </TouchableOpacity>
             </View>
+            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                <View style={{ flex: 1, padding: 20 }}>
+                    <Text style={styles.title}>Add Feed</Text>
 
-            <View style={styles.formGroup}>
-                <Text style={styles.label}>Video</Text>
-                <TextInput
-                    style={styles.input}
-                    value={videoUrl}
-                    onChangeText={setVideoUrl}
-                    placeholder="Paste video URL or upload below"
-                />
-                <TouchableOpacity onPress={pickVideo} style={styles.uploadButton}>
-                    <Text style={styles.uploadText}>Upload Video</Text>
-                </TouchableOpacity>
-            </View>
+                    <View style={styles.formGroup}>
+                        <Text style={styles.label}>Content</Text>
+                        <TextInput
+                            style={styles.inputMultiline}
+                            value={contentText}
+                            onChangeText={setContentText}
+                            placeholder="Write your post..."
+                            multiline
+                        />
+                    </View>
 
-            <View style={styles.buttonRow}>
-                <TouchableOpacity onPress={handleclose} style={styles.button}>
-                    <LinearGradient colors={['#1F73C6', '#F7941E']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.button}>
-                        <Text style={styles.buttonText}>Close</Text>
-                    </LinearGradient>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={handleSubmit} style={styles.button}>
-                    <LinearGradient colors={['#1F73C6', '#F7941E']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.button}>
-                        <Text style={styles.buttonText}>Add Feed</Text>
-                    </LinearGradient>
-                </TouchableOpacity>
-            </View>
-        </View>
+                    <View style={styles.formGroup}>
+                        <Text style={styles.label}>Image</Text>
+                        {imageUrl ? (
+                            <View style={styles.previewWrapper}>
+                                <Image source={{ uri: imageUrl }} style={styles.previewImage} />
+                                <TouchableOpacity
+                                    style={styles.removeButton}
+                                    onPress={() => setImageUrl("")}
+                                >
+                                    <Ionicons name="close-circle" size={24} color="#ff4444" />
+                                </TouchableOpacity>
+                            </View>
+                        ) : null}
+                        <TouchableOpacity onPress={pickImage} style={styles.uploadButton}>
+                            <Text style={styles.uploadText}>Upload Image</Text>
+                        </TouchableOpacity>
+                    </View>
 
+                    <View style={styles.formGroup}>
+                        <Text style={styles.label}>Video</Text>
+                        {videoUrl ? (
+                            <View style={styles.previewWrapper}>
+                                <Video
+                                    source={{ uri: videoUrl }}
+                                    style={styles.previewVideo}
+                                    useNativeControls
+                                    resizeMode={ResizeMode.CONTAIN}
+                                />
+                                <TouchableOpacity
+                                    style={styles.removeButton}
+                                    onPress={() => setVideoUrl("")}
+                                >
+                                    <Ionicons name="close-circle" size={24} color="#ff4444" />
+                                </TouchableOpacity>
+                            </View>
+                        ) : null}
+                        <TouchableOpacity onPress={pickVideo} style={styles.uploadButton}>
+                            <Text style={styles.uploadText}>Upload Video</Text>
+                        </TouchableOpacity>
+                    </View>
 
+                    <View style={styles.buttonRow}>
+                        <TouchableOpacity onPress={() => router.back()} style={styles.button}>
+                            <LinearGradient
+                                colors={["#1F73C6", "#F7941E"]}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                style={styles.button}
+                            >
+                                <Text style={styles.buttonText}>Close</Text>
+                            </LinearGradient>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={handleSubmit} style={styles.button}>
+                            <LinearGradient
+                                colors={["#1F73C6", "#F7941E"]}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                style={styles.button}
+                            >
+                                <Text style={styles.buttonText}>Add Feed</Text>
+                            </LinearGradient>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+                {error && (
+                    <Text style={{ color: 'red', textAlign: 'center' }}>{error}</Text>
+                )}
+            </ScrollView>
 
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    richEditor: {
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 10,
-        marginBottom: 10,
-        backgroundColor: '#fafafa',
+    container: {
+        flex: 1,
+        marginTop: Spacing.xl || 32, // Replace with 32 if Spacing is undefined
+        backgroundColor: "#fff",
     },
-    richToolbar: {
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 10,
-        marginBottom: 20,
+    topBar: {
+        flexDirection: "row",
+        justifyContent: "flex-end",
+        padding: 16,
     },
     title: {
         fontSize: 18,
-        fontWeight: 'bold',
+        fontWeight: "bold",
         marginBottom: 16,
-        color: '#333',
+        color: "#333",
     },
     formGroup: {
-        marginBottom: 12,
-        width: '90%',
+        marginBottom: 16,
+        width: "100%",
     },
-
     label: {
         fontSize: 14,
-        marginBottom: 4,
-        color: '#555',
+        marginBottom: 6,
+        color: "#555",
     },
-
-
+    scrollContent: {
+        padding: 20,
+        paddingBottom: 40,
+    },
     inputMultiline: {
         borderWidth: 1,
-        borderColor: '#ddd',
+        borderColor: "#ddd",
         borderRadius: 8,
         paddingHorizontal: 12,
         paddingTop: 12,
-        height: 100,
-        backgroundColor: '#fff',
+        height: 120,
+        backgroundColor: "#fff",
+        textAlignVertical: "top",
     },
-
+    uploadButton: {
+        backgroundColor: "#eee",
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 6,
+        marginTop: 6,
+        alignSelf: "flex-start",
+    },
+    uploadText: {
+        color: "#333",
+        fontSize: 13,
+    },
+    previewWrapper: {
+        position: "relative",
+        width: "100%",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    previewImage: {
+        width: "100%",
+        height: 180,
+        borderRadius: 10,
+        marginTop: 8,
+    },
+    previewVideo: {
+        width: "100%",
+        height: 200,
+        borderRadius: 10,
+        marginTop: 8,
+    },
+    removeButton: {
+        position: "absolute",
+        top: 8,
+        right: 8,
+        backgroundColor: "#fff",
+        borderRadius: 12,
+    },
     buttonRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '100%',
+        flexDirection: "row",
+        justifyContent: "space-between",
         marginTop: 20,
     },
-
     button: {
         paddingVertical: 10,
         paddingHorizontal: 20,
         borderRadius: 8,
     },
-
     buttonText: {
-        color: '#fff',
+        color: "#fff",
         fontSize: 14,
-        fontWeight: 'bold',
-        textAlign: 'center',
+        fontWeight: "bold",
+        textAlign: "center",
     },
-    inputContainer: {
-        maxWidth: "90%",
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 12,
-        paddingHorizontal: 12,
-        marginVertical: 5,
-        width: '100%',
-
-    },
-    inputIcon: {
-        marginRight: 8,
-    },
-    input: {
-        flex: 1,
-        height: 44,
-    },
-
-
-    uploadButton: {
-        backgroundColor: '#eee',
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderRadius: 6,
-        marginTop: 6,
-        alignSelf: 'flex-start',
-    },
-
-    uploadText: {
-        color: '#333',
-        fontSize: 13,
-    },
-
 });

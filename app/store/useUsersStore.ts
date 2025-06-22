@@ -63,6 +63,7 @@ const useUsersStore = create<UsersStore>((set) => ({
     try {
       const res = await axios.put(`${API_URL}/user/${id}`, data);
       set({ response: res.data, loading: false });
+      await saveAuthData(res.data.data)
       return res;
     } catch (err: any) {
       set({ error: err?.response?.data?.message || 'User update failed', loading: false });

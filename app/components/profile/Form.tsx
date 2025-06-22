@@ -10,7 +10,7 @@ import { getAuthData } from "@/services/secureStore";
 
 export default function Form() {
     const modal = useModal();
-    const { fetchUserByPhoneNumber, createUser, updateUser } = useUsersStore();
+    const { fetchUserByPhoneNumber, updateUser } = useUsersStore();
     const [userData, setUserData] = useState<any>(null);
     const [isVisible, setIsVisible] = useState(false);
     const [formData, setFormData] = useState({
@@ -43,7 +43,7 @@ export default function Form() {
             console.log('Authrr Data:', resp.data);
             if (resp?.data?.statusCode == 200) {
                 setUserData(resp.data.data);
-                console.log('User Data:', resp.data.data?.isSkip);
+                console.log('User Data:', resp?.data?.data?.isSkip);
 
                 setIsVisible(!(resp?.data?.data?.isSkip))
             }
@@ -139,7 +139,7 @@ export default function Form() {
 
         if (valid) {
             console.log('Submitting:', formData);
-            const resp = await updateUser(userData?._id, { ...formData, isSkip: true });
+            const resp = await updateUser(userData?._id, { ...formData, isSkip: true, location: formData.address });
             console.log('Response:', resp);
             if (resp?.data?.statusCode == 201 || resp?.data?.statusCode == 200) {
                 console.log('User upadted successfully:', resp.data.data);
@@ -157,108 +157,110 @@ export default function Form() {
 
 
         <AppModal visible={isVisible} onClose={modal.close}>
-            <Text style={{ fontSize: 18, marginBottom: 10 }}>Profile</Text>
+            <View style={styles.container}>
+                <Text style={{ fontSize: 18, marginBottom: 10 }}> Update Profile</Text>
 
-            <View style={styles.inputContainer}>
-                <TextInput
-                    placeholder="Email Address"
-                    value={formData.email}
-                    onChangeText={text => handleChange('email', text)}
-                    style={[styles.input, errors.email && { borderColor: 'red' }]}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                />
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        placeholder="Email Address"
+                        value={formData.email}
+                        onChangeText={text => handleChange('email', text)}
+                        style={[styles.input, errors.email && { borderColor: 'red' }]}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                    />
 
-            </View>
-            {errors.email ? <Text style={{ color: 'red' }}>{errors.email}</Text> : null}
+                </View>
+                {errors.email ? <Text style={{ color: 'red' }}>{errors.email}</Text> : null}
 
-            <View style={styles.inputContainer}>
-                <TextInput
-                    placeholder="Username"
-                    value={formData.username}
-                    onChangeText={text => handleChange('username', text)}
-                    style={[styles.input, errors.username && { borderColor: 'red' }]}
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        placeholder="Username"
+                        value={formData.username}
+                        onChangeText={text => handleChange('username', text)}
+                        style={[styles.input, errors.username && { borderColor: 'red' }]}
 
-                    autoCapitalize="none"
-                />
+                        autoCapitalize="none"
+                    />
 
-            </View>
-            {errors.username ? <Text style={{ color: 'red' }}>{errors.username}</Text> : null}
+                </View>
+                {errors.username ? <Text style={{ color: 'red' }}>{errors.username}</Text> : null}
 
 
-            <View style={styles.inputContainer}>
-                <TextInput
-                    placeholder="Business Name"
-                    value={formData.businessName}
-                    onChangeText={text => handleChange('businessName', text)}
-                    style={[styles.input, errors.businessName && { borderColor: 'red' }]}
-                    autoCapitalize="none"
-                />
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        placeholder="Business Name"
+                        value={formData.businessName}
+                        onChangeText={text => handleChange('businessName', text)}
+                        style={[styles.input, errors.businessName && { borderColor: 'red' }]}
+                        autoCapitalize="none"
+                    />
 
-            </View>
+                </View>
 
-            {errors.businessName ? <Text style={{ color: 'red' }}>{errors.businessName}</Text> : null}
-            <View style={styles.inputContainer}>
-                <TextInput
-                    placeholder="Business Type"
-                    value={formData.businessType}
-                    onChangeText={text => handleChange('businessType', text)}
-                    style={[styles.input, errors.businessType && { borderColor: 'red' }]}
-                    autoCapitalize="none"
-                />
+                {errors.businessName ? <Text style={{ color: 'red' }}>{errors.businessName}</Text> : null}
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        placeholder="Business Type"
+                        value={formData.businessType}
+                        onChangeText={text => handleChange('businessType', text)}
+                        style={[styles.input, errors.businessType && { borderColor: 'red' }]}
+                        autoCapitalize="none"
+                    />
 
-            </View>
-            {errors.businessType ? <Text style={{ color: 'red' }}>{errors.businessType}</Text> : null}
-            <View style={styles.inputContainer}>
-                <TextInput
-                    placeholder="Udyam Number"
-                    value={formData.udyamNumber}
-                    onChangeText={text => handleChange('udyamNumber', text)}
-                    style={[styles.input, errors.udyamNumber && { borderColor: 'red' }]}
-                    autoCapitalize="none"
-                />
+                </View>
+                {errors.businessType ? <Text style={{ color: 'red' }}>{errors.businessType}</Text> : null}
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        placeholder="Udyam Number"
+                        value={formData.udyamNumber}
+                        onChangeText={text => handleChange('udyamNumber', text)}
+                        style={[styles.input, errors.udyamNumber && { borderColor: 'red' }]}
+                        autoCapitalize="none"
+                    />
 
-            </View>
-            {errors.udyamNumber ? <Text style={{ color: 'red' }}>{errors.udyamNumber}</Text> : null}
+                </View>
+                {errors.udyamNumber ? <Text style={{ color: 'red' }}>{errors.udyamNumber}</Text> : null}
 
-            <View style={styles.inputContainer}>
-                <TextInput
-                    placeholder="GST Number"
-                    value={formData.gstNumber}
-                    onChangeText={text => handleChange('gstNumber', text)}
-                    style={[styles.input, errors.gstNumber && { borderColor: 'red' }]}
-                    autoCapitalize="none"
-                />
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        placeholder="GST Number"
+                        value={formData.gstNumber}
+                        onChangeText={text => handleChange('gstNumber', text)}
+                        style={[styles.input, errors.gstNumber && { borderColor: 'red' }]}
+                        autoCapitalize="none"
+                    />
 
-            </View>
-            {errors.gstNumber ? <Text style={{ color: 'red' }}>{errors.gstNumber}</Text> : null}
-            <View style={styles.inputContainer}>
-                <TextInput
-                    placeholder="Address/Location"
-                    value={formData.address}
-                    onChangeText={text => handleChange('address', text)}
-                    style={[styles.input, errors.address && { borderColor: 'red' }]}
-                    autoCapitalize="none"
-                />
+                </View>
+                {errors.gstNumber ? <Text style={{ color: 'red' }}>{errors.gstNumber}</Text> : null}
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        placeholder="Address/Location"
+                        value={formData.address}
+                        onChangeText={text => handleChange('address', text)}
+                        style={[styles.input, errors.address && { borderColor: 'red' }]}
+                        autoCapitalize="none"
+                    />
 
-            </View>
-            {errors.address ? <Text style={{ color: 'red' }}>{errors.address}</Text> : null}
+                </View>
+                {errors.address ? <Text style={{ color: 'red' }}>{errors.address}</Text> : null}
 
-            <View style={{ flexDirection: 'row', justifyContent: "space-between", width: '95%' }}>
-                <TouchableOpacity onPress={handleSkip} style={styles.button}>
-                    <LinearGradient colors={['#1F73C6', '#F7941E']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }} style={styles.button}>
-                        <Text style={styles.buttonText}>Skip</Text>
-                    </LinearGradient>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={handleSubmit} style={styles.button}>
-                    <LinearGradient colors={['#1F73C6', '#F7941E']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }} style={styles.button}>
-                        <Text style={styles.buttonText}>Submit</Text>
-                    </LinearGradient>
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', justifyContent: "space-between", width: '95%' }}>
+                    <TouchableOpacity onPress={handleSkip} style={styles.button}>
+                        <LinearGradient colors={['#1F73C6', '#F7941E']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }} style={styles.button}>
+                            <Text style={styles.buttonText}>Skip</Text>
+                        </LinearGradient>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={handleSubmit} style={styles.button}>
+                        <LinearGradient colors={['#1F73C6', '#F7941E']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }} style={styles.button}>
+                            <Text style={styles.buttonText}>Submit</Text>
+                        </LinearGradient>
+                    </TouchableOpacity>
+                </View>
             </View>
         </AppModal>
 
@@ -270,6 +272,13 @@ const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 5,
         // margin: 10,
+    },
+    container: {
+        // margin: 10,
+        flexDirection: 'column',
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     buttonText: {
         color: '#fff',

@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity, Dimensions } from 'react-native';
 import Card from '@/components/common/Card';
 import { Heart, MessageSquare, Share, MoreVertical } from 'lucide-react-native';
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
 import Spacing from '@/constants/Spacing';
+import { formatTimestamp } from '../utils/dateconverter';
+import { ResizeMode, Video } from 'expo-av';
+import { getAuthData } from '@/services/secureStore';
 
 const { width } = Dimensions.get('window');
 
@@ -13,6 +16,8 @@ export type PostType = 'product' | 'deal' | 'help' | 'success';
 interface FeedCardProps {
   id: string;
   // type: PostType;
+  phone?: string;
+  userId?: string;
   username: string;
   businessName: string;
   timestamp: string;
@@ -20,56 +25,62 @@ interface FeedCardProps {
   imageUrl?: string;
   likes: number;
   comments: number;
-  onLike: (id: string) => void;
+  videoUrl: string;
+  verified?: boolean;
+  isVisible?: boolean;
+  likesIds?: string[];
+  onLike: (id: string, likes: string[]) => void;
   onComment: (id: string) => void;
   onShare: (id: string) => void;
   onMoreOptions: (id: string) => void;
   onPress: (id: string) => void;
-  verified?: boolean;
+
 }
 
 export default function FeedCard({
   id,
+  phone,
   username,
   businessName,
   timestamp,
   content,
   imageUrl,
+  videoUrl,
   likes,
+  likesIds,
+  userId,
   comments,
   onLike,
   onComment,
   onShare,
   onMoreOptions,
   onPress,
+  isVisible = false,
   verified = false,
 }: FeedCardProps) {
 
-  const getPostTypeLabel = (type: PostType) => {
-    switch (type) {
-      case 'product': return 'New Product';
-      case 'deal': return 'Business Deal';
-      case 'help': return 'Need Help';
-      case 'success': return 'Success Story';
-    }
-  };
+  const videoRef = useRef<Video>(null);
 
-  const getPostTypeColor = (type: PostType) => {
-    switch (type) {
-      case 'product': return Colors.primary[600];
-      case 'deal': return Colors.success[500];
-      case 'help': return Colors.warning[500];
-      case 'success': return Colors.primary[500];
-    }
-  };
 
+  const isliked = userId ? likesIds?.includes(userId) : false;
+
+
+  useEffect(() => {
+    if (videoRef.current) {
+      if (isVisible) {
+        videoRef.current.playAsync();
+      } else {
+        videoRef.current.pauseAsync();
+      }
+    }
+  }, [isVisible]);
   return (
     <TouchableOpacity activeOpacity={0.9} onPress={() => onPress(id)}>
       <Card style={styles.card}>
         <View style={styles.header}>
           <View style={styles.profileContainer}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{username.charAt(0)}</Text>
+              <Text style={styles.avatarText}>{username?.charAt(0) ? username?.charAt(0)?.toUpperCase() : "U"}</Text>
             </View>
             <View style={styles.userInfo}>
               <View style={styles.nameContainer}>
@@ -80,7 +91,7 @@ export default function FeedCard({
                   </View>
                 )}
               </View>
-              <Text style={styles.username}>@{username} • {timestamp}</Text>
+              <Text style={styles.username}>@{username ? username : phone} • {formatTimestamp(timestamp)}</Text>
             </View>
           </View>
 
@@ -94,9 +105,9 @@ export default function FeedCard({
           </View>
         </View>
 
-        <View style={styles.content}>
+        {content && (<View style={styles.content}>
           <Text style={styles.contentText}>{content}</Text>
-        </View>
+        </View>)}
 
         {imageUrl && (
           <Image
@@ -106,12 +117,25 @@ export default function FeedCard({
           />
         )}
 
+        {videoUrl && (
+          <Video
+            source={{ uri: videoUrl }}
+            style={styles.video}
+            ref={videoRef}
+            useNativeControls
+            resizeMode={ResizeMode.CONTAIN}
+            shouldPlay={true} // Set true to autoplay
+            isLooping
+          />
+        )}
         <View style={styles.actions}>
           <TouchableOpacity
             style={styles.actionButton}
-            onPress={() => onLike(id)}
+            onPress={() => onLike(id, likesIds ?? [])}
           >
-            <Heart size={20} color={Colors.gray[600]} />
+            <Heart size={20}
+              fill={isliked ? '#E0245E' : 'none'}
+              color={isliked ? '#E0245E' : Colors.gray[600]} />
             <Text style={styles.actionText}>{likes}</Text>
           </TouchableOpacity>
 
@@ -142,16 +166,22 @@ const styles = StyleSheet.create({
     width: width - Spacing.lg * 2,
     alignSelf: 'center',
   },
+  video: {
+    width: '100%',
+    height: 200,
+    backgroundColor: Colors.gray[200], // fallback in case video doesn't load
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    paddingHorizontal: Spacing.md,
+    // paddingHorizontal: Spacing.md,
     paddingTop: Spacing.md,
   },
   profileContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingBottom: Spacing.sm,
   },
   avatar: {
     width: 40,
@@ -223,6 +253,7 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: 200,
+    // paddingTop: Spacing.lg,
   },
   actions: {
     flexDirection: 'row',

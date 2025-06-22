@@ -148,7 +148,7 @@ const BottomView: React.FC = () => {
                     <Animated.View style={[styles.btnCircleUp, { bottom: 25 }]}>
                         <TouchableOpacity onPress={() => {
                             console.log("Pressed FAB — navigating to /communityfeed");
-                            // router.push("/communityfeed");
+                            router.push("/communityfeed");
                         }} activeOpacity={0.8}>
                             <LinearGradient
                                 colors={['#1F73C6', '#F7941E']}
