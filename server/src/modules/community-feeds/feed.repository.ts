@@ -10,5 +10,9 @@ export class CommunityRepository extends BaseRepository<IPost> {
   aggregate(pipeline: any[]) {
     return this.model.aggregate(pipeline);
   }
+
+  async getFeedByUserId(userId: string) {
+    return Community_Feeds.getFeedByUserId(userId);
+  }
   
 }

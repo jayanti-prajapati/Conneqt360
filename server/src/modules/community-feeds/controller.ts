@@ -28,7 +28,10 @@ export class CommunityController {
 
   async getAll(req: Request, res: Response) {
     try {
-      const feeds = await this.communityService.getAll();
+        const keyword = req.query.search as string | undefined;
+
+      const feeds = await this.communityService.getAll(keyword);
+      
       return res.status(200).json({
         statusCode: 200,
         message: "succes",
@@ -111,23 +114,34 @@ export class CommunityController {
     }
   }
 
-  async getAllFeeds(req: Request, res: Response) {
+
+   async getFeedByUserId(req: Request, res: Response) {
     try {
-      const { search } = req.query;
-      const feeds = await this.communityService.getAllSearch(
-        search as string
-      );
-     return res.status(200).json({
+      const userId = req.params.userId;
+
+      const userData = await this.communityService.getFeedByUserId(userId);
+      if (!userId) {
+        return res.status(404).json({
+          statusCode: 404,
+          message: "User Id not found",
+        });
+      }
+      return res.status(200).json({
         statusCode: 200,
         message: "success",
-        data: feeds,
-      });;
+        data: userData,
+      });
     } catch (error: any) {
-       return res.status(400).json({
+      return res.status(400).json({
         statusCode: 400,
         message: "failed",
         error: error.message,
       });
     }
-  }
+  };
+
+
+
+
+
 }
