@@ -60,17 +60,19 @@ export default function CommunityFeedScreen() {
         }
         const userData = await getAuthData()
         // const users= await 
+        console.log("User Data:", userData);
+
         // console.log("User Data:", userData);
         const feedData = {
             content: contentText,
             imageUrl,
             videoUrl,
-            user: userData?.userData?._id
+            user: userData?.userData?.user?.id
         };
 
         console.log("Submitting feed:", feedData);
         const resp = await createFeed(feedData)
-        console.log("Response:", resp);
+        // console.log("Response:", resp);
         if (resp?.data?.statusCode == 201 || resp?.data?.statusCode == 200) {
             // console.log('Post upadted successfully:', resp.data.data);
             router.push('/(tabs)');
