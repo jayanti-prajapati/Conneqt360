@@ -51,6 +51,10 @@ const feedSchema = new Schema<IPost>({
     type: String,
     required: false,
   },
+  isDeleted: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -60,15 +64,17 @@ const feedSchema = new Schema<IPost>({
 
 
 export interface IPostModel extends Model<IPost> {
-  getFeedByUserId(userId: string | Types.ObjectId): Promise<IPost | null>;
+  getFeedByUserId(filter: any): Promise<IPost[]>;
 }
 
-feedSchema.statics.getFeedByUserId = function (userId: string | Types.ObjectId) {
-  return this.find({ user: new mongoose.Types.ObjectId(userId) })
+
+feedSchema.statics.getFeedByUserId = function(filter) {
+  return this.find(filter)
     .populate("user", "username email phone businessName businessType")
     .populate("comments.user", "username phone")
     .sort({ createdAt: -1 });
 };
+
 
 
 

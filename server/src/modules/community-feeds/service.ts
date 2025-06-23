@@ -62,32 +62,34 @@ export class CommunityService {
 
   // Otherwise return all using populate
   return this.communityRepo
-    .findAll()
+    .findAll({ isDeleted: false})
     .populate("user", "username email phone businessName businessType")
     .populate("comments.user", "username phone")
     .sort({ createdAt: -1 });
 }
 
 
-  async getById(id: string) {
-    return this.communityRepo
-      .findById(id)
-      .populate("user", "username email phone businessName businessType")
-      .populate("comments.user", "username phone")
-      .sort({ createdAt: -1 });
-  }
+async getById(id: string) {
+  return this.communityRepo
+    .findById(id, { isDeleted: false })
+    .populate("user", "username email phone businessName businessType")
+    .populate("comments.user", "username phone")
+    .sort({ createdAt: -1 });
+}
+
+
 
   async update(id: string, data: Partial<IPost>) {
-    return this.communityRepo.update(id, data);
+    return this.communityRepo.update(id, data, { isDeleted: false});
   }
 
   async delete(id: string) {
-    return this.communityRepo.delete(id);
+    return this.communityRepo.delete(id, { isDeleted: false});
   }
 
 
 async getFeedByUserId(userId: string) {
-  return this.communityRepo.getFeedByUserId(userId);
+  return this.communityRepo.getFeedByUserId(userId, { isDeleted: false});
 }
 
   

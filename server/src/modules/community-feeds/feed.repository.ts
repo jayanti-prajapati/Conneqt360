@@ -11,8 +11,9 @@ export class CommunityRepository extends BaseRepository<IPost> {
     return this.model.aggregate(pipeline);
   }
 
-  async getFeedByUserId(userId: string) {
-    return Community_Feeds.getFeedByUserId(userId);
-  }
+ async getFeedByUserId(userId: string, extraFilter: any = {}) {
+  return Community_Feeds.getFeedByUserId({ user: userId, ...extraFilter });
+}
+
   
 }
