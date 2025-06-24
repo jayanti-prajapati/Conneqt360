@@ -1,4 +1,4 @@
-import { Model, Document } from 'mongoose';
+import { Model, Document } from "mongoose";
 
 export class BaseRepository<T extends Document> {
   constructor(protected model: Model<T>) {}
@@ -7,20 +7,31 @@ export class BaseRepository<T extends Document> {
     return this.model.create(data);
   }
 
-   findById(id: string) {
-    return this.model.findById(id);
+  findById(id: string, extraFilter: any = {}) {
+    return this.model.findOne({ _id: id, ...extraFilter });
   }
 
-   findAll(filter: Partial<T> = {}) {
+  findAll(filter: Partial<T> = {}) {
     return this.model.find(filter as any);
   }
 
-  async update(id: string, data: Partial<T>) {
-    return this.model.findByIdAndUpdate(id, data, { new: true });
+ 
+  async update(
+    id: string,
+    data: Partial<T>,
+    extraFilter: any = {}
+  ): Promise<T | null> {
+    return this.model.findOneAndUpdate({ _id: id, ...extraFilter }, data, {
+      new: true,
+    });
   }
 
-  async delete(id: string) {
-    return this.model.findByIdAndDelete(id);
-  }
+ async delete(id: string, extraFilter: any = {}): Promise<T | null> {
+  return this.model.findOneAndUpdate(
+    { _id: id, ...extraFilter },
+    { status: 'inactive', isDeleted: true },
+    { new: true }
+  );
+}
 
 }

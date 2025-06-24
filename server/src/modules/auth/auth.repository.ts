@@ -10,8 +10,8 @@ export class AuthRepository extends BaseRepository<IUser> {
     super(User);
   }
 
- async findByPhone(phone: string) {
-    return User.findByPhone(phone);
+ async findByPhone(phone: string, extraFilter: any = {}) {
+    return User.findByPhone({ phone, ...extraFilter});
   }
 
 }

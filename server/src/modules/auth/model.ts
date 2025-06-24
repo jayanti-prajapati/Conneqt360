@@ -83,6 +83,11 @@ const authSchema = new Schema<IUser>({
     type: Date,
     default: Date.now,
   },
+  status: {
+    type: String,
+    enum: ["active", "inactive"],
+    default: "active"
+  },
 });
 
 authSchema.pre("save", async function (next) {
