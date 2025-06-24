@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "Connect360",
-    "slug": "connect360",
+    "name": "Conneqt360",
+    "slug": "conneqt360",
     "version": "1.0.0",
     "orientation": "portrait",
-    "scheme": "connect360",
+    "scheme": "conneqt360",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "web": {
@@ -21,7 +21,7 @@
     },
     "extra": {
       "router": {
-        "origin": "https://connect360.app"
+        "origin": "https://conneqt360.app"
       },
       "eas": {
         "projectId": "feb704d0-4d04-4885-a433-356674ef86d9"

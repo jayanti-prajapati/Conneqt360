@@ -13,12 +13,17 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import useAuthStore from '@/store/useAuthStore';
 import ResendOtp from '@/components/ResendOtp';
+import { useModal } from '@/hooks/useModal';
+import Button from '@/components/common/Button';
+import AppModal from '@/components/modal/AppModal';
+import Form from '@/components/profile/Form';
 
 export default function OTPScreen() {
     const inputRefs = useRef<Array<TextInput | null>>([]);
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
+
     // const { phone } = useLocalSearchParams();
     const { verifyOtp, otpNumber, phone } = useAuthStore();
 
@@ -46,6 +51,7 @@ export default function OTPScreen() {
             if (response?.status === 200 || response?.status === 201) {
                 console.log('OTP verified successfully');
                 setError(null);
+
                 router.push('/(tabs)');
             } else {
                 setError('Invalid OTP. Please Enter the correct OTP.');

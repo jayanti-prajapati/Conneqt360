@@ -22,6 +22,7 @@ interface AuthStore {
   verifyOtp: (data: { phone: string; otp: string }) => Promise<any>;
   clearAuth: () => Promise<void>;
   loadAuthData: () => Promise<void>;
+  fetchUserByPhoneNumber: (phone: string) => Promise<any>;
 }
 
 const useAuthStore = create<AuthStore>((set) => ({
@@ -45,6 +46,19 @@ const useAuthStore = create<AuthStore>((set) => ({
     }
   },
 
+  fetchUserByPhoneNumber: async (phone: string) => {
+    set({ loading: true, });
+    try {
+      const res = await axios.get(`${API_URL}/auth/${phone}`);
+      set({ loading: false });
+
+
+      return res;
+    } catch (err: any) {
+      set({ error: err?.response?.data?.message || 'Registration failed', loading: false });
+      return err?.response;
+    }
+  },
   login: async (data: LoginPayload) => {
     set({ loading: true, error: null, response: null });
     try {
@@ -78,6 +92,7 @@ const useAuthStore = create<AuthStore>((set) => ({
     try {
       const res = await axios.post(`${API_URL}/auth/verify-otp`, data);
       set({ response: res.data, loading: false });
+      await saveAuthData(res.data);
       return res;
     } catch (err: any) {
       set({ error: err?.response?.data?.message || 'OTP sent failed', loading: false });
