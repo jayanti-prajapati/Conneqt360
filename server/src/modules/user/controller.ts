@@ -11,7 +11,7 @@ export class UserController {
   async create(req: Request, res: Response) {
     try {
       const user = await this.userService.create(req.body);
-  
+
       return res.status(200).json({
         statusCode: 200,
         message: "success",
@@ -20,10 +20,10 @@ export class UserController {
         },
       });
     } catch (error: any) {
-     return res.status(400).json({
+      return res.status(400).json({
         statusCode: 400,
         message: "failed",
-         error: error.message,
+        error: error.message,
       });
     }
   }
@@ -37,10 +37,10 @@ export class UserController {
         data: users,
       });
     } catch (error: any) {
-     return res.status(400).json({
+      return res.status(400).json({
         statusCode: 400,
         message: "failed",
-         error: error.message,
+        error: error.message,
       });
     }
   }
@@ -51,67 +51,84 @@ export class UserController {
 
       const userData = await this.userService.getById(id);
 
-      if (!id) {
+      if (!userData) {
         return res.status(404).json({
           statusCode: 404,
           message: "Id not found",
         });
       }
-       return res.status(200).json({
+      return res.status(200).json({
         statusCode: 200,
         message: "success",
-        data: userData
+        data: userData,
       });
     } catch (error: any) {
-       return res.status(400).json({
+      return res.status(400).json({
         statusCode: 400,
         message: "failed",
-         error: error.message,
-      });
-    }
-  };
-
-  async update(req: Request, res: Response) {
-    try {
-        const id = req.params.id;
-
-        const updateUser = await this.userService.update(id, req.body);
-        if (!id) {
-            return res.status(404).json({
-                statusCode: 404,
-                message: "id not found"
-            });
-        }
-        return res.status(200).json({
-            statusCode: 200,
-            message: 'success',
-            data: updateUser
-        });
-    } catch (error: any) {
-       return res.status(400).json({
-        statusCode: 400,
-        message: "failed",
-         error: error.message,
-      });
-    }
-  };
-
-  async delete(req: Request, res: Response) {
-    try {
-        const deleteUser = await this.userService.delete(req.params.id);
-        return res.status(200).json({
-            statusCode: 200,
-            message: 'success',
-            data: deleteUser
-        });
-    } catch (error: any) {
-       return res.status(400).json({
-        statusCode: 400,
-        message: "failed",
-         error: error.message,
+        error: error.message,
       });
     }
   }
+
+  async update(req: Request, res: Response) {
+    try {
+      const id = req.params.id;
+
+      if (!id) {
+        return res.status(400).json({
+          statusCode: 400,
+          message: "User ID is required",
+        });
+      }
+
+      const updateUser = await this.userService.update(id, req.body);
+
+      if (!updateUser) {
+        return res.status(404).json({
+          statusCode: 404,
+          message: "User not found or inactive",
+        });
+      }
+
+      return res.status(200).json({
+        statusCode: 200,
+        message: "success",
+        data: updateUser,
+      });
+    } catch (error: any) {
+      return res.status(400).json({
+        statusCode: 400,
+        message: "failed",
+        error: error.message,
+      });
+    }
+  }
+
+async delete(req: Request, res: Response) {
+  try {
+    const deleteUser = await this.userService.delete(req.params.id);
+
+    if (!deleteUser) {
+      return res.status(404).json({
+        statusCode: 404,
+        message: "User not found or already inactive",
+      });
+    }
+
+    return res.status(200).json({
+      statusCode: 200,
+      message: "success",
+      data: deleteUser.id,
+    });
+  } catch (error: any) {
+    return res.status(400).json({
+      statusCode: 400,
+      message: "failed",
+      error: error.message,
+    });
+  }
+}
 
 
 }

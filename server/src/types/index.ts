@@ -21,6 +21,7 @@ export interface IUser extends Document {
   profileUrl?: string;
   thumbnail?: string;
   createdAt: Date;
+  status: string;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -39,6 +40,7 @@ export interface IPost extends Document {
   description?: Text;
   share?: string;
   circle?: ICircle['_id'];
+  isDeleted: boolean;
   createdAt: Date;
 }
 

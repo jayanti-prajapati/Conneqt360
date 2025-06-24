@@ -9,18 +9,18 @@ export class UserService {
     }
 
     async update(id: string, data: Partial<IUser>) {
-        return this.userRepo.update(id, data);
+        return this.userRepo.update(id, data, { status: 'active' });
     }
 
     async getAll() {
-        return this.userRepo.findAll();
+        return this.userRepo.findAll({ status: 'active'});
     }
 
     async getById(id: string) {
-        return this.userRepo.findById(id);
+        return this.userRepo.findById(id, { status: 'active'});
     }
 
     async delete(id: string) {
-        return this.userRepo.delete(id);
+        return this.userRepo.delete(id, { status: 'active'});
     }
 }
