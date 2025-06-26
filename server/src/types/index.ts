@@ -1,9 +1,10 @@
 import mongoose, { Document, Model } from 'mongoose';
 import { Request } from 'express';
 export interface IUser extends Document {
+  name?: string;
   username?: string;
   email?: string;
-  password?: string;
+  // password?: string;
   phone?: string;
   location?: string;
   connections?: number;
@@ -11,10 +12,12 @@ export interface IUser extends Document {
   rating?: number;
   businessName?: string;
   businessType?: string;
+  jobTitle?: string;
+  referrels?: number;
   verified?: boolean;
   isSkip?: boolean;
   gstNumber?: string;
-  confirmPassword: String,
+  //confirmPassword: String,
   udyamNumber?: string;
   interests?: string[];
   aboutUs?: Text;

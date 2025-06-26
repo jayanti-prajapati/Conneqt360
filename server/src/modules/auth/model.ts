@@ -2,6 +2,10 @@ import mongoose, { Schema, Model, Document } from "mongoose";
 import { IUser, IAuthDocument, IAuthModel } from "../../types";
 
 const authSchema = new Schema<IUser>({
+  name: {
+     type: String,
+    required: false,
+  },
   username: {
     type: String,
      unique: true,
@@ -13,12 +17,20 @@ const authSchema = new Schema<IUser>({
     unique: true,
     trim: true,
   },
-  password: {
+  // password: {
+  //   type: String,
+  //   required: false,
+  // },
+  // confirmPassword: {
+  //   type: String,
+  //   required: false,
+  // },
+  jobTitle: {
     type: String,
     required: false,
   },
-  confirmPassword: {
-    type: String,
+  referrels: {
+    type: Number,
     required: false,
   },
   businessName: {
