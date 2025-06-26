@@ -1,17 +1,15 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, ImageStyle, ViewStyle, TextStyle, Dimensions, ActionSheetIOS } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
-import { ArrowLeft, Check, Cross, LogOut, Mail, Phone, Edit, MapIcon, MapPin, Camera, Image as ImageIcon } from 'lucide-react-native';
-import { pickImage, takePhoto } from '@/utils/imageUtils';
-import * as ImagePicker from 'expo-image-picker';
+import { Check, LogOut, Mail, Phone, Edit, MapPin, Camera } from 'lucide-react-native';
+import { pickImage } from '@/utils/imageUtils';
 import Button from '@/components/common/Button';
 import { clearAuthData, getAuthData } from '@/services/secureStore';
 import Colors from '@/constants/Colors';
 import Spacing from '@/constants/Spacing';
-import { useModal } from '@/hooks/useModal';
 import Form from '@/components/profile/Form';
 import useUsersStore from '@/store/useUsersStore';
 import CustomLoader from '@/components/loader/CustomLoader';
@@ -91,7 +89,8 @@ export default function ProfileScreen() {
       'gstNumber',
       'udyamNumber',
       'location',
-      'aboutUs'
+      'aboutUs',
+      'profileUrl'
     ];
 
     const totalFields = fields.length;
