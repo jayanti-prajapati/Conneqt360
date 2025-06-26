@@ -11,7 +11,7 @@ export class AuthService {
   async login(loginData: { email: string; password: string }) {
     return this.authRepo.create({
       email: loginData.email,
-      password: loginData.password,
+      //password: loginData.password,
       status: "active",
     });
   }
