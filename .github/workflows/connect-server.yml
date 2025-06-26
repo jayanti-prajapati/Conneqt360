@@ -52,7 +52,7 @@ jobs:
 
             # pulled latest images
             #docker-compose pull connect360 || true
-
+            pm2 restart connect-app
             #Removing  unused Docker resources
             #docker system prune -af --volumes
             #docker network prune -f
@@ -62,7 +62,7 @@ jobs:
             #docker-compose up -d --build connect360
 
             #exit
-          #EOF
+          EOF
           
           # Optional: clean up the SSH key after use
           #rm /tmp/private_key
