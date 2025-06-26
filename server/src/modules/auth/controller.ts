@@ -255,11 +255,12 @@ export class AuthController {
         path: "/",
         maxAge: 24 * 60 * 60 * 1000,
       });
+      const userObj = existingUser.toObject();
       
       res.status(200).json({
         message: "success",
         data: {
-          ...existingUser,
+          ...userObj,
           token,
         },
       });
