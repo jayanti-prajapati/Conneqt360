@@ -5,8 +5,6 @@ import { z } from "zod";
 import { AuthService } from "./service";
 import { User } from "./model";
 
-
-
 const jwt = require("jsonwebtoken");
 
 export const registerSchema = z.object({
@@ -79,16 +77,15 @@ export class AuthController {
         error: error.message,
       });
     }
-  };
+  }
 
   async getAll(req: Request, res: Response) {
     try {
-
       const users = await User.find().select("-password -confirmPassword");
       return res.status(200).json({
         statusCode: 200,
         message: "success",
-        data: users
+        data: users,
       });
     } catch (error: any) {
       return res.status(400).json({
@@ -97,7 +94,7 @@ export class AuthController {
         error: error.message,
       });
     }
-  };
+  }
 
   async getByPhone(req: Request, res: Response) {
     try {
@@ -116,7 +113,7 @@ export class AuthController {
       return res.status(200).json({
         statusCode: 200,
         message: "success",
-        data: phoneData
+        data: phoneData,
       });
     } catch (error: any) {
       return res.status(400).json({
@@ -181,10 +178,7 @@ export class AuthController {
     }
   }
 
-
-
   async otpLogin(req: Request, res: Response) {
-
     // const serviceAccount = require('./firebaseServiceAccountKey.json');
 
     // admin.initializeApp({
@@ -193,9 +187,8 @@ export class AuthController {
 
     const { phone } = req.body;
 
-
-    if (!phone) return res.status(400).json({ error: 'Phone number is required' });
-
+    if (!phone)
+      return res.status(400).json({ error: "Phone number is required" });
 
     //   const user = await User.findOne({ phone });
     // if (!user) {
@@ -208,14 +201,12 @@ export class AuthController {
       // sendOTP(phone, parseInt(otp));
       otpStore[phone] = {
         otp,
-        expiry: Infinity,  //Date.now() + 5 * 60 * 1000, //5 min expiry
+        expiry: Infinity, //Date.now() + 5 * 60 * 1000, //5 min expiry
       };
-      res.status(200).json({ message: 'OTP sent successfully', otp }); // Return OTP only for dev/debug
+      res.status(200).json({ message: "OTP sent successfully", otp }); // Return OTP only for dev/debug
     } catch (error) {
-      res.status(400).json({ error: 'Failed to send OTP' });
+      res.status(400).json({ error: "Failed to send OTP" });
     }
-
-
 
     // if (!phone) return res.status(400).json({ error: 'Phone number is required' });
 
@@ -226,9 +217,7 @@ export class AuthController {
     // } catch (error) {
     //   res.status(500).json({ error: 'Failed to send OTP' });
     // }
-  };
-
-
+  }
 
   async verifyOtp(req: Request, res: Response) {
     try {
@@ -239,11 +228,9 @@ export class AuthController {
       if (!existingUser) {
         existingUser = await this.authService.register({
           phone: phone,
-          verified: true
-        })
-      };
-
-
+          verified: true,
+        });
+      }
 
       const storedEntry = otpStore[phone];
       if (!storedEntry || storedEntry.otp !== otp) {
@@ -268,12 +255,11 @@ export class AuthController {
         path: "/",
         maxAge: 24 * 60 * 60 * 1000,
       });
-
+      
       res.status(200).json({
         message: "success",
-        user: {
-          id: existingUser._id,
-          phone: existingUser.phone,
+        data: {
+          ...existingUser,
           token,
         },
       });
@@ -285,6 +271,4 @@ export class AuthController {
       });
     }
   }
-
-
 }
