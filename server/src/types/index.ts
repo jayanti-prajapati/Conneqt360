@@ -97,6 +97,6 @@ export interface IAuthDocument extends IUser, Document { };
 export interface IUserDocument extends IUser, Document { };
 
 export interface IAuthModel extends Model<IAuthDocument> {
-  findByPhone(phone: string): Promise<IAuthDocument | null>;
+  findByPhone(phone: string, extraFilter?: any): Promise<IAuthDocument | null>;
 }
 

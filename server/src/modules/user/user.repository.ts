@@ -7,4 +7,10 @@ export class UserRepository extends BaseRepository<IUser> {
     constructor() {
         super(User);
     }
+
+   async findByPhone(phone: string, extraFilter: any = {}) {
+  return User.findByPhone(phone, extraFilter); // ✅ Now works
+}
+
+
 }
