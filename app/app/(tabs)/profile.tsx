@@ -1,8 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, ImageStyle, ViewStyle, TextStyle, Dimensions } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, ImageStyle, ViewStyle, TextStyle, Dimensions, ActionSheetIOS } from 'react-native';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, Check, Cross, LogOut, Mail, Phone, Edit, MapIcon, MapPin } from 'lucide-react-native';
+
+import { ArrowLeft, Check, Cross, LogOut, Mail, Phone, Edit, MapIcon, MapPin, Camera, Image as ImageIcon } from 'lucide-react-native';
+import { pickImage, takePhoto } from '@/utils/imageUtils';
+import * as ImagePicker from 'expo-image-picker';
 import Button from '@/components/common/Button';
 import { clearAuthData, getAuthData } from '@/services/secureStore';
 import Colors from '@/constants/Colors';
@@ -17,6 +21,7 @@ import About from '@/components/profile/About';
 
 
 export default function ProfileScreen() {
+
   const router = useRouter();
   const [isPresent, setIsPresent] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -31,7 +36,7 @@ export default function ProfileScreen() {
   }, []);
   const fetchUserById = async () => {
     const data = await getAuthData();
-    const response = await getUserById(data?.userData?._id);
+    const response = await getUserById(data?.userData?.data?._id);
     if (response?.data?.statusCode == 200) {
       setUser(response?.data?.data);
     } else {
@@ -141,6 +146,24 @@ export default function ProfileScreen() {
               source={{ uri: 'https://randomuser.me/api/portraits/men/1.jpg' }}
               style={styles.profileImage}
             />
+            <View style={styles.imageUploadOverlay}>
+              <TouchableOpacity
+                style={styles.uploadButton}
+                onPress={async () => {
+                  const image = await pickImage();
+                  if (image) {
+
+                    console.log(image);
+
+                    // TODO: Upload image to your backend
+                    // await updateUserProfileImage(user._id, image);
+                    // fetchUserById(); // Refresh user data
+                  }
+                }}
+              >
+                <Camera size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
           </View>
 
           <View style={styles.nameContainer}>
@@ -338,9 +361,33 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 60,
     backgroundColor: Colors.gray[200],
-    overflow: 'hidden' as const,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    overflow: 'hidden',
     marginBottom: Spacing.md,
     alignSelf: 'center',
+  },
+  imageUploadOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderRadius: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    opacity: 0,
+    // @ts-ignore
+    transition: 'opacity 0.3s',
+  },
+  uploadButton: {
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileImageContainerActive: {
+    opacity: 1,
   },
   profileImage: {
     width: '100%',

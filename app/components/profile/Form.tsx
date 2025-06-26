@@ -6,7 +6,9 @@ import { Feather } from "@expo/vector-icons";
 import { useEffect, useState, useCallback } from "react";
 
 import useUsersStore from "@/store/useUsersStore";
-import { getAuthData } from "@/services/secureStore";
+import { clearAuthData, getAuthData } from "@/services/secureStore";
+import { useRouter } from "expo-router";
+
 type Props = {
     isPresent?: boolean;
     onClose?: () => void;
@@ -15,6 +17,7 @@ type Props = {
 }
 export default function Form({ isPresent, onClose, closeText, users }: Props) {
     const modal = useModal();
+    const router = useRouter();
     const { fetchUserByPhoneNumber, updateUser } = useUsersStore();
     const [userData, setUserData] = useState<any>(null);
     const [isVisible, setIsVisible] = useState(false);
@@ -64,14 +67,19 @@ export default function Form({ isPresent, onClose, closeText, users }: Props) {
 
         const fetchData = async () => {
             const authData = await getAuthData();
-            const resp = await fetchUserByPhoneNumber(authData?.userData?.phone)
-            console.log('Authrr Data:', resp.data);
+            // console.log('Auth Data:', authData);
+            const resp = await fetchUserByPhoneNumber(authData?.userData?.data?.phone)
+            // console.log('Authrr Data:', resp.data);
             if (resp?.data?.statusCode == 200) {
                 setUserData(resp.data.data);
                 console.log('User Data:', resp?.data?.data?.isSkip);
 
                 setIsVisible(!(resp?.data?.data?.isSkip))
                 return;
+            }
+            else {
+                clearAuthData();
+                router.replace('/(auth)/login');
             }
 
 
