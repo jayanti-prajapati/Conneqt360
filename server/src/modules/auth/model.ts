@@ -6,10 +6,11 @@ const authSchema = new Schema<IUser>({
     type: String,
     required: false,
   },
-  username: {
+ username: {
     type: String,
-    unique: true,
     required: false,
+    unique: true,
+    default: null,
   },
   email: {
     type: String,
