@@ -1,5 +1,5 @@
-import mongoose, { Document, Model } from 'mongoose';
-import { Request } from 'express';
+import mongoose, { Document, Model } from "mongoose";
+import { Request } from "express";
 export interface IUser extends Document {
   name?: string;
   username?: string;
@@ -33,26 +33,33 @@ export interface IPost extends Document {
   content: Text;
   imageUrl?: string;
   videoUrl?: string;
-  user: IUser['_id'];
-  likes: IUser['_id'][];
+  user: IUser["_id"];
+  likes: IUser["_id"][];
   comments: {
-    user: IUser['_id'];
+    user: IUser["_id"];
     content: Text;
     createdAt: Date;
   }[];
   description?: Text;
   share?: string;
-  circle?: ICircle['_id'];
+  circle?: ICircle["_id"];
   isDeleted: boolean;
+  createdAt: Date;
+}
+
+export interface IUpload_Logs extends Document {
+  fileName: string;
+  type: string;
+  uploadedBy: string;
   createdAt: Date;
 }
 
 export interface ICircle extends Document {
   name: string;
   description: string;
-  type: 'sector' | 'location' | 'building';
-  members: IUser['_id'][];
-  admins: IUser['_id'][];
+  type: "sector" | "location" | "building";
+  members: IUser["_id"][];
+  admins: IUser["_id"][];
   createdAt: Date;
 }
 
@@ -61,11 +68,11 @@ export interface IProduct extends Document {
   price: string;
   description: string;
   imageUrl: string;
-  sellerId: IUser['_id'];
+  sellerId: IUser["_id"];
   category: string;
   location: string;
   ratings: {
-    userId: IUser['_id'];
+    userId: IUser["_id"];
     rating: number;
     review?: string;
   }[];
@@ -75,14 +82,14 @@ export interface IProduct extends Document {
 export interface IChat extends Document {
   isGroup: boolean;
   name?: string;
-  participants: IUser['_id'][];
+  participants: IUser["_id"][];
   messages: {
-    senderId: IUser['_id'];
+    senderId: IUser["_id"];
     content: string;
     createdAt: Date;
   }[];
   lastMessage?: {
-    senderId: IUser['_id'];
+    senderId: IUser["_id"];
     content: string;
     createdAt: Date;
   };
@@ -93,10 +100,9 @@ export interface AuthRequest extends Request {
   userId?: string;
 }
 
-export interface IAuthDocument extends IUser, Document { };
-export interface IUserDocument extends IUser, Document { };
+export interface IAuthDocument extends IUser, Document {}
+export interface IUserDocument extends IUser, Document {}
 
 export interface IAuthModel extends Model<IAuthDocument> {
-  findByPhone(phone: string): Promise<IAuthDocument | null>;
+  findByPhone(phone: string, extraFilter?: any): Promise<IAuthDocument | null>;
 }
-

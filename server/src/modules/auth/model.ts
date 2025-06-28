@@ -3,13 +3,14 @@ import { IUser, IAuthDocument, IAuthModel } from "../../types";
 
 const authSchema = new Schema<IUser>({
   name: {
-     type: String,
+    type: String,
     required: false,
   },
-  username: {
+ username: {
     type: String,
-     unique: true,
     required: false,
+    unique: true,
+    default: null,
   },
   email: {
     type: String,
@@ -84,7 +85,7 @@ const authSchema = new Schema<IUser>({
   },
   isSkip: {
     type: Boolean,
-    required: false
+    required: false,
   },
   aboutUs: {
     type: String,
@@ -98,7 +99,7 @@ const authSchema = new Schema<IUser>({
   status: {
     type: String,
     enum: ["active", "inactive"],
-    default: "active"
+    default: "active",
   },
 });
 
@@ -115,14 +116,14 @@ authSchema.methods.comparePassword = async function (
   return candidatePassword === this.password;
 };
 
-authSchema.statics.findByPhone = function (phone: string) {
-  return this.findOne({ phone });
+authSchema.statics.findByPhone = function (
+  phone: string,
+  extraFilter: any = {}
+) {
+  return this.findOne({ phone, ...extraFilter });
 };
 
-//export const User = mongoose.model<IUser>('User', userSchema);
 export const Register = mongoose.model<IUser>("register", authSchema);
-
-// export const User = mongoose.model<IUserDocument, IUserModel>("User", authSchema);
 
 export const User = mongoose.model<IAuthDocument, IAuthModel>(
   "User",
