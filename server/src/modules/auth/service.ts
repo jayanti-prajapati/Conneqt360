@@ -25,10 +25,10 @@ export class AuthService {
   }
 
   async getAll() {
-    return this.authRepo.findAll({ status: 'active'});
+    return this.authRepo.findAll({ status: "active" });
   }
 
   async getByPhone(phone: string) {
-    return this.authRepo.findByPhone(phone, { status: 'active'});
+    return this.authRepo.findByPhone(phone, { status: "active" });
   }
 }

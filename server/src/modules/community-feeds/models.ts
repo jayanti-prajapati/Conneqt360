@@ -53,7 +53,7 @@ const feedSchema = new Schema<IPost>({
   },
   isDeleted: {
     type: Boolean,
-    default: false
+    default: false,
   },
   createdAt: {
     type: Date,
@@ -61,22 +61,16 @@ const feedSchema = new Schema<IPost>({
   },
 });
 
-
-
 export interface IPostModel extends Model<IPost> {
   getFeedByUserId(filter: any): Promise<IPost[]>;
 }
 
-
-feedSchema.statics.getFeedByUserId = function(filter) {
+feedSchema.statics.getFeedByUserId = function (filter) {
   return this.find(filter)
     .populate("user", "username email phone businessName businessType")
     .populate("comments.user", "username phone")
     .sort({ createdAt: -1 });
 };
-
-
-
 
 export const Community_Feeds = mongoose.model<IPost, IPostModel>(
   "community_feeds",

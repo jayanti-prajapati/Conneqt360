@@ -105,35 +105,35 @@ export class UserController {
     }
   }
 
-async delete(req: Request, res: Response) {
-  try {
-    const deleteUser = await this.userService.delete(req.params.id);
+  async delete(req: Request, res: Response) {
+    try {
+      const deleteUser = await this.userService.delete(req.params.id);
 
-    if (!deleteUser) {
-      return res.status(404).json({
-        statusCode: 404,
-        message: "User not found or already inactive",
+      if (!deleteUser) {
+        return res.status(404).json({
+          statusCode: 404,
+          message: "User not found or already inactive",
+        });
+      }
+
+      return res.status(200).json({
+        statusCode: 200,
+        message: "success",
+        data: deleteUser.id,
+      });
+    } catch (error: any) {
+      return res.status(400).json({
+        statusCode: 400,
+        message: "failed",
+        error: error.message,
       });
     }
-
-    return res.status(200).json({
-      statusCode: 200,
-      message: "success",
-      data: deleteUser.id,
-    });
-  } catch (error: any) {
-    return res.status(400).json({
-      statusCode: 400,
-      message: "failed",
-      error: error.message,
-    });
   }
-}
 
- async getByPhone(req: Request, res: Response) {
+  async getByPhone(req: Request, res: Response) {
     try {
       const phone = req.params.phone;
-      
+
       const phoneData = await this.userService.getByPhone(phone);
 
       if (!phoneData) {
@@ -145,7 +145,7 @@ async delete(req: Request, res: Response) {
       return res.status(200).json({
         statusCode: 200,
         message: "success",
-        data: phoneData
+        data: phoneData,
       });
     } catch (error: any) {
       return res.status(400).json({
@@ -155,6 +155,4 @@ async delete(req: Request, res: Response) {
       });
     }
   }
-
-
 }

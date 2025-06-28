@@ -15,7 +15,6 @@ export class BaseRepository<T extends Document> {
     return this.model.find(filter as any);
   }
 
- 
   async update(
     id: string,
     data: Partial<T>,
@@ -26,12 +25,11 @@ export class BaseRepository<T extends Document> {
     });
   }
 
- async delete(id: string, extraFilter: any = {}): Promise<T | null> {
-  return this.model.findOneAndUpdate(
-    { _id: id, ...extraFilter },
-    { status: 'inactive', isDeleted: true },
-    { new: true }
-  );
-}
-
+  async delete(id: string, extraFilter: any = {}): Promise<T | null> {
+    return this.model.findOneAndUpdate(
+      { _id: id, ...extraFilter },
+      { status: "inactive", isDeleted: true },
+      { new: true }
+    );
+  }
 }

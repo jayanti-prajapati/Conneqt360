@@ -3,12 +3,12 @@ import { IUser, IAuthDocument, IAuthModel } from "../../types";
 
 const authSchema = new Schema<IUser>({
   name: {
-     type: String,
+    type: String,
     required: false,
   },
   username: {
     type: String,
-     unique: true,
+    unique: true,
     required: false,
   },
   email: {
@@ -84,7 +84,7 @@ const authSchema = new Schema<IUser>({
   },
   isSkip: {
     type: Boolean,
-    required: false
+    required: false,
   },
   aboutUs: {
     type: String,
@@ -98,7 +98,7 @@ const authSchema = new Schema<IUser>({
   status: {
     type: String,
     enum: ["active", "inactive"],
-    default: "active"
+    default: "active",
   },
 });
 
@@ -123,7 +123,6 @@ authSchema.statics.findByPhone = function (
 };
 
 export const Register = mongoose.model<IUser>("register", authSchema);
-
 
 export const User = mongoose.model<IAuthDocument, IAuthModel>(
   "User",
