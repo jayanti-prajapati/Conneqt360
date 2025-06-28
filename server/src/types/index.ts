@@ -47,6 +47,13 @@ export interface IPost extends Document {
   createdAt: Date;
 }
 
+export interface IUpload_Logs extends Document {
+  fileName: string;
+  type: string;
+  uploadedBy: string;
+  createdAt: Date;
+}
+
 export interface ICircle extends Document {
   name: string;
   description: string;
