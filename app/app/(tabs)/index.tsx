@@ -271,7 +271,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Form />
+      <Form closeText="Skip" />
       <CustomLoader visible={loading} />
       <KeyboardAvoidingView
         style={styles.container}

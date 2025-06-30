@@ -1,174 +1,305 @@
-import React from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  SafeAreaView
-} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity } from 'react-native';
+
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { LogOut, Settings, Share2 } from 'lucide-react-native';
-import ProfileHeader from '@/components/profile/ProfileHeader';
-import Card from '@/components/common/Card';
+
+import { Check, LogOut, Mail, Phone, Edit, MapPin, Camera } from 'lucide-react-native';
+import { pickImage } from '@/utils/imageUtils';
 import Button from '@/components/common/Button';
+import { clearAuthData, getAuthData } from '@/services/secureStore';
 import Colors from '@/constants/Colors';
-import Typography from '@/constants/Typography';
 import Spacing from '@/constants/Spacing';
-import { User } from '@/types';
-import { clearAuthData } from '@/services/secureStore';
+import Form from '@/components/profile/Form';
+import useUsersStore from '@/store/useUsersStore';
+import CustomLoader from '@/components/loader/CustomLoader';
+import About from '@/components/profile/About';
 
 // Mock user data
-const mockUser: User = {
-  id: '1',
-  name: 'TextileCraft Industries',
-  businessName: 'TextileCraft Industries',
-  email: 'contact@textilecraft.com',
-  phone: '+91 98765 43210',
-  location: 'Surat, Gujarat',
-  businessType: 'Textile Manufacturing & Export',
-  verified: true,
-};
+
 
 export default function ProfileScreen() {
+
   const router = useRouter();
+  const [isPresent, setIsPresent] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [isAbout, setIsAbout] = useState(false);
 
+
+  const { loading, getUserById } = useUsersStore();
+
+  useEffect(() => {
+
+    fetchUserById();
+  }, []);
+  const fetchUserById = async () => {
+    const data = await getAuthData();
+    const response = await getUserById(data?.userData?.data?._id);
+    if (response?.data?.statusCode == 200) {
+      setUser(response?.data?.data);
+    } else {
+      clearAuthData();
+      router.replace('/(auth)/login');
+    }
+  }
+
+
+  const handleBack = () => {
+    router.back();
+  };
+  const close = () => {
+    setIsPresent(false);
+    setIsAbout(false);
+    fetchUserById();
+  }
   const handleEditProfile = () => {
+    setIsPresent(true);
     console.log('Edit profile');
-    // In a full implementation, navigate to edit profile screen
   };
 
-  const handleConnect = () => {
-    console.log('Connect with business');
-    // In a full implementation, send connection request
+  const handleEditAbout = () => {
+    setIsAbout(true);
+    console.log('Edit about');
   };
 
-  const handleSettings = () => {
-    console.log('Settings');
-    // In a full implementation, navigate to settings screen
+  const handleShareCard = () => {
+    console.log('Share card');
   };
 
-  const handleShare = () => {
-    console.log('Share profile');
-    // In a full implementation, open share dialog
+  const handleViewBusiness = () => {
+    console.log('View business');
   };
+
   const handleLogout = () => {
-    console.log('Logout profile');
     clearAuthData();
     router.replace('/(auth)/login');
-    // In a full implementation, open share dialog
   };
 
+  // Calculate profile completion percentage based on filled fields
+  const calculateProfileCompletion = (userData: any) => {
+    if (!userData) return 0;
+
+    const fields = [
+      'name',
+      'jobTitle',
+      'email',
+      'username',
+      'businessName',
+      'businessType',
+      'gstNumber',
+      'udyamNumber',
+      'location',
+      'aboutUs',
+      'profileUrl'
+    ];
+
+    const totalFields = fields.length;
+    let completedFields = 0;
+
+    fields.forEach(field => {
+      if (userData[field]) {
+        completedFields++;
+      }
+    });
+
+    // Calculate percentage (rounded to nearest integer)
+    return Math.round((completedFields / totalFields) * 100);
+  };
+
+  const profileCompletion = calculateProfileCompletion(user);
+  // console.log('Profile completion:', isPresent);
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.headerActions}>
-        <TouchableOpacity style={styles.iconButton} onPress={handleSettings}>
-          <Settings size={24} color={Colors.gray[700]} />
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
+      <Form isPresent={isPresent} onClose={close} closeText="Close" users={user} />
+      <CustomLoader visible={loading} />
+      <About isAbout={isAbout} onClose={close} userId={user?._id} />
+      <View style={styles.header}>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+          {/* <ArrowLeft size={24} color={Colors.gray[700]} /> */}
         </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton} onPress={handleShare}>
-          <Share2 size={24} color={Colors.gray[700]} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton} onPress={handleLogout}>
-          <LogOut size={24} color={Colors.gray[700]} />
-        </TouchableOpacity>
+        <Text style={styles.headerTitle}>
+          <Image
+            source={require('@/assets/images/logo.png')} // <-- Your local logo image
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
+        </Text>
+        <View style={styles.headerIcons}>
+          <TouchableOpacity style={styles.iconButton} onPress={handleLogout}>
+            <Text style={styles.logoutText}>
+              <LogOut />
+
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <ScrollView>
-        <ProfileHeader
-          name={mockUser.name}
-          verified={mockUser.verified}
-          businessType={mockUser.businessType}
-          location={mockUser.location}
-          phone={mockUser.phone}
-          email={mockUser.email}
-          isOwnProfile={true}
-          onEditProfile={handleEditProfile}
-          onConnect={handleConnect}
-        />
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.profileSection}>
+          <View style={styles.profileImageContainer}>
+            <Image
+              source={{ uri: 'https://randomuser.me/api/portraits/men/1.jpg' }}
+              style={styles.profileImage}
+            />
+            <View style={styles.imageUploadOverlay}>
+              <TouchableOpacity
+                style={styles.uploadButton}
+                onPress={async () => {
+                  const image = await pickImage();
+                  if (image) {
 
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>158</Text>
-            <Text style={styles.statLabel}>Connections</Text>
+                    console.log(image);
+
+                    // TODO: Upload image to your backend
+                    // await updateUserProfileImage(user._id, image);
+                    // fetchUserById(); // Refresh user data
+                  }
+                }}
+              >
+                <Camera size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
           </View>
-          <View style={[styles.statItem, styles.statBorder]}>
-            <Text style={styles.statValue}>12</Text>
-            <Text style={styles.statLabel}>Products</Text>
+
+          <View style={styles.nameContainer}>
+            <Text style={styles.name}>{user?.name}</Text>
+            <View style={styles.verifiedBadge}>
+              {user?.verified && (
+
+                <Check size={16} color={Colors.white} />
+
+              )}
+            </View>
           </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>4.8</Text>
-            <Text style={styles.statLabel}>Rating</Text>
+          <Text style={styles.username}>{user?.username}</Text>
+          <Text style={styles.title}>{user?.jobTitle}</Text>
+
+
+          <View style={styles.buttonRow}>
+            <Button
+              title="Edit Profile"
+              variant="outline"
+              size="small"
+              onPress={handleEditProfile}
+              style={styles.button}
+            />
+            <Button
+              title="Share Card"
+              variant="outline"
+              size="small"
+              onPress={handleShareCard}
+              style={styles.button}
+            />
+            <Button
+              title="View Business"
+              variant="primary"
+              size="small"
+              onPress={handleViewBusiness}
+              style={styles.button}
+            />
+          </View>
+        </View>
+
+        {/* Profile Completion Progress */}
+        <View style={[styles.card, { marginTop: Spacing.md, marginHorizontal: Spacing.lg }]}>
+          <View style={styles.progressHeader}>
+            <Text style={styles.progressTitle}>Profile Completion</Text>
+            <Text style={profileCompletion == 100 ? styles.progressPercentSuccess : styles.progressPercent}>{profileCompletion}%</Text>
+          </View>
+          <View style={styles.progressBar}>
+            <View
+              style={[
+                profileCompletion == 100 ? styles.progressSuccess : styles.progressFill,
+                { width: `${profileCompletion}%` }
+              ]}
+            />
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About Us</Text>
-          <Card padding="medium">
-            <Text style={styles.aboutText}>
-              TextileCraft Industries is a leading manufacturer and exporter of high-quality textile products.
-              Established in 2005, we specialize in cotton fabrics, synthetic blends, and eco-friendly textiles
-              for fashion and home decor industries.
-            </Text>
-          </Card>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={styles.sectionTitle}>About</Text>
+            <TouchableOpacity onPress={handleEditAbout}>
+              <Edit size={18} color={Colors.primary[900]} style={{ marginLeft: 8 }} />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.card}>
+            <Text style={styles.aboutText}>{user?.aboutUs}</Text>
+          </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Business Documents</Text>
-          <Card padding="medium">
-            <View style={styles.documentItem}>
-              <Text style={styles.documentName}>GST Certificate</Text>
-              <Text style={styles.documentVerified}>Verified ✓</Text>
+          <Text style={styles.sectionTitle}>Business Details</Text>
+          <View style={styles.card}>
+            <View style={styles.detailRow}>
+              <Text style={[styles.detailLabel, { width: '30%' }]}>Business</Text>
+              <Text style={styles.detailValue}>{user?.businessName}</Text>
             </View>
-            <View style={styles.documentItem}>
-              <Text style={styles.documentName}>Udyam Registration</Text>
-              <Text style={styles.documentVerified}>Verified ✓</Text>
+            <View style={styles.detailRow}>
+              <Text style={[styles.detailLabel, { width: '30%' }]}>Type</Text>
+              <Text
+                style={styles.detailValue}
+              >
+                {user?.businessType}
+              </Text>
             </View>
-            <View style={styles.documentItem}>
-              <Text style={styles.documentName}>IEC Code</Text>
-              <Text style={styles.documentVerified}>Verified ✓</Text>
+            <View style={styles.detailRow}>
+              <Text style={[styles.detailLabel, { width: '30%' }]}>GST Number</Text>
+              <Text
+                style={styles.detailValue}
+              >
+                {user?.gstNumber}
+              </Text>
             </View>
-          </Card>
+            <View style={styles.detailRow}>
+              <Text style={[styles.detailLabel, { width: '40%' }]}>Udyam Number</Text>
+              <Text
+                style={styles.detailValue}
+              >
+                {user?.udyamNumber}
+              </Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Referrals Programs</Text>
+              <Text style={styles.detailValue}>{5} </Text>
+            </View>
+          </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Featured Products</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.productsList}
-          >
-            <View style={styles.productCard}>
-              <View style={styles.productImage} />
-              <Text style={styles.productName}>Organic Cotton</Text>
-              <Text style={styles.productPrice}>₹250/meter</Text>
-            </View>
-            <View style={styles.productCard}>
-              <View style={styles.productImage} />
-              <Text style={styles.productName}>Printed Fabric</Text>
-              <Text style={styles.productPrice}>₹180/meter</Text>
-            </View>
-            <View style={styles.productCard}>
-              <View style={styles.productImage} />
-              <Text style={styles.productName}>Linen Blend</Text>
-              <Text style={styles.productPrice}>₹320/meter</Text>
-            </View>
-          </ScrollView>
-        </View>
+        {/* <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Referral Program</Text>
+          <View style={styles.card}>
+            <Text style={styles.referralText}>{mockUser.referrals} referrals</Text>
+            <Text style={styles.contactText}>{mockUser.phone}</Text>
+            <Text style={styles.contactText}>{mockUser.email}</Text>
+          </View>
+        </View> */}
 
-        <View style={styles.actionButtons}>
+        <View style={styles.contactSection}>
+          <View style={styles.contactInfo}>
+            <View style={styles.contactItem}>
+              <Phone size={20} color={Colors.primary[900]} />
+              <Text style={styles.contactText}>{user?.phone}</Text>
+            </View>
+            <View style={styles.contactItem}>
+              <Mail size={20} color={Colors.primary[900]} />
+              <Text style={styles.contactText}>{user?.email}</Text>
+            </View>
+            <View style={styles.contactItem}>
+              <MapPin size={20} color={Colors.primary[900]} />
+              <Text style={styles.contactText}>{user?.location}</Text>
+            </View>
+          </View>
           <Button
-            title="Download Business Card"
-            variant="outline"
-            size="medium"
-            onPress={() => console.log('Download business card')}
-            style={styles.button}
-          />
-          <Button
-            title="View Trust Score"
+            title={user?.businessName}
             variant="primary"
-            size="medium"
-            onPress={() => console.log('View trust score')}
-            style={styles.button}
+            size="small"
+            onPress={handleViewBusiness}
+            style={styles.businessButton}
           />
         </View>
       </ScrollView>
@@ -179,127 +310,259 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.gray[100],
+    backgroundColor: Colors.white,
   },
-  headerActions: {
+
+  header: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.lg,
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    zIndex: 10,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.gray[200],
   },
-  iconButton: {
+  backButton: {
+    padding: Spacing.xs,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: Colors.gray[800],
+  },
+  headerIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logoutText: {
+    color: Colors.primary[900],
+    fontSize: 14,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: Spacing.xl,
+    paddingTop: Spacing.md,
+  },
+  profileSection: {
+    alignItems: 'center',
+    padding: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.gray[100],
+  },
+  logoImage: {
+    width: 150,
+    height: 30,
+    marginBottom: 12,
+  },
+  profileImageContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: Colors.gray[200],
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    overflow: 'hidden',
+    marginBottom: Spacing.md,
+    alignSelf: 'center',
+  },
+  imageUploadOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderRadius: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    opacity: 0,
+    // @ts-ignore
+    transition: 'opacity 0.3s',
+  },
+  uploadButton: {
+    backgroundColor: 'rgba(0,0,0,0.6)',
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.white,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: Spacing.sm,
+  },
+  profileImageContainerActive: {
+    opacity: 1,
+  },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+  },
+  nameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.xs / 2, // Using xs/2 instead of undefined xxs
+  },
+  name: {
+    fontSize: 24,
+    fontWeight: '600',
+    marginRight: Spacing.xs,
+  },
+  verifiedBadge: {
+    backgroundColor: Colors.primary[500],
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  unverifiedText: {
+    color: Colors.gray[600],
+    fontSize: 12,
+    fontWeight: '600',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    textAlign: 'center',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 16,
+    color: Colors.gray[600],
+    marginBottom: Spacing.lg,
+  },
+  username: {
+    fontSize: 16,
+    color: Colors.gray[600],
+
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    marginHorizontal: -Spacing.xs,
+  },
+  button: {
+    margin: Spacing.xs,
+    flex: 1,
+    minWidth: 100,
+  },
+  section: {
+    padding: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.gray[100],
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: Spacing.sm,
+    color: Colors.gray[800],
+  },
+  card: {
+    backgroundColor: Colors.white,
+    borderRadius: 12,
+    padding: Spacing.lg,
+    marginBottom: Spacing.md,
+    // marginHorizontal: Spacing.lg,
     shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
-  statsContainer: {
+  progressHeader: {
     flexDirection: 'row',
-    backgroundColor: Colors.white,
-    paddingVertical: Spacing.md,
-    marginBottom: Spacing.md,
-  },
-  statItem: {
-    flex: 1,
+    justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  statBorder: {
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: Colors.gray[200],
-  },
-  statValue: {
-    fontSize: Typography.size.xl,
-    fontWeight: Typography.weight.bold as any,
-    color: Colors.gray[800],
-  },
-  statLabel: {
-    fontSize: Typography.size.sm,
-    color: Colors.gray[600],
-    marginTop: 2,
-  },
-  section: {
-    marginBottom: Spacing.lg,
-    paddingHorizontal: Spacing.lg,
-  },
-  sectionTitle: {
-    fontSize: Typography.size.lg,
-    fontWeight: Typography.weight.semiBold as any,
-    color: Colors.gray[800],
     marginBottom: Spacing.sm,
   },
+  progressTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: Colors.gray[800],
+  },
+  progressPercent: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.primary[600],
+  },
+  progressPercentSuccess: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'green',
+  },
+  progressBar: {
+    height: 8,
+    backgroundColor: Colors.gray[200],
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginTop: Spacing.sm,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: Colors.primary[500],
+    borderRadius: 4,
+  },
+  progressSuccess: {
+    height: '100%',
+    backgroundColor: "green",
+    borderRadius: 4,
+  },
   aboutText: {
-    fontSize: Typography.size.md,
+    fontSize: 14,
     color: Colors.gray[700],
     lineHeight: 22,
   },
-  documentItem: {
+  detailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: Spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.gray[200],
+    marginBottom: Spacing.sm,
+    alignItems: 'center',
   },
-  documentName: {
-    fontSize: Typography.size.md,
-    color: Colors.gray[800],
+  detailLabel: {
+    fontSize: 14,
+
+    color: Colors.gray[600],
+    flexShrink: 1,
   },
-  documentVerified: {
-    fontSize: Typography.size.sm,
-    color: Colors.success[500],
-    fontWeight: Typography.weight.medium as any,
+  detailValue: {
+    textAlign: 'right',
+    fontSize: 14,
+    fontWeight: '500',
+    color: Colors.gray[900],
+    flex: 1,
+    marginLeft: Spacing.md,
+    flexShrink: 1,
+    flexWrap: 'wrap',
   },
-  productsList: {
-    paddingVertical: Spacing.sm,
+  referralText: {
+    fontSize: 14,
+    color: Colors.primary[900],
   },
-  productCard: {
-    width: 120,
-    marginRight: Spacing.md,
-    backgroundColor: Colors.white,
-    borderRadius: 8,
-    padding: Spacing.sm,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+  contactSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: Spacing.lg,
+    borderBottomWidth: 2,
+    borderBottomColor: Colors.gray[100],
   },
-  productImage: {
-    height: 80,
-    backgroundColor: Colors.gray[200],
-    borderRadius: 4,
+  contactInfo: {
+    flex: 1,
+  },
+  contactItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: Spacing.xs,
   },
-  productName: {
-    fontSize: Typography.size.sm,
-    fontWeight: Typography.weight.medium as any,
+  contactText: {
+    fontSize: 14,
+    marginLeft: Spacing.sm,
     color: Colors.gray[800],
   },
-  productPrice: {
-    fontSize: Typography.size.sm,
-    color: Colors.primary[600],
-    marginTop: 2,
+  businessButton: {
+    marginLeft: Spacing.md,
+    width: 150,
   },
-  actionButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.xl,
+  iconButton: {
+    padding: Spacing.xs,
   },
-  button: {
-    flex: 1,
-    marginHorizontal: Spacing.xs,
-  },
+
+  // button: {
+  //   flex: 1,
+  //   marginHorizontal: Spacing.xs,
+  // },
 });

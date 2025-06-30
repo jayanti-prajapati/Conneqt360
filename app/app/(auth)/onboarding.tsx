@@ -1,7 +1,6 @@
 import React, { use, useEffect } from 'react';
 import { StyleSheet, View, Text, Image, Dimensions, TouchableOpacity, ImageBackground } from 'react-native';
 import { useRouter } from 'expo-router';
-import Button from '@/components/common/Button';
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
 import Spacing from '@/constants/Spacing';
@@ -18,7 +17,7 @@ export default function OnboardingScreen() {
     const checkAuth = async () => {
       try {
         const authData = await getAuthData();
-        console.log('Auth Data:', authData);
+        // console.log('Auth Data:', authData);
 
         if (authData?.userData) {
           router.replace('/(tabs)');

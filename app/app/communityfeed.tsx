@@ -17,6 +17,8 @@ import { useRouter } from "expo-router";
 import Spacing from "@/constants/Spacing"; // or replace with a number like 32
 import { getAuthData } from "@/services/secureStore";
 import useCommunityFeedsStore from "@/store/useCommunityFeeds";
+import { pickImage } from "@/utils/imageUtils";
+import { pickVideo } from "@/utils/videoUtils";
 
 export default function CommunityFeedScreen() {
     const router = useRouter();
@@ -28,18 +30,13 @@ export default function CommunityFeedScreen() {
 
 
 
-    const pickImage = async () => {
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            quality: 1,
-        });
-
-        if (!result.canceled) {
-            setImageUrl(result.assets[0].uri);
+    const pickImages = async () => {
+        const image = await pickImage();
+        //@ts-ignore
+        if (image) {
+            setImageUrl(image);
         }
     };
-
     const pickVideo = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Videos,
@@ -67,7 +64,7 @@ export default function CommunityFeedScreen() {
             content: contentText,
             imageUrl,
             videoUrl,
-            user: userData?.userData?.user?.id
+            user: userData?.userData?.data?._id
         };
 
         console.log("Submitting feed:", feedData);
@@ -78,6 +75,7 @@ export default function CommunityFeedScreen() {
             router.push('/(tabs)');
 
         } else {
+            console.log("Error creating post:", resp);
             console.error('Error creating post:', resp.data.message);
 
         }
@@ -120,7 +118,7 @@ export default function CommunityFeedScreen() {
                                 </TouchableOpacity>
                             </View>
                         ) : null}
-                        <TouchableOpacity onPress={pickImage} style={styles.uploadButton}>
+                        <TouchableOpacity onPress={pickImages} style={styles.uploadButton}>
                             <Text style={styles.uploadText}>Upload Image</Text>
                         </TouchableOpacity>
                     </View>
