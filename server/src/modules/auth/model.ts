@@ -2,10 +2,15 @@ import mongoose, { Schema, Model, Document } from "mongoose";
 import { IUser, IAuthDocument, IAuthModel } from "../../types";
 
 const authSchema = new Schema<IUser>({
-  username: {
+  name: {
     type: String,
-     unique: true,
     required: false,
+  },
+ username: {
+    type: String,
+    required: false,
+    unique: true,
+    default: null,
   },
   email: {
     type: String,
@@ -13,12 +18,20 @@ const authSchema = new Schema<IUser>({
     unique: true,
     trim: true,
   },
-  password: {
+  // password: {
+  //   type: String,
+  //   required: false,
+  // },
+  // confirmPassword: {
+  //   type: String,
+  //   required: false,
+  // },
+  jobTitle: {
     type: String,
     required: false,
   },
-  confirmPassword: {
-    type: String,
+  referrels: {
+    type: Number,
     required: false,
   },
   businessName: {
@@ -72,7 +85,7 @@ const authSchema = new Schema<IUser>({
   },
   isSkip: {
     type: Boolean,
-    required: false
+    required: false,
   },
   aboutUs: {
     type: String,
@@ -86,7 +99,7 @@ const authSchema = new Schema<IUser>({
   status: {
     type: String,
     enum: ["active", "inactive"],
-    default: "active"
+    default: "active",
   },
 });
 
@@ -103,14 +116,14 @@ authSchema.methods.comparePassword = async function (
   return candidatePassword === this.password;
 };
 
-authSchema.statics.findByPhone = function (phone: string) {
-  return this.findOne({ phone });
+authSchema.statics.findByPhone = function (
+  phone: string,
+  extraFilter: any = {}
+) {
+  return this.findOne({ phone, ...extraFilter });
 };
 
-//export const User = mongoose.model<IUser>('User', userSchema);
 export const Register = mongoose.model<IUser>("register", authSchema);
-
-// export const User = mongoose.model<IUserDocument, IUserModel>("User", authSchema);
 
 export const User = mongoose.model<IAuthDocument, IAuthModel>(
   "User",

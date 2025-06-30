@@ -11,7 +11,7 @@ export class AuthService {
   async login(loginData: { email: string; password: string }) {
     return this.authRepo.create({
       email: loginData.email,
-      password: loginData.password,
+      //password: loginData.password,
       status: "active",
     });
   }
@@ -25,10 +25,10 @@ export class AuthService {
   }
 
   async getAll() {
-    return this.authRepo.findAll({ status: 'active'});
+    return this.authRepo.findAll({ status: "active" });
   }
 
   async getByPhone(phone: string) {
-    return this.authRepo.findByPhone(phone, { status: 'active'});
+    return this.authRepo.findByPhone(phone, { status: "active" });
   }
 }

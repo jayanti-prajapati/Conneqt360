@@ -85,7 +85,7 @@ export class CommunityController {
       if (!updateCommunity) {
         return res.status(404).json({
           statusCode: 404,
-          message: "Community feed is not found or already  deleted",
+          message: "Community feed is not found",
         });
       }
       return res.status(200).json({
@@ -108,7 +108,7 @@ export class CommunityController {
       if (!deleteFeed) {
         return res.status(404).json({
           statusCode: 404,
-          message: "Community feed is not found or already  deleted",
+          message: "Community feed is not found",
         });
       }
       return res.status(200).json({
@@ -139,7 +139,7 @@ export class CommunityController {
       if (!userData) {
         return res.status(404).json({
           statusCode: 404,
-          message: "Community feed is not found or already  deleted",
+          message: "Community feed is not found",
         });
       }
 
