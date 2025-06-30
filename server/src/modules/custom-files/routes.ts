@@ -9,15 +9,15 @@ const router = Router();
 // Multer storage with correct typings
 const storage = multer.diskStorage({
   destination: (
-    _req: Request,
-    _file: Express.Multer.File,
+    _req,
+    _file,
     cb: (error: Error | null, destination: string) => void
   ) => {
     cb(null, "./uploads/");
   },
   filename: (
-    _req: Request,
-    file: Express.Multer.File,
+    _req,
+    file,
     cb: (error: Error | null, filename: string) => void
   ) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -35,7 +35,7 @@ router.post("/upload-file", upload.single("file"), async (req: Request, res: Res
   req.setTimeout(3600000);
 
   try {
-    const file = req.file as Express.Multer.File;
+    const file = req.file;
     if (!file) throw new Error("No file uploaded");
 
     const { emailAddress, description } = req.body;
