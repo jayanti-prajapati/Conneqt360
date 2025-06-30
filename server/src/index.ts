@@ -4,6 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./modules/auth/routes";
 import userRoutes from "./modules/user/routes";
+import customRoutes from "./modules/custom-files/routes"
 import communityRoutes from "./modules/community-feeds/routes";
 import cookieParser from "cookie-parser";
 dotenv.config();
@@ -22,6 +23,7 @@ mongoose
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/community-feeds", communityRoutes);
+app.use("/api/custom-file", customRoutes);
 
 app.use(
   (

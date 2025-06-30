@@ -1,4 +1,4 @@
-import mongoose, { Document, Model } from "mongoose";
+import mongoose, { Document, Model, Types } from "mongoose";
 import { Request } from "express";
 export interface IUser extends Document {
   name?: string;
@@ -47,13 +47,17 @@ export interface IPost extends Document {
   createdAt: Date;
 }
 
-export interface IUpload_Logs extends Document {
-  fileName: string;
-  type: string;
-  uploadedBy: string;
-  createdAt: Date;
+export interface ICustomFile {
+  fileName?: string;
+  type?: string;
+  uploadedBy?: string;
+  createdAt?: Date;
 }
 
+
+export interface ICustomFileDocument extends ICustomFile, Document {
+  _id: Types.ObjectId;
+}
 export interface ICircle extends Document {
   name: string;
   description: string;
