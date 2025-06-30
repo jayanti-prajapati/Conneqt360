@@ -2,56 +2,46 @@ import { Request, Response, Router } from "express";
 import multer from "multer";
 import path from "path";
 import * as fs from "fs";
-import { CustomFilesService } from "./service";
+
+
 
 const router = Router();
 
-// Multer storage with correct typings
 const storage = multer.diskStorage({
-  destination: function (
-    _req: Request,
-    _file: Express.Multer.File,
-    cb: (error: Error | null, destination: string) => void
-  ) {
-    cb(null, './uploads/');
+  destination: "./uploads/",
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + "-" + file.originalname);
   },
-  filename: function (
-    _req: Request,
-    file: Express.Multer.File,
-    cb: (error: Error | null, filename: string) => void
-  ) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, `${uniqueSuffix}-${file.originalname}`);
-  }
 });
-
 const upload = multer({
   storage,
-  limits: { fileSize: 1 * 1024 * 1024 * 1024 }, // 1GB
+  limits: { fileSize: 1 * 1024 * 1024 * 1024 },
 });
 
-// Upload endpoint
-router.post("/upload-file", upload.single("file"), async (req: Request, res: Response) => {
+router.post("/upload-file",  upload.single("file"), async (req: any, res: Response) => {
   req.setTimeout(3600000);
+
+  const masterId = (req as any).masterId;
 
   try {
     const file = req.file;
-    if (!file) throw new Error("No file uploaded");
+    if (!file) {
+      throw { message: 'No file uploaded' }
+    }
 
-    const { emailAddress, description } = req.body;
-    const { originalname, filename, mimetype } = file;
+    const { emailAddress, title, description } = req.body;
+
+
+    const { originalname, filename } = file;
     const filePath = `/uploads/${filename}`;
 
-    const fileId = await CustomFilesService.saveFile({
-      fileName: filename,
-      type: mimetype,
-      uploadedBy: emailAddress,
-    });
+    // const fileId = await CustomFilesService.saveFile({ masterId, path: filename, createdBy: emailAddress });
 
     res.status(200).json({
       message: "File uploaded successfully!",
       data: {
-        fileId,
+        // fileId,
         emailAddress,
         description,
         originalName: originalname,
@@ -63,21 +53,26 @@ router.post("/upload-file", upload.single("file"), async (req: Request, res: Res
   } catch (error: any) {
     res.status(500).json({
       message: "Error uploading file",
-      error: error.message || error,
+      error: error instanceof Error ? error.message : error,
     });
   }
 });
 
-// Fetch file endpoint
 router.get("/fetch-doc", async (req: Request, res: Response) => {
   req.setTimeout(3600000);
 
   try {
+
     const { fileName } = req.query;
-    if (!fileName) throw new Error("File name is required");
+
+    if (!fileName) {
+      throw ({ message: "File name is required1" });
+    }
 
     const decodedFileName = decodeURIComponent(fileName as string);
-    const sanitizedFileName = path.basename(decodedFileName);
+    const sanitizedFileName = path.basename(decodedFileName); // Prevent directory traversal
+
+    // Use project root relative uploads directory
     const uploadsPath = path.resolve(process.cwd(), "uploads");
     const filePath = path.join(uploadsPath, sanitizedFileName);
 
@@ -89,9 +84,10 @@ router.get("/fetch-doc", async (req: Request, res: Response) => {
     }
   } catch (error: any) {
     res.status(500).json({
-      message: error?.message || "Error fetching file",
+      message: error?.message || "Error fetching file"
     });
   }
 });
+
 
 export default router;
