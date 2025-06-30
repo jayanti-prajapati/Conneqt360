@@ -14,6 +14,7 @@ import Form from '@/components/profile/Form';
 import useUsersStore from '@/store/useUsersStore';
 import CustomLoader from '@/components/loader/CustomLoader';
 import About from '@/components/profile/About';
+import { Ionicons } from '@expo/vector-icons';
 
 // Mock user data
 
@@ -21,12 +22,13 @@ import About from '@/components/profile/About';
 export default function ProfileScreen() {
 
   const router = useRouter();
+
   const [isPresent, setIsPresent] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isAbout, setIsAbout] = useState(false);
 
 
-  const { loading, getUserById } = useUsersStore();
+  const { loading, getUserById, updateUser } = useUsersStore();
 
   useEffect(() => {
 
@@ -142,7 +144,7 @@ export default function ProfileScreen() {
         <View style={styles.profileSection}>
           <View style={styles.profileImageContainer}>
             <Image
-              source={{ uri: 'https://randomuser.me/api/portraits/men/1.jpg' }}
+              source={{ uri: user?.profileUrl || 'https://randomuser.me/api/portraits/men/1.jpg' }}
               style={styles.profileImage}
             />
             <View style={styles.imageUploadOverlay}>
@@ -151,16 +153,15 @@ export default function ProfileScreen() {
                 onPress={async () => {
                   const image = await pickImage();
                   if (image) {
-
-                    console.log(image);
-
-                    // TODO: Upload image to your backend
-                    // await updateUserProfileImage(user._id, image);
-                    // fetchUserById(); // Refresh user data
+                    const resp = await updateUser(user?._id, { profileUrl: image });
+                    if (resp?.data?.statusCode == 201 || resp?.data?.statusCode == 200) {
+                      // console.log(resp?.data)
+                      fetchUserById(); // Refresh user data
+                    }
                   }
                 }}
               >
-                <Camera size={24} color="#fff" />
+                <Ionicons name="camera" size={15} color="black" />
               </TouchableOpacity>
             </View>
           </View>
@@ -227,9 +228,9 @@ export default function ProfileScreen() {
               <Edit size={18} color={Colors.primary[900]} style={{ marginLeft: 8 }} />
             </TouchableOpacity>
           </View>
-          <View style={styles.card}>
+          {user?.aboutUs && <View style={styles.card}>
             <Text style={styles.aboutText}>{user?.aboutUs}</Text>
-          </View>
+          </View>}
         </View>
 
         <View style={styles.section}>
@@ -356,42 +357,47 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   profileImageContainer: {
+    position: 'relative',
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: Colors.gray[200],
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-    overflow: 'hidden',
-    marginBottom: Spacing.md,
     alignSelf: 'center',
-  },
-  imageUploadOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderRadius: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
-    opacity: 0,
-    // @ts-ignore
-    transition: 'opacity 0.3s',
-  },
-  uploadButton: {
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  profileImageContainerActive: {
-    opacity: 1,
+    marginTop: 20,
+    marginBottom: 20,
   },
   profileImage: {
     width: '100%',
     height: '100%',
+    borderRadius: 60,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
+  imageUploadOverlay: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    backgroundColor: Colors.gray[200],
+    borderRadius: 20,
+    padding: 8,
+    zIndex: 1,
+  },
+  uploadButton: {
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.gray[200],
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  profileImageContainerActive: {
+    opacity: 1,
+  },
+  // profileImage: {
+  //   width: '100%',
+  //   height: '100%',
+  // },
   nameContainer: {
     flexDirection: 'row',
     alignItems: 'center',

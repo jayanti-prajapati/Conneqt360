@@ -72,12 +72,13 @@ export default function Form({ isPresent, onClose, closeText, users }: Props) {
             // console.log('Authrr Data:', resp.data);
             if (resp?.data?.statusCode == 200) {
                 setUserData(resp.data.data);
-                console.log('User Data:', resp?.data?.data?.isSkip);
+                // console.log('User Data:', resp?.data?.data?.isSkip);
 
                 setIsVisible(!(resp?.data?.data?.isSkip))
                 return;
             }
             else {
+                // console.log('User Data:', resp);
                 clearAuthData();
                 router.replace('/(auth)/login');
             }
@@ -279,9 +280,13 @@ export default function Form({ isPresent, onClose, closeText, users }: Props) {
                     <TextInput
                         placeholder="Username"
                         value={formData.username}
+                        // editable={!formData.username}
+                        // style={[
+                        //     styles.input,
+                        //     errors.username && { borderColor: 'red' },
+                        //     formData?.username && { backgroundColor: '#f5f5f5', width: "100%" } // Optional: Add a gray background when disabled
+                        // ]}
                         onChangeText={text => handleChange('username', text)}
-                        style={[styles.input, errors.username && { borderColor: 'red' }]}
-
                         autoCapitalize="none"
                     />
 
