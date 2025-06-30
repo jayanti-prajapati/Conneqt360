@@ -22,7 +22,6 @@ const upload = multer({
 router.post("/upload-file",  upload.single("file"), async (req: any, res: Response) => {
   req.setTimeout(3600000);
 
-  const masterId = (req as any).masterId;
 
   try {
     const file = req.file;
