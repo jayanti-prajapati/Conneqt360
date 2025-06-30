@@ -8,21 +8,21 @@ const router = Router();
 
 // Multer storage with correct typings
 const storage = multer.diskStorage({
-  destination: (
-    _req,
-    _file,
+  destination: function (
+    _req: Request,
+    _file: Express.Multer.File,
     cb: (error: Error | null, destination: string) => void
-  ) => {
-    cb(null, "./uploads/");
+  ) {
+    cb(null, './uploads/');
   },
-  filename: (
-    _req,
-    file,
+  filename: function (
+    _req: Request,
+    file: Express.Multer.File,
     cb: (error: Error | null, filename: string) => void
-  ) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+  ) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     cb(null, `${uniqueSuffix}-${file.originalname}`);
-  },
+  }
 });
 
 const upload = multer({
