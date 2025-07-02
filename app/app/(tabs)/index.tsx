@@ -111,7 +111,7 @@ export default function HomeScreen() {
     }
   }
 
-  console.log("feedData", feedData);
+  // console.log("feedData", feedData);
 
 
 

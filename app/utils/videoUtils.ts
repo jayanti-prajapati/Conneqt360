@@ -1,3 +1,4 @@
+import useFilesStore from '@/store/useFilesStore';
 import * as ImagePicker from 'expo-image-picker';
 import { Alert, Platform } from 'react-native';
 
@@ -20,15 +21,18 @@ export const pickVideo = async (): Promise<string | null> => {
         });
 
         if (!result.canceled && result.assets && result.assets.length > 0) {
-            const asset = result.assets[0];
-            // If base64 is available, use it, otherwise fall back to URI
-            if (asset.base64) {
-                return `data:video/mp4;base64,${asset.base64}`;
-            } else if (asset.uri) {
-                // For iOS/Android, we'll need to handle the URI differently
-                // You might want to upload the file from the URI directly to your server
-                return await getVideoBase64(asset.uri);
-            }
+            const { uploadFile } = useFilesStore.getState();
+            const file = {
+                uri: result.assets[0].uri,
+                name: result.assets[0].fileName,
+                type: result.assets[0].mimeType,
+            };
+            // console.log('File upload response:', result.assets[0]);
+            const data = await uploadFile(file);
+            console.log("asdasdasdasd", data);
+
+
+            return "http://84.247.177.87/api/custom-file/fetch-doc?fileName=" + data?.data?.data?.fileName;
         }
         return null;
     } catch (error) {

@@ -19,6 +19,7 @@ import { getAuthData } from "@/services/secureStore";
 import useCommunityFeedsStore from "@/store/useCommunityFeeds";
 import { pickImage } from "@/utils/imageUtils";
 import { pickVideo } from "@/utils/videoUtils";
+import useFilesStore from "@/store/useFilesStore";
 
 export default function CommunityFeedScreen() {
     const router = useRouter();
@@ -27,6 +28,7 @@ export default function CommunityFeedScreen() {
     const [contentText, setContentText] = useState("");
     const [imageUrl, setImageUrl] = useState("");
     const [videoUrl, setVideoUrl] = useState("");
+    const { loading } = useFilesStore()
 
 
 
@@ -37,16 +39,14 @@ export default function CommunityFeedScreen() {
             setImageUrl(image);
         }
     };
-    const pickVideo = async () => {
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-            allowsEditing: false,
-            quality: 1,
-        });
-
-        if (!result.canceled) {
-            setVideoUrl(result.assets[0].uri);
+    const pickVideos = async () => {
+        const video = await pickVideo();
+        //@ts-ignore
+        if (video) {
+            setVideoUrl(video);
         }
+
+
     };
 
     const handleSubmit = async () => {
@@ -141,7 +141,7 @@ export default function CommunityFeedScreen() {
                                 </TouchableOpacity>
                             </View>
                         ) : null}
-                        <TouchableOpacity onPress={pickVideo} style={styles.uploadButton}>
+                        <TouchableOpacity onPress={pickVideos} style={styles.uploadButton}>
                             <Text style={styles.uploadText}>Upload Video</Text>
                         </TouchableOpacity>
                     </View>
@@ -171,6 +171,9 @@ export default function CommunityFeedScreen() {
                 </View>
                 {error && (
                     <Text style={{ color: 'red', textAlign: 'center' }}>{error}</Text>
+                )}
+                {loading && (
+                    <Text style={{ color: 'greed', textAlign: 'center' }}>File uploading, Please wait</Text>
                 )}
             </ScrollView>
 
