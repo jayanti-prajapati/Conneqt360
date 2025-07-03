@@ -15,8 +15,9 @@ const authSchema = new Schema<IUser>({
   email: {
     type: String,
     required: false,
-    unique: true,
+    // unique: true,
     trim: true,
+    default: null,
   },
   // password: {
   //   type: String,
