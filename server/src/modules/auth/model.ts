@@ -5,6 +5,7 @@ const authSchema = new Schema<IUser>({
   name: {
     type: String,
     required: false,
+    default: null,
   },
   username: {
     type: String,
@@ -14,8 +15,9 @@ const authSchema = new Schema<IUser>({
   email: {
     type: String,
     required: false,
-    unique: true,
+    // unique: true,
     trim: true,
+    default: null,
   },
   // password: {
   //   type: String,
@@ -28,67 +30,83 @@ const authSchema = new Schema<IUser>({
   jobTitle: {
     type: String,
     required: false,
+    default: null,
   },
   referrels: {
     type: Number,
     required: false,
+    default: null,
   },
   businessName: {
     type: String,
     required: false,
+    default: null,
   },
   phone: {
     type: String,
     required: false,
     unique: true,
+    default: null,
   },
   location: {
     type: String,
     required: false,
+    default: null,
   },
   businessType: {
     type: String,
     required: false,
+    default: null,
   },
   profileUrl: {
     type: String,
     required: false,
+    default: null,
   },
   thumbnail: {
     type: String,
     required: false,
+    default: null,
   },
   connections: {
     type: Number,
     required: false,
+    default: null,
   },
   products: {
     type: Number,
     required: false,
+    default: null,
   },
   rating: {
     type: Number,
     required: false,
+    default: null,
   },
   verified: {
     type: Boolean,
     default: false,
+
   },
   gstNumber: {
     type: String,
     required: false,
+    default: null,
   },
   udyamNumber: {
     type: String,
     required: false,
+    default: null,
   },
   isSkip: {
     type: Boolean,
     required: false,
+    default: null,
   },
   aboutUs: {
     type: String,
     required: false,
+    default: null,
   },
   interests: [String],
   createdAt: {
