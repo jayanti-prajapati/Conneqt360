@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -14,71 +14,53 @@ import Form from '@/components/profile/Form';
 import useUsersStore from '@/store/useUsersStore';
 import CustomLoader from '@/components/loader/CustomLoader';
 import About from '@/components/profile/About';
+import { Ionicons } from '@expo/vector-icons';
 
 // Mock user data
 
 
-export default function ProfileScreen() {
 
+export default function ProfileScreen() {
   const router = useRouter();
+
   const [isPresent, setIsPresent] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isAbout, setIsAbout] = useState(false);
 
+  const { loading, getUserById, updateUser } = useUsersStore();
 
-  const { loading, getUserById } = useUsersStore();
-
-  useEffect(() => {
-
-    fetchUserById();
-  }, []);
+  // Fetch user data
   const fetchUserById = async () => {
-    const data = await getAuthData();
-    const response = await getUserById(data?.userData?.data?._id);
-    if (response?.data?.statusCode == 200) {
-      setUser(response?.data?.data);
-    } else {
+    try {
+      const data = await getAuthData();
+      const userId = data?.userData?.data?._id;
+
+      if (!userId) {
+        clearAuthData();
+        router.replace('/(auth)/login');
+        return;
+      }
+
+      const response = await getUserById(userId);
+      if (response?.data?.statusCode === 200) {
+        setUser(response.data.data);
+      } else {
+        clearAuthData();
+        router.replace('/(auth)/login');
+      }
+    } catch (error) {
+      console.error('Error fetching user:', error);
       clearAuthData();
       router.replace('/(auth)/login');
     }
-  }
-
-
-  const handleBack = () => {
-    router.back();
   };
-  const close = () => {
-    setIsPresent(false);
-    setIsAbout(false);
+
+  useEffect(() => {
     fetchUserById();
-  }
-  const handleEditProfile = () => {
-    setIsPresent(true);
-    console.log('Edit profile');
-  };
+  }, []);
 
-  const handleEditAbout = () => {
-    setIsAbout(true);
-    console.log('Edit about');
-  };
-
-  const handleShareCard = () => {
-    console.log('Share card');
-  };
-
-  const handleViewBusiness = () => {
-    console.log('View business');
-  };
-
-  const handleLogout = () => {
-    clearAuthData();
-    router.replace('/(auth)/login');
-  };
-
-  // Calculate profile completion percentage based on filled fields
-  const calculateProfileCompletion = (userData: any) => {
-    if (!userData) return 0;
-
+  // Profile completion calculation
+  const calculateProfileCompletion = (userData: any = {}) => {
     const fields = [
       'name',
       'jobTitle',
@@ -90,48 +72,58 @@ export default function ProfileScreen() {
       'udyamNumber',
       'location',
       'aboutUs',
-      'profileUrl'
+      'profileUrl',
     ];
-
-    const totalFields = fields.length;
-    let completedFields = 0;
-
-    fields.forEach(field => {
-      if (userData[field]) {
-        completedFields++;
-      }
-    });
-
-    // Calculate percentage (rounded to nearest integer)
-    return Math.round((completedFields / totalFields) * 100);
+    const completed = fields?.filter((field) => !!userData[field]).length;
+    return Math.round((completed / fields?.length) * 100);
   };
 
-  const profileCompletion = calculateProfileCompletion(user);
-  // console.log('Profile completion:', isPresent);
-  return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
-      <Form isPresent={isPresent} onClose={close} closeText="Close" users={user} />
-      <CustomLoader visible={loading} />
-      <About isAbout={isAbout} onClose={close} userId={user?._id} />
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          {/* <ArrowLeft size={24} color={Colors.gray[700]} /> */}
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          <Image
-            source={require('@/assets/images/logo.png')} // <-- Your local logo image
-            style={styles.logoImage}
-            resizeMode="contain"
-          />
-        </Text>
-        <View style={styles.headerIcons}>
-          <TouchableOpacity style={styles.iconButton} onPress={handleLogout}>
-            <Text style={styles.logoutText}>
-              <LogOut />
+  const profileCompletion = user ? calculateProfileCompletion(user) : 0;
 
-            </Text>
-          </TouchableOpacity>
-        </View>
+  const handleProfileImageUpload = async () => {
+    try {
+      const image = await pickImage();
+      if (image && user?._id) {
+        const resp = await updateUser(user._id, { profileUrl: image });
+        if ([200, 201].includes(resp?.data?.statusCode)) {
+          fetchUserById();
+        }
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    }
+  };
+
+  const handleLogout = () => {
+    clearAuthData();
+    router.replace('/(auth)/login');
+  };
+
+  const close = () => {
+    setIsPresent(false);
+    setIsAbout(false);
+    fetchUserById();
+  };
+
+  return (
+
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <Form isPresent={isPresent} onClose={close} closeText="Close" users={user} />
+      <About isAbout={isAbout} onClose={close} userId={user?._id} />
+      <CustomLoader visible={loading} />
+
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={router.back} style={styles.backButton} />
+        <Text style={styles.headerTitle}>
+          <Image source={require('../../assets/images/logo.png')} style={styles.logoImage} resizeMode="contain" />
+        </Text>
+        <TouchableOpacity onPress={handleLogout} style={styles.iconButton}>
+          <LogOut />
+        </TouchableOpacity>
       </View>
 
       <ScrollView
@@ -139,173 +131,122 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* Profile Section */}
         <View style={styles.profileSection}>
           <View style={styles.profileImageContainer}>
             <Image
-              source={{ uri: 'https://randomuser.me/api/portraits/men/1.jpg' }}
+              source={{
+                uri: user?.profileUrl,
+              }}
               style={styles.profileImage}
             />
             <View style={styles.imageUploadOverlay}>
-              <TouchableOpacity
-                style={styles.uploadButton}
-                onPress={async () => {
-                  const image = await pickImage();
-                  if (image) {
-
-                    console.log(image);
-
-                    // TODO: Upload image to your backend
-                    // await updateUserProfileImage(user._id, image);
-                    // fetchUserById(); // Refresh user data
-                  }
-                }}
-              >
-                <Camera size={24} color="#fff" />
+              <TouchableOpacity style={styles.uploadButton} onPress={handleProfileImageUpload}>
+                <Ionicons name="camera" size={15} color="black" />
               </TouchableOpacity>
             </View>
           </View>
 
           <View style={styles.nameContainer}>
-            <Text style={styles.name}>{user?.name}</Text>
-            <View style={styles.verifiedBadge}>
-              {user?.verified && (
-
+            <Text style={styles.name}>{user?.name || 'Unknown User'}</Text>
+            {user?.verified && (
+              <View style={styles.verifiedBadge}>
                 <Check size={16} color={Colors.white} />
-
-              )}
-            </View>
+              </View>
+            )}
           </View>
-          <Text style={styles.username}>{user?.username}</Text>
-          <Text style={styles.title}>{user?.jobTitle}</Text>
-
+          <Text style={styles.username}>{user?.username || '-'}</Text>
+          <Text style={styles.title}>{user?.jobTitle || '-'}</Text>
 
           <View style={styles.buttonRow}>
-            <Button
-              title="Edit Profile"
-              variant="outline"
-              size="small"
-              onPress={handleEditProfile}
-              style={styles.button}
-            />
-            <Button
-              title="Share Card"
-              variant="outline"
-              size="small"
-              onPress={handleShareCard}
-              style={styles.button}
-            />
-            <Button
-              title="View Business"
-              variant="primary"
-              size="small"
-              onPress={handleViewBusiness}
-              style={styles.button}
-            />
+            <Button title="Edit Profile" variant="outline" size="small" onPress={() => setIsPresent(true)} style={styles.button} />
+            <Button title="Share Card" variant="outline" size="small" onPress={() => console.log('Share card')} style={styles.button} />
+            <Button title="View Business" variant="primary" size="small" onPress={() => console.log('View business')} style={styles.button} />
           </View>
         </View>
 
-        {/* Profile Completion Progress */}
+        {/* Profile Completion */}
         <View style={[styles.card, { marginTop: Spacing.md, marginHorizontal: Spacing.lg }]}>
           <View style={styles.progressHeader}>
             <Text style={styles.progressTitle}>Profile Completion</Text>
-            <Text style={profileCompletion == 100 ? styles.progressPercentSuccess : styles.progressPercent}>{profileCompletion}%</Text>
+            <Text style={profileCompletion === 100 ? styles.progressPercentSuccess : styles.progressPercent}>
+              {profileCompletion}%
+            </Text>
           </View>
           <View style={styles.progressBar}>
             <View
               style={[
-                profileCompletion == 100 ? styles.progressSuccess : styles.progressFill,
-                { width: `${profileCompletion}%` }
+                profileCompletion === 100 ? styles.progressSuccess : styles.progressFill,
+                { width: `${profileCompletion}%` },
               ]}
             />
           </View>
         </View>
 
+        {/* About */}
         <View style={styles.section}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text style={styles.sectionTitle}>About</Text>
-            <TouchableOpacity onPress={handleEditAbout}>
+            <TouchableOpacity onPress={() => setIsAbout(true)}>
               <Edit size={18} color={Colors.primary[900]} style={{ marginLeft: 8 }} />
             </TouchableOpacity>
           </View>
-          <View style={styles.card}>
-            <Text style={styles.aboutText}>{user?.aboutUs}</Text>
-          </View>
+          {user?.aboutUs ? (
+            <View style={styles.card}>
+              <Text style={styles.aboutText}>{user.aboutUs}</Text>
+            </View>
+          ) : (
+            <Text style={{ color: Colors.gray[400] }}>No description available.</Text>
+          )}
         </View>
 
+        {/* Business Details */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Business Details</Text>
           <View style={styles.card}>
-            <View style={styles.detailRow}>
-              <Text style={[styles.detailLabel, { width: '30%' }]}>Business</Text>
-              <Text style={styles.detailValue}>{user?.businessName}</Text>
-            </View>
-            <View style={styles.detailRow}>
-              <Text style={[styles.detailLabel, { width: '30%' }]}>Type</Text>
-              <Text
-                style={styles.detailValue}
-              >
-                {user?.businessType}
-              </Text>
-            </View>
-            <View style={styles.detailRow}>
-              <Text style={[styles.detailLabel, { width: '30%' }]}>GST Number</Text>
-              <Text
-                style={styles.detailValue}
-              >
-                {user?.gstNumber}
-              </Text>
-            </View>
-            <View style={styles.detailRow}>
-              <Text style={[styles.detailLabel, { width: '40%' }]}>Udyam Number</Text>
-              <Text
-                style={styles.detailValue}
-              >
-                {user?.udyamNumber}
-              </Text>
-            </View>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Referrals Programs</Text>
-              <Text style={styles.detailValue}>{5} </Text>
-            </View>
+            {[
+              ['Business', user?.businessName],
+              ['Type', user?.businessType],
+              ['GST Number', user?.gstNumber],
+              ['Udyam Number', user?.udyamNumber],
+              ['Referrals Programs', '5'], // Hardcoded as in your code
+            ].map(([label, value]) => (
+              <View key={label} style={styles.detailRow}>
+                <Text style={[styles.detailLabel, { width: '40%' }]}>{label}</Text>
+                <Text style={styles.detailValue}>{value || '-'}</Text>
+              </View>
+            ))}
           </View>
         </View>
 
-        {/* <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Referral Program</Text>
-          <View style={styles.card}>
-            <Text style={styles.referralText}>{mockUser.referrals} referrals</Text>
-            <Text style={styles.contactText}>{mockUser.phone}</Text>
-            <Text style={styles.contactText}>{mockUser.email}</Text>
-          </View>
-        </View> */}
-
+        {/* Contact Info */}
         <View style={styles.contactSection}>
           <View style={styles.contactInfo}>
-            <View style={styles.contactItem}>
-              <Phone size={20} color={Colors.primary[900]} />
-              <Text style={styles.contactText}>{user?.phone}</Text>
-            </View>
-            <View style={styles.contactItem}>
-              <Mail size={20} color={Colors.primary[900]} />
-              <Text style={styles.contactText}>{user?.email}</Text>
-            </View>
-            <View style={styles.contactItem}>
-              <MapPin size={20} color={Colors.primary[900]} />
-              <Text style={styles.contactText}>{user?.location}</Text>
-            </View>
+            {[
+              [<Phone size={20} color={Colors.primary[900]} />, user?.phone],
+              [<Mail size={20} color={Colors.primary[900]} />, user?.email],
+              [<MapPin size={20} color={Colors.primary[900]} />, user?.location],
+            ].map(([Icon, info], idx) => (
+              <View key={idx} style={styles.contactItem}>
+                {Icon}
+                <Text style={styles.contactText}>{info || '-'}</Text>
+              </View>
+            ))}
           </View>
           <Button
-            title={user?.businessName}
+            title={user?.businessName || 'Business'}
             variant="primary"
             size="small"
-            onPress={handleViewBusiness}
+            onPress={() => console.log('View business')}
             style={styles.businessButton}
           />
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </KeyboardAvoidingView>
+
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
@@ -356,42 +297,47 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   profileImageContainer: {
+    position: 'relative',
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: Colors.gray[200],
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-    overflow: 'hidden',
-    marginBottom: Spacing.md,
     alignSelf: 'center',
-  },
-  imageUploadOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderRadius: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
-    opacity: 0,
-    // @ts-ignore
-    transition: 'opacity 0.3s',
-  },
-  uploadButton: {
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  profileImageContainerActive: {
-    opacity: 1,
+    marginTop: 20,
+    marginBottom: 20,
   },
   profileImage: {
     width: '100%',
     height: '100%',
+    borderRadius: 60,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
+  imageUploadOverlay: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    backgroundColor: Colors.gray[200],
+    borderRadius: 20,
+    padding: 8,
+    zIndex: 1,
+  },
+  uploadButton: {
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.gray[200],
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  profileImageContainerActive: {
+    opacity: 1,
+  },
+  // profileImage: {
+  //   width: '100%',
+  //   height: '100%',
+  // },
   nameContainer: {
     flexDirection: 'row',
     alignItems: 'center',

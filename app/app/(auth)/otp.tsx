@@ -4,8 +4,6 @@ import {
     StyleSheet,
     TextInput,
     TouchableOpacity,
-    KeyboardAvoidingView,
-    Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRef, useState } from 'react';
@@ -13,10 +11,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import useAuthStore from '@/store/useAuthStore';
 import ResendOtp from '@/components/ResendOtp';
-import { useModal } from '@/hooks/useModal';
-import Button from '@/components/common/Button';
-import AppModal from '@/components/modal/AppModal';
-import Form from '@/components/profile/Form';
 
 export default function OTPScreen() {
     const inputRefs = useRef<Array<TextInput | null>>([]);

@@ -1,135 +1,173 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
-import AppModal from "../modal/AppModal";
-import { useModal } from "@/hooks/useModal";
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import useUsersStore from "@/store/useUsersStore";
+import AppModal from '../modal/AppModal';
+import useUsersStore from '@/store/useUsersStore';
 
 type Props = {
     isAbout: boolean;
     onClose?: () => void;
-    userId: string;
-
-}
+    userId?: string;
+};
 
 const About = ({ isAbout, onClose, userId }: Props) => {
-    const modal = useModal();
     const { updateUser } = useUsersStore();
     const [about, setAbout] = useState('');
     const [error, setError] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
+    // Close modal and reset state
     const handleClose = () => {
-        modal.close();
+        setAbout('');
+        setError('');
         onClose?.();
-    }
+    };
 
+    // Handle save/update
     const handleSubmit = async () => {
-        if (!about) {
+        if (!about.trim()) {
             setError('About is required');
             return;
         }
 
-        const resp = await updateUser(userId, { aboutUs: about });
-        if (resp?.data?.statusCode == 201 || resp?.data?.statusCode == 200) {
-            console.log(resp?.data)
-            modal.close();
-            onClose?.();
-        } else {
-            setError("Something went wrong, Please try again")
-
-
+        if (!userId) {
+            setError('Invalid user ID');
+            return;
         }
-        // modal.close();
-    }
+
+        try {
+            setSubmitting(true);
+            const resp = await updateUser(userId, { aboutUs: about });
+
+            if (resp?.data?.statusCode === 200 || resp?.data?.statusCode === 201) {
+                console.log('About updated:', resp?.data);
+                handleClose();
+            } else {
+                setError(resp?.data?.message || 'Something went wrong. Please try again.');
+            }
+        } catch (err) {
+            console.error('Error updating about:', err);
+            setError('Unexpected error occurred. Please try again later.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    // Reset form when modal opens
+    useEffect(() => {
+        if (!isAbout) {
+            setAbout('');
+            setError('');
+        }
+    }, [isAbout]);
+
     return (
-        <AppModal visible={isAbout} onClose={modal.close}>
-            <View style={styles.container}>
-                <Text style={{ fontSize: 18, marginBottom: 10 }}> Update About</Text>
-
-
-
+        <AppModal visible={isAbout} onClose={handleClose}>
+            <KeyboardAvoidingView
+                style={styles.container}
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            >
+                <Text style={styles.title}>Update About</Text>
 
                 <View style={styles.inputContainer}>
                     <TextInput
-                        placeholder="About"
+                        placeholder="Write something about yourself..."
                         value={about}
-                        multiline={true}
-                        numberOfLines={4}
-                        onChangeText={text => setAbout(text)}
-                        style={[styles.input]}
+                        multiline
+                        numberOfLines={6}
+                        onChangeText={(text) => setAbout(text)}
+                        style={styles.input}
                         autoCapitalize="none"
                     />
-
                 </View>
 
-                {error && <Text style={styles.errorText}>{error}</Text>}
+                {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-                <View style={{ flexDirection: 'row', justifyContent: "space-between", width: '95%' }}>
-                    <TouchableOpacity onPress={handleClose} style={styles.button}>
-                        <LinearGradient colors={['#1F73C6', '#F7941E']}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 0 }} style={styles.button}>
-                            <Text style={styles.buttonText}>Close</Text>
-                        </LinearGradient>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={handleSubmit} style={styles.button}>
-                        <LinearGradient colors={['#1F73C6', '#F7941E']}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 0 }} style={styles.button}>
-                            <Text style={styles.buttonText}>Save</Text>
-                        </LinearGradient>
-                    </TouchableOpacity>
+                <View style={styles.buttonRow}>
+                    <GradientButton title="Close" onPress={handleClose} />
+                    <GradientButton title={submitting ? 'Saving...' : 'Save'} onPress={handleSubmit} disabled={submitting} />
                 </View>
-            </View>
+            </KeyboardAvoidingView>
         </AppModal>
     );
 };
 
 export default About;
 
+// ------------------ Gradient Button Component ------------------
+type ButtonProps = {
+    title: string;
+    onPress: () => void;
+    disabled?: boolean;
+};
+
+const GradientButton = ({ title, onPress, disabled }: ButtonProps) => (
+    <TouchableOpacity onPress={onPress} style={styles.button} disabled={disabled}>
+        <LinearGradient
+            colors={['#1F73C6', '#F7941E']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.gradient}
+        >
+            <Text style={styles.buttonText}>{title}</Text>
+        </LinearGradient>
+    </TouchableOpacity>
+);
+
+// ------------------ Styles ------------------
 const styles = StyleSheet.create({
-    button: {
-        padding: 10,
-        borderRadius: 5,
-        // margin: 10,
-    },
     container: {
-        // margin: 10,
-        flexDirection: 'column',
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        paddingHorizontal: 20,
     },
-    buttonText: {
-        color: '#fff',
-        fontSize: 12,
-        textAlign: 'center',
+    title: {
+        fontSize: 18,
+        marginBottom: 15,
+        fontWeight: '600',
+        color: '#333',
     },
     inputContainer: {
-        maxWidth: "90%",
-        flexDirection: 'row',
-        alignItems: 'center',
+        width: '100%',
         borderWidth: 1,
-
         borderColor: '#ddd',
         borderRadius: 12,
         paddingHorizontal: 12,
-        marginVertical: 5,
-        width: '100%',
-
-    },
-    inputIcon: {
-        marginRight: 8,
+        paddingVertical: 6,
+        marginVertical: 10,
+        backgroundColor: '#fff',
     },
     input: {
-        flex: 1,
-
-        height: 200,
+        minHeight: 120,
+        fontSize: 14,
         textAlignVertical: 'top',
+        color: '#333',
     },
     errorText: {
         color: 'red',
         fontSize: 12,
         marginTop: 5,
+        textAlign: 'center',
+    },
+    buttonRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
+        marginTop: 20,
+    },
+    button: {
+        flex: 1,
+        marginHorizontal: 5,
+    },
+    gradient: {
+        paddingVertical: 10,
+        borderRadius: 8,
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 13,
+        textAlign: 'center',
+        fontWeight: '500',
     },
 });
