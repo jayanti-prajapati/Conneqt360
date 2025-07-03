@@ -69,7 +69,7 @@ export class CommunityService {
     // Otherwise return all using populate
     return this.communityRepo
       .findAll({ isDeleted: false })
-      .populate("user", "username email phone businessName businessType")
+      .populate("user", "username email phone businessName businessType profileUrl")
       .populate("comments.user", "username phone")
       .sort({ createdAt: -1 });
   }
