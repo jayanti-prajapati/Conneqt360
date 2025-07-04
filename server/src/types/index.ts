@@ -58,6 +58,13 @@ export interface ICustomFile {
 export interface ICustomFileDocument extends ICustomFile, Document {
   _id: Types.ObjectId;
 }
+
+export interface IChat extends Document {
+  senderId?: IUser["_id"];
+  receiverId?: IUser["_id"];
+  message?: Text;
+  timestamp?: Date;
+}
 export interface ICircle extends Document {
   name: string;
   description: string;
