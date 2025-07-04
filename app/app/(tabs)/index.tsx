@@ -160,6 +160,7 @@ export default function HomeScreen() {
               <FeedCard
                 id={item?._id}
                 phone={item?.user?.phone}
+                profileImage={item?.user?.profileUrl}
                 userId={users?._id}
                 username={item?.user?.username}
                 businessName={item?.user?.businessName}

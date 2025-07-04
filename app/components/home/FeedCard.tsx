@@ -27,6 +27,7 @@ interface FeedCardProps {
   comments: number;
   videoUrl: string;
   verified?: boolean;
+  profileImage?: string;
   isVisible?: boolean;
   likesIds?: string[];
   onLike: (id: string, likes: string[]) => void;
@@ -55,6 +56,7 @@ export default function FeedCard({
   onShare,
   onMoreOptions,
   onPress,
+  profileImage,
   isVisible = false,
   verified = false,
 }: FeedCardProps) {
@@ -80,11 +82,19 @@ export default function FeedCard({
         <View style={styles.header}>
           <View style={styles.profileContainer}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{username?.charAt(0) ? username?.charAt(0)?.toUpperCase() : "U"}</Text>
+              {profileImage ? (
+                <Image
+                  source={{ uri: profileImage }}
+                  style={{ width: '100%', height: '100%', borderRadius: 20 }}
+                />
+              ) : (
+                <Text style={styles.avatarText}>{username?.charAt(0)?.toUpperCase() || "U"}</Text>
+              )}
+              {/* <Text style={styles.avatarText}>{username?.charAt(0) ? username?.charAt(0)?.toUpperCase() : "U"}</Text> */}
             </View>
             <View style={styles.userInfo}>
               <View style={styles.nameContainer}>
-                <Text style={styles.businessName}>{businessName}</Text>
+                <Text style={styles.businessName}>{businessName || "Unknown User"}</Text>
                 {verified && (
                   <View style={styles.verifiedBadge}>
                     <Text style={styles.verifiedText}>✓</Text>

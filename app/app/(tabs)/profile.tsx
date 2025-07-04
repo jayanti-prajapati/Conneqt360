@@ -15,6 +15,7 @@ import useUsersStore from '@/store/useUsersStore';
 import CustomLoader from '@/components/loader/CustomLoader';
 import About from '@/components/profile/About';
 import { Ionicons } from '@expo/vector-icons';
+import Typography from '@/constants/Typography';
 
 // Mock user data
 
@@ -65,6 +66,7 @@ export default function ProfileScreen() {
       'name',
       'jobTitle',
       'email',
+      'phone',
       'username',
       'businessName',
       'businessType',
@@ -75,6 +77,7 @@ export default function ProfileScreen() {
       'profileUrl',
     ];
     const completed = fields?.filter((field) => !!userData[field]).length;
+    if (completed === 0) return 0; // Avoid division by zero
     return Math.round((completed / fields?.length) * 100);
   };
 
@@ -107,13 +110,14 @@ export default function ProfileScreen() {
 
   return (
 
+    // <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <Form isPresent={isPresent} onClose={close} closeText="Close" users={user} />
       <About isAbout={isAbout} onClose={close} userId={user?._id} />
-      <CustomLoader visible={loading} />
+      {loading && <CustomLoader visible={loading} />}
 
       {/* Header */}
       <View style={styles.header}>
@@ -134,12 +138,18 @@ export default function ProfileScreen() {
         {/* Profile Section */}
         <View style={styles.profileSection}>
           <View style={styles.profileImageContainer}>
-            <Image
-              source={{
-                uri: user?.profileUrl,
-              }}
-              style={styles.profileImage}
-            />
+            {user?.profileUrl ?
+              <Image
+                source={{
+                  uri: user?.profileUrl,
+                }}
+                style={styles.profileImage}
+              /> :
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>{user?.username?.charAt(0) ? user?.username?.charAt(0)?.toUpperCase() : "U"}</Text>
+              </View>
+            }
+
             <View style={styles.imageUploadOverlay}>
               <TouchableOpacity style={styles.uploadButton} onPress={handleProfileImageUpload}>
                 <Ionicons name="camera" size={15} color="black" />
@@ -243,7 +253,7 @@ export default function ProfileScreen() {
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
-
+    // </SafeAreaView>
   );
 }
 
@@ -251,9 +261,26 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: Spacing.md,
     backgroundColor: Colors.white,
   },
-
+  avatarText: {
+    // width: '100%',
+    // height: '100%',
+    color: Colors.primary[700],
+    fontSize: 40,
+    fontWeight: Typography.weight.bold as any,
+  },
+  avatar: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 60,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    backgroundColor: Colors.primary[100],
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -483,6 +510,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: Spacing.lg,
+    marginBottom: Spacing.md,
+    // paddingBottom: Spacing.md,
     borderBottomWidth: 2,
     borderBottomColor: Colors.gray[100],
   },
