@@ -64,6 +64,9 @@ export interface IChat extends Document {
   receiverId?: IUser["_id"];
   message?: Text;
   timestamp?: Date;
+  isRead?: boolean;
+  isDeleted?: boolean;
+  attachments?: JSON;
 }
 export interface ICircle extends Document {
   name: string;

@@ -8,16 +8,22 @@ export class ChatService {
         return this.chatRepo.create(chatData);
     }
 
-    async getAll() {
-        return this.chatRepo.findAll()
-        .populate("senderId",   "username email phone businessName businessType profileUrl")
-      .populate("receiverId", "username email phone businessName businessType profileUrl")
-      .sort({ timestamp: -1 })
-    }
+    // async getAll() {
+    //     return this.chatRepo.findAll()
+    //     .populate("senderId",   "username email phone businessName businessType profileUrl")
+    //   .populate("receiverId", "username email phone businessName businessType profileUrl")
+    //   .sort({ timestamp: -1 })
+    // }
 
-    async getMessageByUser(userId: string) {
-        return this.chatRepo.findByUser(userId);
-    }
+    async getConversation(userA: string, userB: string) {
+    const messages = await this.chatRepo.getConversation(userA, userB);
+    await this.chatRepo.markMessagesAsRead(userB, userA); 
+    return messages;
+  }
+
+  async getUserChatList(userId: string) {
+  return this.chatRepo.getLatestChatsForUser(userId);
+}
 
     
 }
