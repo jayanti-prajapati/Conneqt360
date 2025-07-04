@@ -1,4 +1,6 @@
+import useFilesStore from '@/store/useFilesStore';
 import * as ImagePicker from 'expo-image-picker';
+import { use } from 'react';
 import { Alert, Platform } from 'react-native';
 
 export const pickImage = async (): Promise<string | null> => {
@@ -19,10 +21,21 @@ export const pickImage = async (): Promise<string | null> => {
       quality: 0.5,
       base64: true,
     });
+    // console.log('ImagePicker result:', result.assets[0]);
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      const base64Image = `data:image/jpeg;base64,${result.assets[0].base64}`;
-      return base64Image;
+      // const base64Image = `data:image/jpeg;base64,${result.assets[0].base64}`;
+      const { uploadFile } = useFilesStore.getState();
+      const file = {
+        uri: result.assets[0].uri,
+        name: result.assets[0].fileName,
+        type: result.assets[0].mimeType,
+      };
+      // console.log('File upload response:', result.assets[0]);
+      const data = await uploadFile(file);
+
+
+      return "http://84.247.177.87/api/custom-file/fetch-doc?fileName=" + data?.data?.data?.fileName;
     }
     return null;
   } catch (error) {

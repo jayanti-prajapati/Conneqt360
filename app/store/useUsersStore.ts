@@ -25,7 +25,7 @@ const useUsersStore = create<UsersStore>((set) => ({
   fetchUserByPhoneNumber: async (phone: string) => {
     set({ loading: true });
     try {
-      const res = await axios.get(`${API_URL}/auth/${phone}`);
+      const res = await axios.get(`${API_URL}/user/phone/${phone}`);
       set({ loading: false });
       return res;
     } catch (err: any) {

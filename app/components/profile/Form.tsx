@@ -1,24 +1,33 @@
-import { Button, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import AppModal from "../modal/AppModal";
 import { useModal } from "@/hooks/useModal";
 import { LinearGradient } from "expo-linear-gradient";
-import { Feather } from "@expo/vector-icons";
 import { useEffect, useState, useCallback } from "react";
-
 import useUsersStore from "@/store/useUsersStore";
 import { clearAuthData, getAuthData } from "@/services/secureStore";
 import { useRouter } from "expo-router";
+
+// Reusable gradient button component
+const GradientButton = ({ title, onPress }: { title: string; onPress: () => void }) => (
+    <TouchableOpacity onPress={onPress} style={styles.button}>
+        <LinearGradient colors={["#1F73C6", "#F7941E"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.button}>
+            <Text style={styles.buttonText}>{title}</Text>
+        </LinearGradient>
+    </TouchableOpacity>
+);
 
 type Props = {
     isPresent?: boolean;
     onClose?: () => void;
     closeText?: string;
-    users?: any
-}
-export default function Form({ isPresent, onClose, closeText, users }: Props) {
+    users?: any;
+};
+
+export default function Form({ isPresent, onClose, closeText = "Skip", users }: Props) {
     const modal = useModal();
     const router = useRouter();
     const { fetchUserByPhoneNumber, updateUser } = useUsersStore();
+
     const [userData, setUserData] = useState<any>(null);
     const [isVisible, setIsVisible] = useState(false);
     const [formData, setFormData] = useState({
@@ -31,381 +40,145 @@ export default function Form({ isPresent, onClose, closeText, users }: Props) {
         udyamNumber: '',
         gstNumber: '',
         address: '',
-
     });
 
-    const [errors, setErrors] = useState({
-        name: '',
-        jobTitle: '',
-        email: '',
-        username: '',
-        businessName: '',
-        businessType: '',
-        udyamNumber: '',
-        gstNumber: '',
-        address: '',
-        apiError: '',
-    });
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
-        // Update form data when users prop changes
         setFormData({
-            name: users?.name || '',
-            jobTitle: users?.jobTitle || '',
-            email: users?.email || '',
-            username: users?.username || '',
-            businessName: users?.businessName || '',
-            businessType: users?.businessType || '',
-            udyamNumber: users?.udyamNumber || '',
-            gstNumber: users?.gstNumber || '',
-            address: users?.location || '',
-
+            name: users?.name ?? '',
+            jobTitle: users?.jobTitle ?? '',
+            email: users?.email ?? '',
+            username: users?.username ?? '',
+            businessName: users?.businessName ?? '',
+            businessType: users?.businessType ?? '',
+            udyamNumber: users?.udyamNumber ?? '',
+            gstNumber: users?.gstNumber ?? '',
+            address: users?.location ?? '',
         });
     }, [users]);
 
     useEffect(() => {
-
         const fetchData = async () => {
-            const authData = await getAuthData();
-            // console.log('Auth Data:', authData);
-            const resp = await fetchUserByPhoneNumber(authData?.userData?.data?.phone)
-            // console.log('Authrr Data:', resp.data);
-            if (resp?.data?.statusCode == 200) {
-                setUserData(resp.data.data);
-                console.log('User Data:', resp?.data?.data?.isSkip);
+            try {
+                const authData = await getAuthData();
+                const resp = await fetchUserByPhoneNumber(authData?.userData?.data?.phone);
 
-                setIsVisible(!(resp?.data?.data?.isSkip))
-                return;
+                if (resp?.data?.statusCode === 200) {
+                    setUserData(resp.data.data);
+                    setIsVisible(!resp.data.data?.isSkip);
+                } else {
+                    clearAuthData();
+                    router.replace('/(auth)/login');
+                }
+            } catch (error) {
+                console.error("Error fetching user by phone number:", error);
             }
-            else {
-                clearAuthData();
-                router.replace('/(auth)/login');
-            }
-
-
-        }
+        };
         fetchData();
-
-
     }, [fetchUserByPhoneNumber]);
 
+    const validateForm = () => {
+        const newErrors: Record<string, string> = {};
+
+        if (!formData.email || !/^\S+@\S+\.\S+$/.test(formData.email)) newErrors.email = "Enter a valid email";
+        if (!formData.businessName) newErrors.businessName = "Business name is required";
+        if (!formData.username) newErrors.username = "Username is required";
+        if (!formData.name) newErrors.name = "Name is required";
+        if (!formData.jobTitle) newErrors.jobTitle = "Job title is required";
+        if (!formData.businessType) newErrors.businessType = "Business type is required";
+        if (!formData.udyamNumber) newErrors.udyamNumber = "Udyam number is required";
+        if (!formData.gstNumber) newErrors.gstNumber = "GST number is required";
+        if (!formData.address) newErrors.address = "Address is required";
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     const handleChange = (field: string, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
-        setErrors(prev => ({ ...prev, [field]: '' })); // Clear error on change
+        setErrors(prev => ({ ...prev, [field]: '' }));
     };
-
-
-
 
     const handleSkip = async () => {
-        if (isPresent) {
-            onClose?.();
-            return;
-        }
-        setErrors({
-            name: '',
-            jobTitle: '',
-            email: '',
-            username: '',
-            businessName: '',
-            businessType: '',
-            udyamNumber: '',
-            gstNumber: '',
-            address: '',
-            apiError: '',
-        })
+        try {
+            if (isPresent) return onClose?.();
 
-        modal.close();
-        const resp = await updateUser(userData?._id, { isSkip: true });
-
-        if (resp?.data?.statusCode == 201 || resp?.data?.statusCode == 200) {
-
-            setUserData(resp.data.data);
-            setIsVisible(false);
-        } else {
-            console.error('Error creating user:', resp.data.message);
-            setErrors({
-                apiError: resp.data.error,
-                name: "",
-                jobTitle: "",
-                email: "",
-                username: "",
-                businessName: "",
-                businessType: "",
-                udyamNumber: "",
-                gstNumber: "",
-                address: "",
-            })
-
-        }
-    }
-    const handleSubmit = async () => {
-        let valid = true;
-        let newErrors: typeof errors = {
-            name: '',
-            jobTitle: '',
-            email: '',
-            username: '',
-            businessName: '',
-            businessType: '',
-            udyamNumber: '',
-            gstNumber: '',
-            address: '',
-            apiError: '',
-        };
-
-        if (!formData.email || !/^\S+@\S+\.\S+$/.test(formData.email)) {
-            newErrors.email = 'Enter a valid email';
-            valid = false;
-        }
-
-        if (!formData.businessName) {
-            newErrors.businessName = 'Business name is required';
-            valid = false;
-        }
-
-        if (!formData.username) {
-            newErrors.username = 'Username is required';
-            valid = false;
-        }
-
-        if (!formData.name) {
-            newErrors.name = 'Name is required';
-            valid = false;
-        }
-
-        if (!formData.jobTitle) {
-            newErrors.jobTitle = 'Job Title is required';
-            valid = false;
-        }
-        if (!formData.businessType) {
-            newErrors.businessType = 'Business type is required';
-            valid = false;
-        }
-
-        if (!formData.udyamNumber) {
-            newErrors.udyamNumber = 'Udyam number is required';
-            valid = false;
-        }
-
-        if (!formData.gstNumber) {
-            newErrors.gstNumber = 'GST number is required';
-            valid = false;
-        }
-
-        if (!formData.address) {
-            newErrors.address = 'Address is required';
-            valid = false;
-        }
-
-        setErrors(newErrors);
-
-        if (valid) {
-
-            const resp = await updateUser(userData?._id, { ...formData, isSkip: true, location: formData.address });
-            if (resp?.data?.statusCode == 201 || resp?.data?.statusCode == 200) {
+            modal.close();
+            const resp = await updateUser(userData?._id, { isSkip: true });
+            if (resp?.data?.statusCode === 201 || resp?.data?.statusCode === 200) {
                 setUserData(resp.data.data);
                 setIsVisible(false);
-                onClose?.()
             } else {
-                setErrors({
-                    apiError: 'Something went wrong, Please try again',
-                    name: "",
-                    jobTitle: "",
-                    email: "",
-                    username: "",
-                    businessName: "",
-                    businessType: "",
-                    udyamNumber: "",
-                    gstNumber: "",
-                    address: "",
-                })
-                console.error('Error creating user:', resp.data.message);
-
+                throw new Error(resp.data?.error || 'Unknown error');
             }
-            // modal.close();
+        } catch (error: any) {
+            setErrors({ apiError: error.message });
+            console.error("Error skipping profile update:", error);
         }
     };
 
+    const handleSubmit = async () => {
+        if (!validateForm()) return;
+
+        try {
+            const resp = await updateUser(userData?._id, { ...formData, isSkip: true, location: formData.address });
+            if (resp?.data?.statusCode === 201 || resp?.data?.statusCode === 200) {
+                setUserData(resp.data.data);
+                setIsVisible(false);
+                onClose?.();
+            } else {
+                throw new Error(resp.data?.message || "Failed to update user");
+            }
+        } catch (error: any) {
+            console.error("Error updating user:", error);
+            setErrors({ apiError: error.message });
+        }
+    };
+
+    const renderField = (placeholder: string, field: keyof typeof formData) => (
+        <View style={styles.inputContainer}>
+            <TextInput
+                placeholder={placeholder}
+                value={formData[field]}
+                onChangeText={(text) => handleChange(field, text)}
+                style={[styles.input, errors[field] && { borderColor: 'red' }]}
+                autoCapitalize="none"
+            />
+            {errors[field] && <Text style={{ color: 'red' }}>{errors[field]}</Text>}
+        </View>
+    );
+
     return (
-
-
-        <AppModal visible={isPresent ? isPresent : isVisible} onClose={modal.close}>
+        <AppModal visible={!!(isPresent ?? isVisible)} onClose={modal.close}>
             <View style={styles.container}>
-                <Text style={{ fontSize: 18, marginBottom: 10 }}> Update Profile</Text>
+                <Text style={{ fontSize: 18, marginBottom: 10 }}>Update Profile</Text>
 
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        placeholder="Name"
-                        value={formData.name}
-                        onChangeText={text => handleChange('name', text)}
-                        style={[styles.input, errors.name && { borderColor: 'red' }]}
+                {renderField("Name", "name")}
+                {renderField("Job Title", "jobTitle")}
+                {renderField("Email Address", "email")}
+                {renderField("Username", "username")}
+                {renderField("Business Name", "businessName")}
+                {renderField("Business Type", "businessType")}
+                {renderField("Udyam Number", "udyamNumber")}
+                {renderField("GST Number", "gstNumber")}
+                {renderField("Address/Location", "address")}
 
-                        autoCapitalize="none"
-                    />
-
-                </View>
-                {errors.name ? <Text style={{ color: 'red' }}>{errors.name}</Text> : null}
-
-
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        placeholder="Job Title"
-                        value={formData.jobTitle}
-                        onChangeText={text => handleChange('jobTitle', text)}
-                        style={[styles.input, errors.jobTitle && { borderColor: 'red' }]}
-                        autoCapitalize="none"
-                    />
-
-                </View>
-
-                {errors.jobTitle ? <Text style={{ color: 'red' }}>{errors.jobTitle}</Text> : null}
-
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        placeholder="Email Address"
-                        value={formData.email}
-                        onChangeText={text => handleChange('email', text)}
-                        style={[styles.input, errors.email && { borderColor: 'red' }]}
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                    />
-
-                </View>
-                {errors.email ? <Text style={{ color: 'red' }}>{errors.email}</Text> : null}
-
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        placeholder="Username"
-                        value={formData.username}
-                        onChangeText={text => handleChange('username', text)}
-                        style={[styles.input, errors.username && { borderColor: 'red' }]}
-
-                        autoCapitalize="none"
-                    />
-
-                </View>
-                {errors.username ? <Text style={{ color: 'red' }}>{errors.username}</Text> : null}
-
-
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        placeholder="Business Name"
-                        value={formData.businessName}
-                        onChangeText={text => handleChange('businessName', text)}
-                        style={[styles.input, errors.businessName && { borderColor: 'red' }]}
-                        autoCapitalize="none"
-                    />
-
-                </View>
-
-                {errors.businessName ? <Text style={{ color: 'red' }}>{errors.businessName}</Text> : null}
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        placeholder="Business Type"
-                        value={formData.businessType}
-                        onChangeText={text => handleChange('businessType', text)}
-                        style={[styles.input, errors.businessType && { borderColor: 'red' }]}
-                        autoCapitalize="none"
-                    />
-
-                </View>
-                {errors.businessType ? <Text style={{ color: 'red' }}>{errors.businessType}</Text> : null}
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        placeholder="Udyam Number"
-                        value={formData.udyamNumber}
-                        onChangeText={text => handleChange('udyamNumber', text)}
-                        style={[styles.input, errors.udyamNumber && { borderColor: 'red' }]}
-                        autoCapitalize="none"
-                    />
-
-                </View>
-                {errors.udyamNumber ? <Text style={{ color: 'red' }}>{errors.udyamNumber}</Text> : null}
-
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        placeholder="GST Number"
-                        value={formData.gstNumber}
-                        onChangeText={text => handleChange('gstNumber', text)}
-                        style={[styles.input, errors.gstNumber && { borderColor: 'red' }]}
-                        autoCapitalize="none"
-                    />
-
-                </View>
-                {errors.gstNumber ? <Text style={{ color: 'red' }}>{errors.gstNumber}</Text> : null}
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        placeholder="Address/Location"
-                        value={formData.address}
-                        onChangeText={text => handleChange('address', text)}
-                        style={[styles.input, errors.address && { borderColor: 'red' }]}
-                        autoCapitalize="none"
-                    />
-
-                </View>
-                {errors.address ? <Text style={{ color: 'red' }}>{errors.address}</Text> : null}
-
-                {errors.apiError ? <Text style={{ color: 'red' }}>{errors.apiError}</Text> : null}
+                {errors.apiError && <Text style={{ color: 'red' }}>{errors.apiError}</Text>}
 
                 <View style={{ flexDirection: 'row', justifyContent: "space-between", width: '95%' }}>
-                    <TouchableOpacity onPress={handleSkip} style={styles.button}>
-                        <LinearGradient colors={['#1F73C6', '#F7941E']}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 0 }} style={styles.button}>
-                            <Text style={styles.buttonText}>{closeText}</Text>
-                        </LinearGradient>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={handleSubmit} style={styles.button}>
-                        <LinearGradient colors={['#1F73C6', '#F7941E']}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 0 }} style={styles.button}>
-                            <Text style={styles.buttonText}>Submit</Text>
-                        </LinearGradient>
-                    </TouchableOpacity>
+                    <GradientButton title={closeText} onPress={handleSkip} />
+                    <GradientButton title="Submit" onPress={handleSubmit} />
                 </View>
             </View>
         </AppModal>
-
     );
 }
 
 const styles = StyleSheet.create({
-    button: {
-        padding: 10,
-        borderRadius: 5,
-        // margin: 10,
-    },
-    container: {
-        // margin: 10,
-        flexDirection: 'column',
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    buttonText: {
-        color: '#fff',
-        fontSize: 12,
-        textAlign: 'center',
-    },
-    inputContainer: {
-        maxWidth: "90%",
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 12,
-        paddingHorizontal: 12,
-        marginVertical: 5,
-        width: '100%',
-
-    },
-    inputIcon: {
-        marginRight: 8,
-    },
-    input: {
-        flex: 1,
-        height: 44,
-    },
+    button: { padding: 10, borderRadius: 5 },
+    container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    buttonText: { color: '#fff', fontSize: 12, textAlign: 'center' },
+    inputContainer: { width: '90%', marginVertical: 5 },
+    input: { height: 44, borderWidth: 1, borderColor: '#ddd', borderRadius: 12, paddingHorizontal: 12 },
 });

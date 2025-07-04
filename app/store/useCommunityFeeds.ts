@@ -10,7 +10,7 @@ interface CommunityFeedsStore {
     response: any;
 
     createFeed: (data: any) => Promise<any>;
-    getAllFeeds: () => Promise<any>;
+    getAllFeeds: (searchQuery?: string) => Promise<any>;
     getFeedById: (id: string) => Promise<any>;
     updateFeed: (id: string, data: Partial<any>) => Promise<any>;
     deleteFeed: (id: string) => Promise<any>;
@@ -34,12 +34,19 @@ const useCommunityFeedsStore = create<CommunityFeedsStore>((set) => ({
         }
     },
 
-    getAllFeeds: async () => {
-        set({ loading: true, error: null });
+    getAllFeeds: async (searchQuery?: string) => {
+
         try {
-            const res = await axios.get(`${API_URL}/community-feeds`);
-            set({ response: res.data, loading: false });
-            return res;
+            if (searchQuery) {
+                const res = await axios.get(`${API_URL}/community-feeds?search=${searchQuery}`);
+                set({ response: res.data, loading: false });
+                return res;
+            } else {
+                set({ loading: true, error: null });
+                const res = await axios.get(`${API_URL}/community-feeds`);
+                set({ response: res.data, loading: false });
+                return res;
+            }
         } catch (err: any) {
             set({ error: err?.response?.data?.message || 'Failed to fetch feeds', loading: false });
             return err?.response;
