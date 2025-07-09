@@ -15,18 +15,29 @@ export class CommunityRepository extends BaseRepository<IPost> {
     return Community_Feeds.getFeedByUserId({ user: userId, ...extraFilter });
   }
 
-  async update(id: string, data: Partial<IPost>, condition: any) {
+  async update(id: string, data: Partial<IPost>, condition: any = {}) {
   const updateData: any = {};
+  const setData: any = {};
   const directFields = ["content", "imageUrl", "videoUrl", "description", "share"];
 
- 
+  
   for (const field of directFields) {
     if (data[field as keyof IPost] !== undefined) {
-      updateData[field] = data[field as keyof IPost];
+      setData[field] = data[field as keyof IPost];
     }
   }
 
  
+  if (data.likes !== undefined) {
+    setData.likes = Array.isArray(data.likes) ? data.likes : [];
+  }
+
+ 
+  if (Object.keys(setData).length > 0) {
+    updateData.$set = setData;
+  }
+
+
   if (data.comments && Array.isArray(data.comments)) {
     updateData.$push = {
       comments: {
@@ -35,23 +46,27 @@ export class CommunityRepository extends BaseRepository<IPost> {
           content: comment.content,
           createdAt: comment.createdAt || new Date(),
         })),
+        $position: 0
       },
     };
   }
 
-    if (data.likes && Array.isArray(data.likes)) {
-    updateData.$addToSet = {
-      ...(updateData.$addToSet || {}),
-      likes: { $each: data.likes },
-    };
-  }
 
-  return this.model
-    .findOneAndUpdate({ _id: id, ...condition }, updateData, { new: true })
+  const updateOp = Object.keys(updateData).length > 0 ? updateData : { likes: [] };
+
+  const updatedPost = await this.model
+    .findOneAndUpdate({ _id: id, ...condition }, updateOp, { new: true })
     .populate("user", "name username email phone businessName businessType profileUrl")
     .populate("comments.user", "name username email phone businessName businessType profileUrl");
-}
-
 
   
+  if (updatedPost && Array.isArray(updatedPost.comments)) {
+    updatedPost.comments.sort((a, b) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }
+
+  return updatedPost;
+}
+
 }
