@@ -46,7 +46,15 @@ export class CommunityService {
             share: 1,
             likes: 1,
             comments: {
-              user: 1,
+              user: {
+              _id: 1,
+              name: 1,
+              username: 1,
+              businessName: 1,
+              businessType: 1,
+              email: 1,
+              phone: 1,
+            },
               content: 1,
               _id: 1,
               createdAt: 1,
@@ -54,6 +62,7 @@ export class CommunityService {
             createdAt: 1,
             user: {
               _id: 1,
+              name: 1,
               username: 1,
               businessName: 1,
               businessType: 1,
@@ -69,16 +78,16 @@ export class CommunityService {
     // Otherwise return all using populate
     return this.communityRepo
       .findAll({ isDeleted: false })
-      .populate("user", "username email phone businessName businessType profileUrl")
-      .populate("comments.user", "username phone")
+      .populate("user", "name username email phone businessName businessType profileUrl")
+      .populate("comments.user", "name username email phone businessName businessType profileUrl")
       .sort({ createdAt: -1 });
   }
 
   async getById(id: string) {
     return this.communityRepo
       .findById(id, { isDeleted: false })
-      .populate("user", "username email phone businessName businessType")
-      .populate("comments.user", "username phone")
+      .populate("user", "name username email phone businessName businessType")
+      .populate("comments.user", "name username email phone businessName businessType profileUrl")
       .sort({ createdAt: -1 });
   }
 

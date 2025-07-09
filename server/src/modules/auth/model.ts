@@ -58,6 +58,92 @@ const authSchema = new Schema<IUser>({
     required: false,
     default: null,
   },
+  businessEmail: {
+    type: String,
+    required: false,
+    default: null,
+  },
+  website: {
+    type: String,
+    required: false,
+    default: null,
+  },
+  address: {
+    type: String,
+    required: false,
+    default: null,
+  },
+  city: {
+    type: String,
+    required: false,
+    default: null,
+  },
+  state: {
+    type: String,
+    required: false,
+    default: null,
+  },
+  postalCode: {
+    type: Number,
+    required: false,
+    default: null,
+  },
+  country: {
+    type: String,
+    required: false,
+    default: null,
+  },
+  socialMedia: {
+  type: Object,
+  required: false,
+  default: null,
+},
+
+ services: {
+  type: [String],
+  required: false,
+  default: [],
+},
+ clients: {
+  type: [
+    {
+      id: String,
+      name: String,
+      logo: String,
+      testimonial: String,
+      rating: Number,
+      projectType: String,
+      completedDate: Date,
+    },
+  ],
+  required: false,
+  default: [],
+},
+  // catalog: {
+  //   type: String,
+  //   required: false,
+  //   default: null,
+  // },
+  followersCount: {
+    type: Number,
+    required: false,
+    default: null,
+  },
+  postsCount: {
+    type: Number,
+    required: false,
+    default: null,
+  },
+  isOnline: {
+    type: Boolean,
+    required: false,
+    default: null,
+  },
+  lastSeen: {
+    type: Date,
+    required: false,
+    default: null,
+  },
   profileUrl: {
     type: String,
     required: false,
@@ -86,7 +172,6 @@ const authSchema = new Schema<IUser>({
   verified: {
     type: Boolean,
     default: false,
-
   },
   gstNumber: {
     type: String,
