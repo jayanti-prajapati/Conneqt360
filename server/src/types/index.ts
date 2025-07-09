@@ -11,18 +11,47 @@ export interface IUser extends Document {
   products?: number;
   rating?: number;
   businessName?: string;
+  businessEmail?: string;
   businessType?: string;
   jobTitle?: string;
   referrels?: number;
   verified?: boolean;
   isSkip?: boolean;
+  website?: string;
   gstNumber?: string;
+  address: string;
+  city: string;
+  state: string;
+  postalCode: number;
+  country: string;
+  socialMedia?: {
+    linkedin?: string;
+    twitter?: string;
+    instagram?: string;
+    facebook?: string;
+    youtube?: string;
+  };
+  services?: string[];
+  clients?: {
+    id: string;
+    name: string;
+    logo: string;
+    testimonial: string;
+    rating: number;
+    projectType: string;
+    completedDate: Date;
+  }[];
+  catalog: string;
   //confirmPassword: String,
   udyamNumber?: string;
   interests?: string[];
   aboutUs?: Text;
   profileUrl?: string;
   thumbnail?: string;
+  followersCount?: number;
+  postsCount?: number;
+  isOnline?: boolean;
+  lastSeen?: Date;
   createdAt: Date;
   status: string;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -53,7 +82,6 @@ export interface ICustomFile {
   uploadedBy?: string;
   createdAt?: Date;
 }
-
 
 export interface ICustomFileDocument extends ICustomFile, Document {
   _id: Types.ObjectId;

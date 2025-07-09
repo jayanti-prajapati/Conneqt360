@@ -70,7 +70,7 @@ export class CommunityService {
     return this.communityRepo
       .findAll({ isDeleted: false })
       .populate("user", "username email phone businessName businessType profileUrl")
-      .populate("comments.user", "username phone")
+      .populate("comments.user", "username email phone businessName businessType profileUrl")
       .sort({ createdAt: -1 });
   }
 
@@ -78,7 +78,7 @@ export class CommunityService {
     return this.communityRepo
       .findById(id, { isDeleted: false })
       .populate("user", "username email phone businessName businessType")
-      .populate("comments.user", "username phone")
+      .populate("comments.user", "username email phone businessName businessType profileUrl")
       .sort({ createdAt: -1 });
   }
 
