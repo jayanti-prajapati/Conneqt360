@@ -67,8 +67,8 @@ export interface IPostModel extends Model<IPost> {
 
 feedSchema.statics.getFeedByUserId = function (filter) {
   return this.find(filter)
-    .populate("user", "username email phone businessName businessType")
-    .populate("comments.user", "username phone")
+    .populate("user", "name username email phone businessName businessType")
+    .populate("comments.user", "name username email phone businessName businessType")
     .sort({ createdAt: -1 });
 };
 
