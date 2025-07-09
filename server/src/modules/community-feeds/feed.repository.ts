@@ -39,6 +39,13 @@ export class CommunityRepository extends BaseRepository<IPost> {
     };
   }
 
+    if (data.likes && Array.isArray(data.likes)) {
+    updateData.$addToSet = {
+      ...(updateData.$addToSet || {}),
+      likes: { $each: data.likes },
+    };
+  }
+
   return this.model
     .findOneAndUpdate({ _id: id, ...condition }, updateData, { new: true })
     .populate("user", "name username email phone businessName businessType profileUrl")

@@ -109,6 +109,21 @@ export class CommunityController {
       }
     }
 
+      if (req.body.likes) {
+      const likes = Array.isArray(req.body.likes)
+        ? req.body.likes
+        : [req.body.likes];
+
+      const validLikes = likes.filter((like) => typeof like === "string");
+
+      if (validLikes.length > 0) {
+        dataToUpdate.likes = validLikes;
+      } else {
+        delete dataToUpdate.likes;
+      }
+    }
+
+
     const updateCommunity = await this.communityService.update(id, dataToUpdate);
 
     if (!updateCommunity) {

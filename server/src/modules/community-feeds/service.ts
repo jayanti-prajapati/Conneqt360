@@ -86,7 +86,7 @@ export class CommunityService {
   async getById(id: string) {
     return this.communityRepo
       .findById(id, { isDeleted: false })
-      .populate("user", "name username email phone businessName businessType")
+      .populate("user", "name username email phone businessName businessType profileUrl")
       .populate("comments.user", "name username email phone businessName businessType profileUrl")
       .sort({ createdAt: -1 });
   }
