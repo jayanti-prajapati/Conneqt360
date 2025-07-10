@@ -13,9 +13,9 @@ const availableUsers: User[] = [
   {
     id: 'user456',
     email: 'sarah@company.com',
-    displayName: 'Sarah Johnson',
-    photoURL: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
-    bio: 'Marketing Director',
+    name: 'Sarah Johnson',
+    profileUrl: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
+    aboutUs: 'Marketing Director',
     followersCount: 890,
     followingCount: 650,
     postsCount: 32,
@@ -26,9 +26,9 @@ const availableUsers: User[] = [
   {
     id: 'user789',
     email: 'mike@startup.com',
-    displayName: 'Mike Chen',
-    photoURL: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
-    bio: 'Tech Entrepreneur',
+    name: 'Mike Chen',
+    profileUrl: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
+    aboutUs: 'Tech Entrepreneur',
     followersCount: 2100,
     followingCount: 450,
     postsCount: 67,
@@ -39,9 +39,9 @@ const availableUsers: User[] = [
   {
     id: 'user101',
     email: 'alex@agency.com',
-    displayName: 'Alex Rivera',
-    photoURL: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
-    bio: 'Creative Director',
+    name: 'Alex Rivera',
+    profileUrl: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
+    aboutUs: 'Creative Director',
     followersCount: 1500,
     followingCount: 780,
     postsCount: 89,
@@ -133,7 +133,7 @@ export default function ChatScreen() {
 
   const filteredUsers = availableUsers.filter(u =>
     u.id !== user?.id &&
-    u.displayName.toLowerCase().includes(searchQuery.toLowerCase())
+    u.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleChatPress = (chat: Chat) => {
@@ -156,7 +156,7 @@ export default function ChatScreen() {
       >
         <View style={styles.avatarContainer}>
           <Image
-            source={{ uri: otherUser.photoURL || 'https://via.placeholder.com/50' }}
+            source={{ uri: otherUser.profileUrl || 'https://via.placeholder.com/50' }}
             style={styles.chatAvatar}
           />
           {otherUser.isOnline && <View style={[styles.onlineIndicator, { backgroundColor: theme.success }]} />}
@@ -165,7 +165,7 @@ export default function ChatScreen() {
         <View style={styles.chatContent}>
           <View style={styles.chatHeader}>
             <Text style={[styles.chatName, { color: theme.text }]}>
-              {otherUser.displayName}
+              {otherUser.name}
             </Text>
             <Text style={[styles.timestamp, { color: theme.textSecondary }]}>
               {formatTime(item.lastMessage.createdAt)}
@@ -191,16 +191,16 @@ export default function ChatScreen() {
     >
       <View style={styles.avatarContainer}>
         <Image
-          source={{ uri: item.photoURL || 'https://via.placeholder.com/50' }}
+          source={{ uri: item.profileUrl || 'https://via.placeholder.com/50' }}
           style={styles.chatAvatar}
         />
         {item.isOnline && <View style={[styles.onlineIndicator, { backgroundColor: theme.success }]} />}
       </View>
 
       <View style={styles.userInfo}>
-        <Text style={[styles.userName, { color: theme.text }]}>{item.displayName}</Text>
-        <Text style={[styles.userBio, { color: theme.textSecondary }]} numberOfLines={1}>
-          {item.bio}
+        <Text style={[styles.userName, { color: theme.text }]}>{item.name}</Text>
+        <Text style={[styles.useraboutUs, { color: theme.textSecondary }]} numberOfLines={1}>
+          {item.aboutUs}
         </Text>
       </View>
     </TouchableOpacity>
@@ -242,11 +242,11 @@ export default function ChatScreen() {
           <View style={styles.newChatContainer}>
             <View style={[styles.selectedUser, { backgroundColor: theme.surface, borderColor: theme.border }]}>
               <Image
-                source={{ uri: selectedUser.photoURL || 'https://via.placeholder.com/50' }}
+                source={{ uri: selectedUser.profileUrl || 'https://via.placeholder.com/50' }}
                 style={styles.chatAvatar}
               />
               <Text style={[styles.selectedUserName, { color: theme.text }]}>
-                {selectedUser.displayName}
+                {selectedUser.name}
               </Text>
             </View>
 
@@ -448,7 +448,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 2,
   },
-  userBio: {
+  useraboutUs: {
     fontSize: 14,
   },
   newChatContainer: {

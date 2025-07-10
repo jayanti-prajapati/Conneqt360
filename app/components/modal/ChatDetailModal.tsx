@@ -11,9 +11,9 @@ const mockUsers: User[] = [
     {
         id: 'user456',
         email: 'sarah@company.com',
-        displayName: 'Sarah Johnson',
-        photoURL: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
-        bio: 'Marketing Director',
+        name: 'Sarah Johnson',
+        profileUrl: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
+        aboutUs: 'Marketing Director',
         followersCount: 890,
         followingCount: 650,
         postsCount: 32,
@@ -24,9 +24,9 @@ const mockUsers: User[] = [
     {
         id: 'user789',
         email: 'mike@startup.com',
-        displayName: 'Mike Chen',
-        photoURL: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
-        bio: 'Tech Entrepreneur',
+        name: 'Mike Chen',
+        profileUrl: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
+        aboutUs: 'Tech Entrepreneur',
         followersCount: 2100,
         followingCount: 450,
         postsCount: 67,
@@ -190,11 +190,11 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
                         {otherUser && (
                             <View style={styles.headerUser}>
                                 <Image
-                                    source={{ uri: otherUser.photoURL || 'https://via.placeholder.com/40' }}
+                                    source={{ uri: otherUser.profileUrl || 'https://via.placeholder.com/40' }}
                                     style={styles.headerAvatar}
                                 />
                                 <View style={styles.headerUserInfo}>
-                                    <Text style={[styles.headerName, { color: theme.text }]}>{otherUser.displayName}</Text>
+                                    <Text style={[styles.headerName, { color: theme.text }]}>{otherUser.name}</Text>
                                     <Text style={[styles.headerStatus, { color: theme.textSecondary }]}>
                                         {otherUser.isOnline ? 'Online' : 'Last seen recently'}
                                     </Text>

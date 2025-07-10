@@ -1,7 +1,6 @@
-import { create } from 'zustand';
-import { User } from '../types';
+import { User } from "@/types";
 
-const HARDCODED_USER: User = {
+export const HARDCODED_USER: User = {
     id: 'user123',
     email: 'demo@business.com',
     name: 'Demo User',
@@ -110,20 +109,3 @@ const HARDCODED_USER: User = {
     lastSeen: new Date(),
     createdAt: new Date('2023-01-15'),
 };
-interface AuthState {
-    user: User | null;
-    isLoading: boolean;
-    isAuthenticated: boolean;
-    setUser: (user: User | null) => void;
-    setLoading: (loading: boolean) => void;
-    logout: () => void;
-}
-
-export const useAuthStore = create<AuthState>((set) => ({
-    user: HARDCODED_USER,
-    isLoading: true,
-    isAuthenticated: false,
-    setUser: (user) => set({ user, isAuthenticated: !!user }),
-    setLoading: (isLoading) => set({ isLoading }),
-    logout: () => set({ user: null, isAuthenticated: false }),
-}));

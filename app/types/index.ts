@@ -1,9 +1,13 @@
 export interface User {
   id: string;
+  username?: string;
+  jobTitle?: string;
+
   email: string;
-  displayName: string;
-  photoURL?: string;
-  bio?: string;
+  name: string;
+  profileUrl?: string;
+
+  aboutUs?: string;
   businessName?: string;
   businessType?: string;
   phone?: string;

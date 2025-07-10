@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Share } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
-import { Check, LogOut, Mail, Phone, Edit, MapPin, Camera } from 'lucide-react-native';
+import { Check, LogOut, Mail, Phone, Edit, MapPin, Camera, Globe, Users, Settings, Briefcase, Building, Hash, AtSign } from 'lucide-react-native';
 import { pickImage } from '@/utils/imageUtils';
 import Button from '@/components/common/Button';
 import { clearAuthData, getAuthData } from '@/services/secureStore';
@@ -17,6 +17,16 @@ import About from '@/components/profile/About';
 import { Ionicons } from '@expo/vector-icons';
 import Typography from '@/constants/Typography';
 import LogoutModal from '@/components/profile/LogoutModal';
+import { BusinessCard } from '@/components/profile/BusinessCard';
+import { useThemeStore } from '@/store/themeStore';
+import { EditProfileModal } from '@/components/profile/EditProfileModal';
+import { User } from '@/types';
+import { ProfileImageModal } from '@/components/modal/ProfileImageModal';
+import { BusinessCatalogModal } from '@/components/profile/BusinessCatalogModal';
+import { ServicesModal } from '@/components/profile/ServicesModal';
+import { ClientsModal } from '@/components/profile/ChatDetailModal';
+import { SocialMediaModal } from '@/components/profile/SocialMediaModal';
+import { HARDCODED_USER } from '@/components/mock/UserData';
 
 // Mock user data
 
@@ -24,11 +34,18 @@ import LogoutModal from '@/components/profile/LogoutModal';
 
 export default function ProfileScreen() {
   const router = useRouter();
-
+  const { theme, isDark, toggleTheme } = useThemeStore();
   const [isPresent, setIsPresent] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isAbout, setIsAbout] = useState(false);
   const [isLogout, setIsLogout] = useState(false);
+  const [showBusinessCard, setShowBusinessCard] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showProfileImage, setShowProfileImage] = useState(false);
+  const [showCatalogModal, setShowCatalogModal] = useState(false);
+  const [showServicesModal, setShowServicesModal] = useState(false);
+  const [showClientsModal, setShowClientsModal] = useState(false);
+  const [showSocialModal, setShowSocialModal] = useState(false);
 
   const { loading, getUserById, updateUser } = useUsersStore();
 
@@ -72,15 +89,52 @@ export default function ProfileScreen() {
       'username',
       'businessName',
       'businessType',
+      'businessEmail',
       'gstNumber',
-      'udyamNumber',
-      'location',
+      'address',
+      'city',
+      'state',
+      "website",
       'aboutUs',
       'profileUrl',
     ];
     const completed = fields?.filter((field) => !!userData[field]).length;
     if (completed === 0) return 0; // Avoid division by zero
     return Math.round((completed / fields?.length) * 100);
+  };
+
+
+  const handleSubmit = async (updatedData: Partial<User>) => {
+
+
+    try {
+      if (user) {
+        const updatedUser = { ...user, ...updatedData };
+
+        const resp = await updateUser(user?._id, { ...updatedUser, isSkip: true });
+        if (resp?.data?.statusCode === 201 || resp?.data?.statusCode === 200) {
+          setUser(resp.data.data);
+
+
+        } else {
+          throw new Error(resp.data?.message || "Failed to update user");
+        }
+      }
+    } catch (error: any) {
+      console.error("Error updating user:", error);
+    }
+  };
+  const handleShare = async () => {
+    console.log("Share");
+
+    try {
+      await Share.share({
+        message: `Connect with ${user.name} - ${user.businessName || 'Business Professional'}\n\nEmail: ${user.email}\nPhone: ${user.phone || 'Not provided'}\n\nShared via Business Network App`,
+        title: `${user.name}'s Business Card`,
+      });
+    } catch (error) {
+      console.error('Error sharing business card:', error);
+    }
   };
 
   const profileCompletion = user ? calculateProfileCompletion(user) : 0;
@@ -144,12 +198,14 @@ export default function ProfileScreen() {
         <View style={styles.profileSection}>
           <View style={styles.profileImageContainer}>
             {user?.profileUrl ?
-              <Image
-                source={{
-                  uri: user?.profileUrl,
-                }}
-                style={styles.profileImage}
-              /> :
+              <TouchableOpacity onPress={() => setShowProfileImage(true)}>
+                <Image
+                  source={{
+                    uri: user?.profileUrl,
+                  }}
+                  style={styles.profileImage}
+                />
+              </TouchableOpacity> :
               <View style={styles.avatar}>
                 <Text style={styles.avatarText}>{user?.username?.charAt(0) ? user?.username?.charAt(0)?.toUpperCase() : "U"}</Text>
               </View>
@@ -174,10 +230,31 @@ export default function ProfileScreen() {
           <Text style={styles.title}>{user?.jobTitle || '-'}</Text>
 
           <View style={styles.buttonRow}>
-            <Button title="Edit Profile" variant="outline" size="small" onPress={() => setIsPresent(true)} style={styles.button} />
-            <Button title="Share Card" variant="outline" size="small" onPress={() => console.log('Share card')} style={styles.button} />
-            <Button title="View Business" variant="primary" size="small" onPress={() => console.log('View business')} style={styles.button} />
+            <TouchableOpacity
+              style={[styles.actionButton, { backgroundColor: theme.primary, width: "45%" }]}
+              onPress={() => setShowEditModal(true)}
+            >
+              <Text style={styles.actionButtonText}>Edit Profile</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.actionButton, { backgroundColor: theme.primary, width: "45%" }]}
+              onPress={() => handleShare()}
+            >
+              <Text style={styles.actionButtonText}>Share Card</Text>
+            </TouchableOpacity>
+            {/* <Button title="Edit Profile" variant="outline" size="small" onPress={() => setShowEditModal(true)} style={styles.button} />
+            <Button title="Share Card" variant="outline" size="small" onPress={() => handleShare()} style={styles.button} /> */}
+
+
+
+            {/* <Button title="View Business" variant="primary" size="small" onPress={() => setShowBusinessCard(true)} style={styles.button} /> */}
           </View>
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: theme.primary, width: "100%" }]}
+            onPress={() => setShowBusinessCard(true)}
+          >
+            <Text style={styles.actionButtonText}>View Business</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Profile Completion */}
@@ -199,7 +276,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* About */}
-        <View style={styles.section}>
+        {/* <View style={styles.section}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text style={styles.sectionTitle}>About</Text>
             <TouchableOpacity onPress={() => setIsAbout(true)}>
@@ -213,50 +290,221 @@ export default function ProfileScreen() {
           ) : (
             <Text style={{ color: Colors.gray[400] }}>No description available.</Text>
           )}
-        </View>
+        </View> */}
+        {/* catalogue */}
+        <View style={styles.businessFeaturesSection}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Business Features</Text>
 
-        {/* Business Details */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Business Details</Text>
-          <View style={styles.card}>
-            {[
-              ['Business', user?.businessName],
-              ['Type', user?.businessType],
-              ['GST Number', user?.gstNumber],
-              ['Udyam Number', user?.udyamNumber],
-              ['Referrals Programs', '5'], // Hardcoded as in your code
-            ].map(([label, value]) => (
-              <View key={label} style={styles.detailRow}>
-                <Text style={[styles.detailLabel, { width: '40%' }]}>{label}</Text>
-                <Text style={styles.detailValue}>{value || '-'}</Text>
-              </View>
-            ))}
+          <View style={styles.featuresGrid}>
+            <TouchableOpacity
+              style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
+              onPress={() => setShowCatalogModal(true)}
+            >
+              <Briefcase size={24} color={theme.primary} />
+              <Text style={[styles.featureTitle, { color: theme.text }]}>Catalog</Text>
+              <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
+                {user?.catalog?.length || 0} items
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
+              onPress={() => setShowServicesModal(true)}
+            >
+              <Settings size={24} color={theme.primary} />
+              <Text style={[styles.featureTitle, { color: theme.text }]}>Services</Text>
+              <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
+                {user?.services?.length || 0} services
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
+              onPress={() => setShowClientsModal(true)}
+            >
+              <Users size={24} color={theme.primary} />
+              <Text style={[styles.featureTitle, { color: theme.text }]}>Clients</Text>
+              <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
+                {user?.clients?.length || 0} clients
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
+              onPress={() => setShowSocialModal(true)}
+            >
+              <Globe size={24} color={theme.primary} />
+              <Text style={[styles.featureTitle, { color: theme.text }]}>Connect</Text>
+              <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
+                Social & Web
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
 
-        {/* Contact Info */}
-        <View style={styles.contactSection}>
-          <View style={styles.contactInfo}>
-            {[
-              [<Phone size={20} color={Colors.primary[900]} />, user?.phone],
-              [<Mail size={20} color={Colors.primary[900]} />, user?.email],
-              [<MapPin size={20} color={Colors.primary[900]} />, user?.location],
-            ].map(([Icon, info], idx) => (
-              <View key={idx} style={styles.contactItem}>
-                {Icon}
-                <Text style={styles.contactText}>{info || '-'}</Text>
+
+        {/* Business Information */}
+        {(user?.businessName || user?.businessType) && (
+          <View style={[styles.infoSection, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Business Information</Text>
+
+            {user?.businessName && (
+              <View style={styles.infoItem}>
+                <Building size={20} color={theme.textSecondary} />
+                <View style={styles.infoContent}>
+                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Business Name</Text>
+                  <Text style={[styles.infoValue, { color: theme.text }]}>{user.businessName}</Text>
+                </View>
               </View>
-            ))}
+            )}
+
+            {user?.businessType && (
+              <View style={styles.infoItem}>
+                <Hash size={20} color={theme.textSecondary} />
+                <View style={styles.infoContent}>
+                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Business Type</Text>
+                  <Text style={[styles.infoValue, { color: theme.text }]}>{user.businessType}</Text>
+                </View>
+              </View>
+            )}
+
+            {user?.businessEmail && (
+              <View style={styles.infoItem}>
+                <AtSign size={20} color={theme.textSecondary} />
+                <View style={styles.infoContent}>
+                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Business Email</Text>
+                  <Text style={[styles.infoValue, { color: theme.text }]}>{user.businessEmail}</Text>
+                </View>
+              </View>
+            )}
+
+            {user?.website && (
+              <View style={styles.infoItem}>
+                <Globe size={20} color={theme.textSecondary} />
+                <View style={styles.infoContent}>
+                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Website</Text>
+                  <Text style={[styles.infoValue, { color: theme.text }]}>{user.website}</Text>
+                </View>
+              </View>
+            )}
+
+            {user?.gstNumber && (
+              <View style={styles.infoItem}>
+                <Hash size={20} color={theme.textSecondary} />
+                <View style={styles.infoContent}>
+                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>GST Number</Text>
+                  <Text style={[styles.infoValue, { color: theme.text }]}>{user.gstNumber}</Text>
+                </View>
+              </View>
+            )}
+
+            {user?.udyamNumber && (
+              <View style={styles.infoItem}>
+                <Hash size={20} color={theme.textSecondary} />
+                <View style={styles.infoContent}>
+                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Udyam Number</Text>
+                  <Text style={[styles.infoValue, { color: theme.text }]}>{user.udyamNumber}</Text>
+                </View>
+              </View>
+            )}
           </View>
-          <Button
-            title={user?.businessName || 'Business'}
-            variant="primary"
-            size="small"
-            onPress={() => console.log('View business')}
-            style={styles.businessButton}
-          />
+        )}
+
+        {/* Contact Information */}
+        <View style={[styles.infoSection, { backgroundColor: theme.surface, borderColor: theme.border, marginBottom: 100 }]}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Contact Information</Text>
+
+          {user?.email && <View style={styles.infoItem}>
+            <Mail size={20} color={theme.textSecondary} />
+            <View style={styles.infoContent}>
+              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Email</Text>
+              <Text style={[styles.infoValue, { color: theme.text }]}>{user?.email}</Text>
+            </View>
+          </View>}
+
+          {user?.phone && (
+            <View style={styles.infoItem}>
+              <Phone size={20} color={theme.textSecondary} />
+              <View style={styles.infoContent}>
+                <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Phone</Text>
+                <Text style={[styles.infoValue, { color: theme.text }]}>{user?.phone}</Text>
+              </View>
+            </View>
+          )}
+
+          {(user?.address || user?.city || user?.state || user?.country) && (
+            <View style={styles.infoItem}>
+              <MapPin size={20} color={theme.textSecondary} />
+              <View style={styles.infoContent}>
+                <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Address</Text>
+                <Text style={[styles.infoValue, { color: theme.text }]}>
+                  {[user.address, user.city, user.state, user.postalCode, user.country]
+                    .filter(Boolean)
+                    .join(', ')}
+                </Text>
+              </View>
+            </View>
+          )}
         </View>
+
       </ScrollView>
+      {showBusinessCard && (
+        <View style={styles.businessCardModal}>
+          <TouchableOpacity
+            style={styles.businessCardOverlay}
+            onPress={() => setShowBusinessCard(false)}
+          />
+          <View style={styles.businessCardContainer}>
+            <BusinessCard user={user} />
+            <TouchableOpacity
+              style={[styles.closeBusinessCardButton, { backgroundColor: theme.surface }]}
+              onPress={() => setShowBusinessCard(false)}
+            >
+              <Text style={[styles.closeBusinessCardText, { color: theme.text }]}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {showEditModal && <EditProfileModal
+        visible={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        user={user}
+        onSave={handleSubmit}
+      />}
+
+      {showProfileImage && <ProfileImageModal
+        visible={showProfileImage}
+        imageUri={user.profileUrl || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=2'}
+        onClose={() => setShowProfileImage(false)}
+      />}
+
+      {showCatalogModal && <BusinessCatalogModal
+        visible={showCatalogModal}
+        onClose={() => setShowCatalogModal(false)}
+        catalog={HARDCODED_USER.catalog || []}
+      />}
+      {showServicesModal &&
+        <ServicesModal
+          visible={showServicesModal}
+          onClose={() => setShowServicesModal(false)}
+          services={HARDCODED_USER.services || []}
+        />}
+      {showClientsModal &&
+        <ClientsModal
+          visible={showClientsModal}
+          onClose={() => setShowClientsModal(false)}
+          clients={HARDCODED_USER.clients || []}
+        />}
+      {showSocialModal &&
+        <SocialMediaModal
+          visible={showSocialModal}
+          onClose={() => setShowSocialModal(false)}
+          socialMedia={user.socialMedia || {}}
+          website={user.website}
+          businessEmail={user.businessEmail}
+        />}
+
     </KeyboardAvoidingView>
     // </SafeAreaView>
   );
@@ -285,6 +533,21 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary[100],
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    gap: 6,
+  },
+  actionButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',
@@ -366,10 +629,36 @@ const styles = StyleSheet.create({
   profileImageContainerActive: {
     opacity: 1,
   },
-  // profileImage: {
-  //   width: '100%',
-  //   height: '100%',
-  // },
+  businessFeaturesSection: {
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+  },
+  featuresGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  featureCard: {
+    width: '48%',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+    gap: 8,
+  },
+  featureTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  featureSubtitle: {
+    fontSize: 12,
+    textAlign: 'center',
+  },
   nameContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -409,9 +698,10 @@ const styles = StyleSheet.create({
   },
   buttonRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
+    gap: 10,
+    justifyContent: 'space-between',
     marginHorizontal: -Spacing.xs,
+    marginBottom: Spacing.sm
   },
   button: {
     margin: Spacing.xs,
@@ -423,12 +713,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.gray[100],
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: Spacing.sm,
-    color: Colors.gray[800],
-  },
+  // sectionTitle: {
+  //   fontSize: 16,
+  //   fontWeight: '600',
+  //   marginBottom: Spacing.sm,
+  //   color: Colors.gray[800],
+  // },
   card: {
     backgroundColor: Colors.white,
     borderRadius: 12,
@@ -541,8 +831,59 @@ const styles = StyleSheet.create({
     padding: Spacing.xs,
   },
 
-  // button: {
-  //   flex: 1,
-  //   marginHorizontal: Spacing.xs,
-  // },
+  businessCardModal: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  businessCardOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  businessCardContainer: {
+    margin: 20,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  closeBusinessCardButton: {
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  closeBusinessCardText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  infoSection: {
+    marginHorizontal: 16,
+    marginVertical: 12,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  infoItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+    gap: 12,
+  },
+  infoContent: {
+    flex: 1,
+  },
+  infoLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  infoValue: {
+    fontSize: 16,
+    lineHeight: 22,
+  },
 });

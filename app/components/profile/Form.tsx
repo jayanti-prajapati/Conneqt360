@@ -167,7 +167,7 @@ export default function Form({ isPresent, onClose, closeText = "Skip", users }: 
                 {errors.apiError && <Text style={{ color: 'red' }}>{errors.apiError}</Text>}
 
                 <View style={{ flexDirection: 'row', justifyContent: "space-between", width: '95%' }}>
-                    <GradientButton title={closeText} onPress={handleSkip} />
+                    {/* <GradientButton title={closeText} onPress={handleSkip} /> */}
                     <GradientButton title="Submit" onPress={handleSubmit} />
                 </View>
             </View>
