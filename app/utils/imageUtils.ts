@@ -47,28 +47,34 @@ export const pickImage = async (): Promise<string | null> => {
 
 export const takePhoto = async (): Promise<string | null> => {
   // Request camera permissions
-  const { status } = await ImagePicker.requestCameraPermissionsAsync();
-  if (status !== 'granted') {
-    Alert.alert('Permission required', 'Sorry, we need camera permissions to take a photo.');
-    return null;
-  }
+  // const { status } = await ImagePicker.requestCameraPermissionsAsync();
+  // if (status !== 'granted') {
+  //   Alert.alert('Permission required', 'Sorry, we need camera permissions to take a photo.');
+  //   return null;
+  // }
 
-  try {
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.5,
-      base64: true,
-    });
 
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      const base64Image = `data:image/jpeg;base64,${result.assets[0].base64}`;
-      return base64Image;
-    }
-    return null;
-  } catch (error) {
-    console.error('Error taking photo:', error);
-    Alert.alert('Error', 'Failed to take photo. Please try again.');
-    return null;
+
+  const result = await ImagePicker.launchCameraAsync({
+    allowsEditing: true,
+    // aspect: [16, 9],
+    quality: 0.8,
+  });
+
+  if (!result.canceled && result.assets[0]) {
+    // const base64Image = `data:image/jpeg;base64,${result.assets[0].base64}`;
+    const { uploadFile } = useFilesStore.getState();
+    const file = {
+      uri: result.assets[0].uri,
+      name: result.assets[0].fileName,
+      type: result.assets[0].mimeType,
+    };
+    // console.log('File upload response:', result.assets[0]);
+    const data = await uploadFile(file);
+
+
+    return "http://84.247.177.87/api/custom-file/fetch-doc?fileName=" + data?.data?.data?.fileName;
   }
+  return null;
+
 };

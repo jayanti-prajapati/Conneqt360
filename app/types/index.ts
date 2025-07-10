@@ -1,16 +1,48 @@
 export interface User {
   id: string;
-  name: string;
-  businessName: string;
-  avatar?: string;
-  coverImage?: string;
   email: string;
-  phone: string;
-  location: string;
-  businessType: string;
-  verified: boolean;
+  displayName: string;
+  photoURL?: string;
+  bio?: string;
+  businessName?: string;
+  businessType?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  gstNumber?: string;
+  udyamNumber?: string;
+  businessEmail?: string;
+  website?: string;
+  socialMedia?: {
+    linkedin?: string;
+    twitter?: string;
+    instagram?: string;
+    facebook?: string;
+    youtube?: string;
+  };
+  services?: string[];
+  clients?: Client[];
+  catalog?: CatalogItem[];
+  followersCount: number;
+  followingCount: number;
+  postsCount: number;
+  isOnline: boolean;
+  lastSeen: Date;
+  createdAt: Date;
 }
 
+export interface Client {
+  id: string;
+  name: string;
+  logo?: string;
+  testimonial?: string;
+  rating?: number;
+  projectType?: string;
+  completedDate?: Date;
+}
 export interface Post {
   id: string;
   type: 'product' | 'deal' | 'help' | 'success';
@@ -20,8 +52,8 @@ export interface Post {
   username: string;
   businessName: string;
   timestamp: string;
-  likes: number;
-  comments: number;
+  likes: string[];
+  comments: Comment[];
   verified: boolean;
 }
 
@@ -47,11 +79,39 @@ export interface Product {
   verified: boolean;
 }
 
+export interface Message {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  content: string;
+  mediaType?: 'image' | 'video';
+  mediaUrl?: string;
+  isRead: boolean;
+  createdAt: Date;
+}
+
 export interface Chat {
   id: string;
-  name: string;
-  lastMessage: string;
-  timestamp: string;
-  unreadCount: number;
-  isGroup: boolean;
+  participants?: string[];
+  lastMessage: Message;
+  updatedAt: Date;
+}
+
+export interface Comment {
+  id?: string;
+  userId?: string;
+  user: User;
+  content: string;
+  createdAt?: Date;
+}
+
+export interface CatalogItem {
+  id: string;
+  title: string;
+  description: string;
+  images: string[];
+  price?: string;
+  category: string;
+  tags?: string[];
+  createdAt: Date;
 }

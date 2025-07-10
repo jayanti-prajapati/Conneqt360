@@ -87,7 +87,7 @@ export default function Form({ isPresent, onClose, closeText = "Skip", users }: 
         if (!formData.name) newErrors.name = "Name is required";
         if (!formData.jobTitle) newErrors.jobTitle = "Job title is required";
         if (!formData.businessType) newErrors.businessType = "Business type is required";
-        if (!formData.udyamNumber) newErrors.udyamNumber = "Udyam number is required";
+        // if (!formData.udyamNumber) newErrors.udyamNumber = "Udyam number is required";
         if (!formData.gstNumber) newErrors.gstNumber = "GST number is required";
         if (!formData.address) newErrors.address = "Address is required";
 

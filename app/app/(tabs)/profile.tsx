@@ -16,6 +16,7 @@ import CustomLoader from '@/components/loader/CustomLoader';
 import About from '@/components/profile/About';
 import { Ionicons } from '@expo/vector-icons';
 import Typography from '@/constants/Typography';
+import LogoutModal from '@/components/profile/LogoutModal';
 
 // Mock user data
 
@@ -27,6 +28,7 @@ export default function ProfileScreen() {
   const [isPresent, setIsPresent] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isAbout, setIsAbout] = useState(false);
+  const [isLogout, setIsLogout] = useState(false);
 
   const { loading, getUserById, updateUser } = useUsersStore();
 
@@ -98,14 +100,15 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = () => {
-    clearAuthData();
-    router.replace('/(auth)/login');
+    setIsLogout(true);
+
   };
 
   const close = () => {
     setIsPresent(false);
     setIsAbout(false);
     fetchUserById();
+    setIsLogout(false);
   };
 
   return (
@@ -117,6 +120,8 @@ export default function ProfileScreen() {
     >
       <Form isPresent={isPresent} onClose={close} closeText="Close" users={user} />
       <About isAbout={isAbout} onClose={close} userId={user?._id} />
+      {/* Replace LogOut icon with a custom Logout modal/component if needed */}
+      <LogoutModal isLogout={isLogout} onClose={close} />
       {loading && <CustomLoader visible={loading} />}
 
       {/* Header */}

@@ -12,6 +12,8 @@ import {
   BackHandler,
   FlatList,
   RefreshControl,
+  Share,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Search, Bell, Plus, FileWarning } from 'lucide-react-native';
@@ -26,17 +28,91 @@ import CustomLoader from '@/components/loader/CustomLoader';
 import { useIsFocused } from '@react-navigation/native';
 import { getAuthData } from '@/services/secureStore';
 import NotFound from '@/components/utils/NotFound';
+import { PostDetailModal } from '@/components/modal/PostDetailModal';
+import { CommunityPost } from '@/types/feeds';
+import { PostOptionsModal } from '@/components/modal/PostOptionsModal';
 
+
+
+export const handleDelete = () => {
+  Alert.alert(
+    'Delete Post',
+    'Are you sure you want to delete this post?',
+    [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete', style: 'destructive', onPress: () => {
+          Alert.alert('Deleted', 'Post has been deleted.');
+          // onRefresh?.()
+        }
+      },
+    ]
+  );
+};
+export const handleReport = () => {
+  Alert.alert(
+    'Report Post',
+    'Why are you reporting this post?',
+    [
+      { text: 'Spam', onPress: () => Alert.alert('Reported', 'Thank you for reporting this post.') },
+      { text: 'Inappropriate Content', onPress: () => Alert.alert('Reported', 'Thank you for reporting this post.') },
+      { text: 'Harassment', onPress: () => Alert.alert('Reported', 'Thank you for reporting this post.') },
+      { text: 'Cancel', style: 'cancel' },
+    ]
+  );
+};
+
+export const handleSave = () => {
+  Alert.alert('Saved', 'Post saved to your bookmarks.');
+};
+
+export const handleCopyLink = () => {
+  Alert.alert('Link Copied', 'Post link copied to clipboard.');
+};
+
+export const handleBlock = () => {
+  Alert.alert(
+    'Block User',
+    `Are you sure you want to block ?`,
+    [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Block', style: 'destructive', onPress: () => Alert.alert('Blocked', 'User has been blocked.') },
+    ]
+  );
+};
+export const handleShare = async (id: string) => {
+
+  try {
+    const message = `Check out this post on our app: https://yourapp.com/directory/${id}`;
+
+    const result = await Share.share({
+      message,
+      url: `https://yourapp.com/directory/${id}`,
+      title: 'Check out this post!',
+    });
+
+    if (result.action === Share.sharedAction) {
+      console.log('Post shared');
+    } else if (result.action === Share.dismissedAction) {
+      console.log('Share dismissed');
+    }
+  } catch (error) {
+    console.error('Error sharing:', error);
+  }
+};
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { getAllFeeds, loading, updateFeed } = useCommunityFeedsStore()
+  const { getAllFeeds, loading, updateFeed, response, getFeedById } = useCommunityFeedsStore()
   const [searchQuery, setSearchQuery] = useState('');
   const [feedData, setFeedData] = useState([]);
   const [visibleItemIds, setVisibleItemIds] = useState<string[]>([]);
   const isFocused = useIsFocused();
-  // Add this state near your other state declarations
+  const [isOwnPost, setIsOwnPost] = useState(false); // Add this state to track if the post is owned by the user
+  const [showOptions, setShowOptions] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
+  const [showPostModal, setShowPostModal] = useState(false);
 
   const [users, setUsers] = useState<any>(null);
   const onViewRef = useRef(({ viewableItems }: { viewableItems: Array<{ item: any }> }) => {
@@ -48,24 +124,30 @@ export default function HomeScreen() {
     itemVisiblePercentThreshold: 60, // play only if 60% is visible
   });
 
-  const handlePostPress = (id: string) => console.log(`Post ${id} pressed`);
+  const refreshSelectedPost = async () => {
+    if (!selectedPost?._id) return;
+    try {
+      const data = await getFeedById(selectedPost?._id);
+      setSelectedPost(data?.data?.data);
+    } catch (error) {
+      console.error('Error refreshing selected post:', error);
+    }
+  };
+
+  const handlePostPress = (post: CommunityPost) => {
+    setSelectedPost(post);
+    setShowPostModal(true);
+  };
   const handleLike = async (id: string, likes: string[]) => {
-    // const data = await getAuthData()
-    // if (likes.includes(data?.userData?._id)) {
-    //   // Unlike the post
-    //   const updatedLikes = likes.filter((likeId) => likeId !== data?.userData?._id);
-    //   updateFeed(id, { likes: updatedLikes });
-    // } else {
-    //   // Like the post
-    //   const updatedLikes = [...likes, data?.userData?._id];
-    //   updateFeed(id, { likes: updatedLikes });
-    // }
-    // fetchFeeds();
-    console.log(`Liked post ${id}`);
+    console.log(likes);
 
 
-
-
+    updateFeed(id, { likes: likes });
+    fetchFeeds();
+  };
+  const handleComments = async (id: string, comments: any) => {
+    updateFeed(id, { comments: [comments] });
+    fetchFeeds();
   };
 
   const onRefresh = async () => {
@@ -78,9 +160,12 @@ export default function HomeScreen() {
       setRefreshing(false);
     }
   };
-  const handleComment = (id: string) => console.log(`Comment on post ${id}`);
-  const handleShare = (id: string) => console.log(`Share post ${id}`);
-  const handleMoreOptions = (id: string) => console.log(`More options for post ${id}`);
+
+  const handleMoreOptions = (post: CommunityPost) => {
+    setSelectedPost(post);
+    setIsOwnPost(post?.user?._id === users?.data?._id); // Check if the post belongs to the current user
+    setShowOptions(true);
+  };
 
   useEffect(() => {
     const backAction = () => {
@@ -93,17 +178,16 @@ export default function HomeScreen() {
 
   useEffect(() => {
     fetchFeeds();
-  }, [searchQuery, getAllFeeds]);
+  }, [searchQuery, showPostModal]);
 
   const fetchFeeds = async () => {
     try {
+
       const user = await getAuthData()
       setUsers(user?.userData);
-
       const data = await getAllFeeds(searchQuery);
       // console.log('Fetched feeds successfully:', data);
       if (data?.data?.statusCode == 200 || data?.data?.statusCode == 201) {
-
         setFeedData(data?.data?.data || []);
       }
     } catch (error) {
@@ -112,6 +196,10 @@ export default function HomeScreen() {
   }
 
   // console.log("feedData", feedData);
+  const handleClosePostModal = () => {
+    setShowPostModal(false);
+    setSelectedPost(null);
+  };
 
 
 
@@ -161,26 +249,22 @@ export default function HomeScreen() {
                 id={item?._id}
                 phone={item?.user?.phone}
                 profileImage={item?.user?.profileUrl}
-                userId={users?._id}
+                user={users}
+                post={item}
                 username={item?.user?.username}
                 businessName={item?.user?.businessName}
                 timestamp={item?.createdAt}
                 content={item?.content}
                 imageUrl={item?.imageUrl}
                 videoUrl={item?.videoUrl}
-                likes={item?.likes?.length}
-                comments={item?.comments?.length}
                 onLike={handleLike}
-
-                onComment={handleComment}
+                onComment={handleComments}
                 onShare={handleShare}
                 onMoreOptions={handleMoreOptions}
                 onPress={handlePostPress}
                 likesIds={item?.likes}
                 verified={item?.user?.verified}
-                isVisible={visibleItemIds.includes(item._id) && isFocused
-                }
-              />
+                isVisible={visibleItemIds.includes(item._id) && isFocused} likes={0} />
             )}
             onViewableItemsChanged={onViewRef.current}
             viewabilityConfig={viewConfigRef.current}
@@ -193,6 +277,24 @@ export default function HomeScreen() {
             <NotFound />
           )}
 
+        <PostDetailModal
+          visible={showPostModal}
+          post={selectedPost}
+          onClose={handleClosePostModal}
+          onRefresh={refreshSelectedPost}
+
+        />
+        <PostOptionsModal
+          visible={showOptions}
+          onClose={() => setShowOptions(false)}
+          isOwnPost={isOwnPost}
+          onShare={() => handleShare(selectedPost?._id || '')}
+          onReport={() => handleReport()}
+          onSave={() => handleSave()}
+          onCopyLink={() => handleCopyLink()}
+          onBlock={() => handleBlock()}
+          onDelete={() => handleDelete()}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
