@@ -2,11 +2,14 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+
 import authRoutes from "./modules/auth/routes";
 import userRoutes from "./modules/user/routes";
 import customRoutes from "./modules/custom-files/routes"
 import communityRoutes from "./modules/community-feeds/routes";
-import cookieParser from "cookie-parser";
+import chatRoutes from "./modules/chat/routes"
+
 dotenv.config();
 
 const app = express();
@@ -24,6 +27,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/community-feeds", communityRoutes);
 app.use("/api/custom-file", customRoutes);
+app.use("/api/chat", chatRoutes);
 
 app.use(
   (

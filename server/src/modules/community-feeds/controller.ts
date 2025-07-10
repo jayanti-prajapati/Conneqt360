@@ -71,36 +71,81 @@ export class CommunityController {
     }
   }
 
-  async update(req: Request, res: Response) {
-    try {
-      const id = req.params.id;
-      if (!id) {
-        return res.status(400).json({
-          statusCode: 400,
-          message: "ID is required",
-        });
-      }
-      const updateCommunity = await this.communityService.update(id, req.body);
 
-      if (!updateCommunity) {
-        return res.status(404).json({
-          statusCode: 404,
-          message: "Community feed is not found",
-        });
-      }
-      return res.status(200).json({
-        statusCode: 200,
-        message: "success",
-        data: updateCommunity,
-      });
-    } catch (error: any) {
+  async update(req: Request, res: Response) {
+  try {
+    const id = req.params.id;
+    if (!id) {
       return res.status(400).json({
-        sttausCode: 400,
-        message: "failed",
-        error: error.message,
+        statusCode: 400,
+        message: "ID is required",
       });
     }
+
+    let dataToUpdate = { ...req.body };
+
+    
+    if (req.body.comments) {
+      const comments = Array.isArray(req.body.comments)
+        ? req.body.comments
+        : [req.body.comments]; 
+
+      
+      const validComments = comments.filter(
+        (c) => c.user && c.content
+      ).map((c) => ({
+        ...c,
+        createdAt: c.createdAt || new Date(), 
+      }));
+
+      if (validComments.length > 0) {
+        dataToUpdate = {
+          ...dataToUpdate,
+          comments: validComments,
+        };
+      } else {
+        
+        delete dataToUpdate.comments;
+      }
+    }
+
+      if (req.body.likes) {
+      const likes = Array.isArray(req.body.likes)
+        ? req.body.likes
+        : [req.body.likes];
+
+      const validLikes = likes.filter((like) => typeof like === "string");
+
+      if (validLikes.length > 0) {
+        dataToUpdate.likes = validLikes;
+      } else {
+        delete dataToUpdate.likes;
+      }
+    }
+
+
+    const updateCommunity = await this.communityService.update(id, dataToUpdate);
+
+    if (!updateCommunity) {
+      return res.status(404).json({
+        statusCode: 404,
+        message: "Community feed is not found",
+      });
+    }
+
+    return res.status(200).json({
+      statusCode: 200,
+      message: "success",
+      data: updateCommunity,
+    });
+  } catch (error: any) {
+    return res.status(400).json({
+      statusCode: 400,
+      message: "failed",
+      error: error.message,
+    });
   }
+}
 
   async delete(req: Request, res: Response) {
     try {
