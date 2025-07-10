@@ -21,7 +21,7 @@ export class UserService {
   }
 
   async delete(id: string) {
-    return this.userRepo.delete(id, { status: "active" });
+    return this.userRepo.softdelete(id, { status: "active" });
   }
 
   async getByPhone(phone: string) {

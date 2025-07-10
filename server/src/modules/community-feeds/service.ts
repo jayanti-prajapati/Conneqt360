@@ -96,7 +96,7 @@ export class CommunityService {
   }
 
   async delete(id: string) {
-    return this.communityRepo.delete(id, { isDeleted: false });
+    return this.communityRepo.softdelete(id, { isDeleted: false });
   }
 
   async getFeedByUserId(userId: string) {

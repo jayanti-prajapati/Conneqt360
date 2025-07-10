@@ -8,7 +8,7 @@ import authRoutes from "./modules/auth/routes";
 import userRoutes from "./modules/user/routes";
 import customRoutes from "./modules/custom-files/routes"
 import communityRoutes from "./modules/community-feeds/routes";
-import catalogRoutes from './modules/catalog/routes';
+import userservicesRoutes from './modules/user-services/routes';
 
 dotenv.config();
 
@@ -27,7 +27,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/community-feeds", communityRoutes);
 app.use("/api/custom-file", customRoutes);
-app.use('/api/catalog', catalogRoutes);
+app.use("/api/user-services", userservicesRoutes);
+
 
 
 app.use(

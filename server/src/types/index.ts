@@ -87,25 +87,34 @@ export interface ICustomFileDocument extends ICustomFile, Document {
   _id: Types.ObjectId;
 }
 
-export interface ICatalog extends Document {
-  title?: string;
-  description?: Text;
-  images?: string[];
-  price?: string;
-  category?: string;
-  tags?: string[];
-  createdAt?: Date;
+export interface IUserServices extends Document {
+  user: IUser["_id"];
+  services: {
+    key: string;
+    value: {
+      title: string;
+      description: string;
+    }[];
+  }[];
+  catalog: {
+    title?: string;
+    description?: string;
+    images?: string[];
+    price?: string;
+    category?: string;
+    tags?: string[];
+    createdAt?: Date;
+  }[];
+  client: {
+    name?: string;
+    logo?: string;
+    testimonial?: string;
+    rating?: string;
+    projectType?: string;
+    completedDate?: Date;
+  }[];
 }
 
-export interface IChat extends Document {
-  senderId?: IUser["_id"];
-  receiverId?: IUser["_id"];
-  message?: Text;
-  timestamp?: Date;
-  isRead?: boolean;
-  isDeleted?: boolean;
-  attachments?: JSON;
-}
 export interface ICircle extends Document {
   name: string;
   description: string;
