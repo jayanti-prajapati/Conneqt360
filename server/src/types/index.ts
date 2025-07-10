@@ -87,6 +87,16 @@ export interface ICustomFileDocument extends ICustomFile, Document {
   _id: Types.ObjectId;
 }
 
+export interface ICatalog extends Document {
+  title?: string;
+  description?: Text;
+  images?: string[];
+  price?: string;
+  category?: string;
+  tags?: string[];
+  createdAt?: Date;
+}
+
 export interface IChat extends Document {
   senderId?: IUser["_id"];
   receiverId?: IUser["_id"];
