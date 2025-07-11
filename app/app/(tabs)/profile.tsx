@@ -165,6 +165,28 @@ export default function ProfileScreen() {
     setIsLogout(false);
   };
 
+  const openCatalog = () => {
+    router.push({
+      pathname: '/business-catalog',
+      params: {
+        catalog: JSON.stringify(HARDCODED_USER.catalog || []),
+        owner: 'true'
+
+      },
+    });
+  };
+  const openClients = () => {
+    router.push({
+      pathname: '/business-clients',
+      params: { clients: JSON.stringify(HARDCODED_USER.clients || []) },
+    });
+  };
+  const openServices = () => {
+    router.push({
+      pathname: '/business-services',
+      params: { services: JSON.stringify(HARDCODED_USER.services || []) },
+    });
+  };
   return (
 
     // <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
@@ -298,7 +320,7 @@ export default function ProfileScreen() {
           <View style={styles.featuresGrid}>
             <TouchableOpacity
               style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => setShowCatalogModal(true)}
+              onPress={() => openCatalog()}
             >
               <Briefcase size={24} color={theme.primary} />
               <Text style={[styles.featureTitle, { color: theme.text }]}>Catalog</Text>
@@ -309,7 +331,7 @@ export default function ProfileScreen() {
 
             <TouchableOpacity
               style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => setShowServicesModal(true)}
+              onPress={() => openServices()}
             >
               <Settings size={24} color={theme.primary} />
               <Text style={[styles.featureTitle, { color: theme.text }]}>Services</Text>
@@ -320,7 +342,7 @@ export default function ProfileScreen() {
 
             <TouchableOpacity
               style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => setShowClientsModal(true)}
+              onPress={() => openClients()}
             >
               <Users size={24} color={theme.primary} />
               <Text style={[styles.featureTitle, { color: theme.text }]}>Clients</Text>
@@ -479,31 +501,8 @@ export default function ProfileScreen() {
         onClose={() => setShowProfileImage(false)}
       />}
 
-      {showCatalogModal && <BusinessCatalogModal
-        visible={showCatalogModal}
-        onClose={() => setShowCatalogModal(false)}
-        catalog={HARDCODED_USER.catalog || []}
-      />}
-      {showServicesModal &&
-        <ServicesModal
-          visible={showServicesModal}
-          onClose={() => setShowServicesModal(false)}
-          services={HARDCODED_USER.services || []}
-        />}
-      {showClientsModal &&
-        <ClientsModal
-          visible={showClientsModal}
-          onClose={() => setShowClientsModal(false)}
-          clients={HARDCODED_USER.clients || []}
-        />}
-      {showSocialModal &&
-        <SocialMediaModal
-          visible={showSocialModal}
-          onClose={() => setShowSocialModal(false)}
-          socialMedia={user.socialMedia || {}}
-          website={user.website}
-          businessEmail={user.businessEmail}
-        />}
+
+
 
     </KeyboardAvoidingView>
     // </SafeAreaView>
