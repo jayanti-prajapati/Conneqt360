@@ -5,25 +5,30 @@ const feedSchema = new Schema<IPost>({
   content: {
     type: String,
     required: false,
+    default: null,
   },
   imageUrl: {
     type: String,
     required: false,
+    default: null,
   },
   videoUrl: {
     type: String,
     required: false,
+    default: null,
   },
   user: {
     type: Schema.Types.ObjectId,
     ref: "User",
     required: true,
+    default: null,
   },
   likes: [
     {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: false,
+      default: null,
     },
   ],
   comments: [
@@ -32,10 +37,12 @@ const feedSchema = new Schema<IPost>({
         type: Schema.Types.ObjectId,
         ref: "User",
         required: true,
+        default: null,
       },
       content: {
         type: String,
         required: true,
+        default: null,
       },
       createdAt: {
         type: Date,
@@ -46,10 +53,12 @@ const feedSchema = new Schema<IPost>({
   description: {
     type: String,
     required: false,
+    default: null,
   },
   share: {
     type: String,
     required: false,
+    default: null,
   },
   isDeleted: {
     type: Boolean,
