@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { X, Tag, Calendar, ExternalLink, Plus, PlusCircle } from 'lucide-react-native';
+import { X, Tag, Calendar, ExternalLink, PlusCircle, Edit, Trash2, ArrowLeft } from 'lucide-react-native';
 import { useThemeStore } from '@/store/themeStore';
 import { CatalogItem } from '@/types';
+import { CatalogFormModal } from '@/components/modal/CatalogFormModal';
 
 const { width } = Dimensions.get('window');
 
@@ -13,26 +14,24 @@ export default function BusinessCatalogScreen() {
     const params = useLocalSearchParams();
     const catalog = JSON.parse(params?.catalog as string) as CatalogItem[];
     const isOwner = (params?.owner == 'true') || "false"
-
+    const [showCatalogModal, setShowCatalogModal] = useState(false);
+    const [editingCatalogItem, setEditingCatalogItem] = useState<any>(null);
     const [selectedItem, setSelectedItem] = useState<CatalogItem | null>(null);
 
-    const renderCatalogItem = (item: CatalogItem) => (
-        <TouchableOpacity
-            key={item.id}
-            style={[styles.catalogItem, { backgroundColor: theme.surface, borderColor: theme.border }]}
-            onPress={() => setSelectedItem(item)}
-        >
-            <Image source={{ uri: item.images[0] }} style={styles.catalogImage} resizeMode="cover" />
-            <View style={styles.catalogContent}>
-                <Text style={[styles.catalogTitle, { color: theme.text }]} numberOfLines={2}>{item.title}</Text>
-                <Text style={[styles.catalogDescription, { color: theme.textSecondary }]} numberOfLines={3}>{item.description}</Text>
-                <View style={styles.catalogMeta}>
-                    <Text style={[styles.catalogPrice, { color: theme.primary }]}>{item.price}</Text>
-                    <Text style={[styles.catalogCategory, { color: theme.textSecondary }]}>{item.category}</Text>
-                </View>
-            </View>
-        </TouchableOpacity>
-    );
+
+
+    const handleEditCatalogItem = (item: any) => {
+        setEditingCatalogItem(item);
+        setShowCatalogModal(true);
+    };
+    const handleAddCatalogItem = () => {
+        setEditingCatalogItem(null);
+        setShowCatalogModal(true);
+    };
+
+    const handleDeleteCatalogItem = (itemId: string) => {
+        Alert.alert('Deleted', 'Catalog item deleted successfully');
+    };
 
     const renderDetailView = () => {
         if (!selectedItem) return null;
@@ -90,19 +89,78 @@ export default function BusinessCatalogScreen() {
             </View>
         );
     };
+    const renderCatalogItem = (item: CatalogItem) => (
+        <TouchableOpacity
+            key={item.id}
+            style={[styles.catalogItem, { backgroundColor: theme.surface, borderColor: theme.border }]}
+            onPress={() => setSelectedItem(item)}
+        >
+            {isOwner && (
+                <View style={styles.itemActions}>
+                    <TouchableOpacity
+                        style={[styles.actionButton, { backgroundColor: theme.primary + '20' }]}
+                        onPress={(e) => {
+                            e.stopPropagation();
+                            handleEditCatalogItem(item)
+                        }}
+                    >
+                        <Edit size={16} color={theme.primary} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.actionButton, { backgroundColor: theme.error + '20' }]}
+                        onPress={(e) => {
+                            e.stopPropagation();
+                            handleDeleteCatalogItem(item?.id);
+                        }}
+                    >
+                        <Trash2 size={16} color={theme.error} />
+                    </TouchableOpacity>
+                </View>
+            )}
+            {item.images[0] && <Image
+                source={{ uri: item.images[0] }}
+                style={styles.catalogImage}
+                resizeMode="cover"
+            />}
+            <View style={styles.catalogContent}>
+                <Text style={[styles.catalogTitle, { color: theme.text }]} numberOfLines={2}>
+                    {item.title}
+                </Text>
+                <Text style={[styles.catalogDescription, { color: theme.textSecondary }]} numberOfLines={3}>
+                    {item.description}
+                </Text>
+                <View style={styles.catalogMeta}>
+                    <Text style={[styles.catalogPrice, { color: theme.primary }]}>{item.price}</Text>
+                    <Text style={[styles.catalogCategory, { color: theme.textSecondary }]}>{item.category}</Text>
+                </View>
+                <View style={styles.catalogTags}>
+                    {item.tags?.slice(0, 3).map((tag, index) => (
+                        <View key={index} style={[styles.tag, { backgroundColor: theme.primary + '20' }]}>
+                            <Text style={[styles.tagText, { color: theme.primary }]}>{tag}</Text>
+                        </View>
+                    ))}
+                </View>
+            </View>
+        </TouchableOpacity>
+    );
+
+    const handleSaveCatalogItem = (item: any) => {
+        // In a real app, this would save to the backend
+        Alert.alert('Success', 'Catalog item saved successfully!');
+    };
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
             <View style={[styles.header, { borderBottomColor: theme.border }]}>
                 <TouchableOpacity onPress={() => router.back()}>
-                    <X size={24} color={theme.text} />
+                    <ArrowLeft size={24} color={theme.text} />
                 </TouchableOpacity>
 
 
                 <Text style={[styles.title, { color: theme.text }]}>Business Catalog</Text>
 
                 {isOwner ? (
-                    <TouchableOpacity onPress={() => router.back()}>
+                    <TouchableOpacity onPress={() => handleAddCatalogItem()}>
                         <PlusCircle size={24} color={theme.primary} />
                     </TouchableOpacity>
                 ) : (
@@ -119,6 +177,16 @@ export default function BusinessCatalogScreen() {
             ) : (
                 renderDetailView()
             )}
+
+            {showCatalogModal &&
+                <CatalogFormModal
+                    visible={showCatalogModal}
+                    onClose={() => setShowCatalogModal(false)}
+                    onSave={handleSaveCatalogItem}
+                    item={editingCatalogItem}
+                    isEdit={!!editingCatalogItem}
+                />
+            }
         </View>
     );
 }
@@ -173,6 +241,7 @@ const styles = StyleSheet.create({
     },
     catalogTitle: {
         fontSize: 18,
+        width: "80%",
         fontWeight: '600',
         marginBottom: 8,
     },
@@ -242,6 +311,21 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 16,
+    },
+    itemActions: {
+        position: 'absolute',
+        top: 12,
+        right: 12,
+        flexDirection: 'row',
+        gap: 8,
+        zIndex: 1,
+    },
+    actionButton: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     detailPriceRow: {
         flexDirection: 'row',

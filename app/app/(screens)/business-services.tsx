@@ -1,21 +1,44 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { X, CircleCheck as CheckCircle, PlusCircle } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { X, CircleCheck as CheckCircle, PlusCircle, Edit, Trash2, ArrowLeft } from 'lucide-react-native';
 import { useThemeStore } from '@/store/themeStore';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { ServiceFormModal } from '@/components/modal/ServiceFormModal';
 
 export default function ServicesScreen() {
     const { theme } = useThemeStore();
     const router = useRouter();
     const params = useLocalSearchParams();
+    const [showServiceForm, setShowServiceForm] = useState(false);
+    const [editingService, setEditingService] = useState<{ service: string; index: number } | null>(null);
     const services: string[] = JSON.parse(params.services as string);
-
+    const isOwner = (params.owner == 'true') || "false"
     const serviceCategories = {
         'Development': ['Web Development', 'Mobile App Development'],
         'Cloud & Infrastructure': ['Cloud Solutions'],
         'Design & Marketing': ['UI/UX Design', 'Digital Marketing'],
         'Consulting': ['Business Consulting'],
     };
+
+    const handleAddService = () => {
+        setEditingService(null);
+        setShowServiceForm(true);
+    };
+
+    const handleEditService = (service: string, index: number) => {
+        setEditingService({ service, index });
+        setShowServiceForm(true);
+    };
+
+    const handleDeleteService = (index: number) => {
+        Alert.alert('Deleted', 'Service deleted successfully');
+    };
+
+    const handleSaveService = (service: string) => {
+        // In a real app, this would save to the backend
+        Alert.alert('Success', 'Service saved successfully!');
+    };
+
 
     const getCategoryForService = (service: string) => {
         for (const [category, categoryServices] of Object.entries(serviceCategories)) {
@@ -35,17 +58,22 @@ export default function ServicesScreen() {
         <View style={[styles.container, { backgroundColor: theme.background }]}>
             <View style={[styles.header, { borderBottomColor: theme.border }]}>
                 <TouchableOpacity onPress={() => router.back()}>
-                    <X size={24} color={theme.text} />
+                    <ArrowLeft size={24} color={theme.text} />
                 </TouchableOpacity>
                 <Text style={[styles.title, { color: theme.text }]}>Our Services</Text>
-                <TouchableOpacity onPress={() => router.back()}>
-                    <PlusCircle size={24} color={theme.primary} />
-                </TouchableOpacity>
+                {isOwner ? (
+                    <TouchableOpacity onPress={() => handleAddService()}>
+                        <PlusCircle size={24} color={theme.primary} />
+                    </TouchableOpacity>
+                ) : <View style={{ width: 24 }} />
+
+
+                }
             </View>
 
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-                    Professional services we offer to help grow your business
+                    {isOwner ? 'Manage your services' : 'Professional services we offer to help grow your business'}
                 </Text>
 
                 {Object.entries(groupedServices).map(([category, categoryServices]) => (
@@ -57,6 +85,22 @@ export default function ServicesScreen() {
                                 key={index}
                                 style={[styles.serviceItem, { backgroundColor: theme.surface, borderColor: theme.border }]}
                             >
+                                {isOwner && (
+                                    <View style={styles.serviceActions}>
+                                        <TouchableOpacity
+                                            style={[styles.actionButton, { backgroundColor: theme.primary + '20' }]}
+                                            onPress={() => handleEditService?.(service, index)}
+                                        >
+                                            <Edit size={16} color={theme.primary} />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={[styles.actionButton, { backgroundColor: theme.error + '20' }]}
+                                            onPress={() => handleDeleteService(index)}
+                                        >
+                                            <Trash2 size={16} color={theme.error} />
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
                                 <View style={styles.serviceHeader}>
                                     <CheckCircle size={20} color={theme.success} />
                                     <Text style={[styles.serviceName, { color: theme.text }]}>{service}</Text>
@@ -88,6 +132,14 @@ export default function ServicesScreen() {
                     </TouchableOpacity>
                 </View>
             </ScrollView>
+            <ServiceFormModal
+                visible={showServiceForm}
+                onClose={() => setShowServiceForm(false)}
+                onSave={handleSaveService}
+                service={editingService?.service}
+                isEdit={!!editingService}
+            />
+
         </View>
     );
 }
@@ -142,4 +194,19 @@ const styles = StyleSheet.create({
     contactDescription: { fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 16 },
     contactButton: { paddingHorizontal: 24, paddingVertical: 12, borderRadius: 25 },
     contactButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
+    serviceActions: {
+        position: 'absolute',
+        top: 12,
+        right: 12,
+        flexDirection: 'row',
+        gap: 8,
+        zIndex: 1,
+    },
+    actionButton: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 });

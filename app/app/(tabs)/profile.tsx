@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Share } from 'react-native';
 
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
-import { Check, LogOut, Mail, Phone, Edit, MapPin, Camera, Globe, Users, Settings, Briefcase, Building, Hash, AtSign } from 'lucide-react-native';
+import { Check, LogOut, Mail, Phone, MapPin, Globe, Users, Settings, Briefcase, Building, Hash, AtSign } from 'lucide-react-native';
 import { pickImage } from '@/utils/imageUtils';
-import Button from '@/components/common/Button';
 import { clearAuthData, getAuthData } from '@/services/secureStore';
 import Colors from '@/constants/Colors';
 import Spacing from '@/constants/Spacing';
@@ -22,11 +20,8 @@ import { useThemeStore } from '@/store/themeStore';
 import { EditProfileModal } from '@/components/profile/EditProfileModal';
 import { User } from '@/types';
 import { ProfileImageModal } from '@/components/modal/ProfileImageModal';
-import { BusinessCatalogModal } from '@/components/profile/BusinessCatalogModal';
-import { ServicesModal } from '@/components/profile/ServicesModal';
-import { ClientsModal } from '@/components/profile/ChatDetailModal';
-import { SocialMediaModal } from '@/components/profile/SocialMediaModal';
 import { HARDCODED_USER } from '@/components/mock/UserData';
+import { SocialMediaModal } from '@/components/profile/SocialMediaModal';
 
 // Mock user data
 
@@ -178,13 +173,13 @@ export default function ProfileScreen() {
   const openClients = () => {
     router.push({
       pathname: '/business-clients',
-      params: { clients: JSON.stringify(HARDCODED_USER.clients || []) },
+      params: { clients: JSON.stringify(HARDCODED_USER.clients || []), owner: 'true' },
     });
   };
   const openServices = () => {
     router.push({
       pathname: '/business-services',
-      params: { services: JSON.stringify(HARDCODED_USER.services || []) },
+      params: { services: JSON.stringify(HARDCODED_USER.services || []), owner: 'true' },
     });
   };
   return (
@@ -251,7 +246,7 @@ export default function ProfileScreen() {
           <Text style={styles.username}>{user?.username || '-'}</Text>
           <Text style={styles.title}>{user?.jobTitle || '-'}</Text>
 
-          <View style={styles.buttonRow}>
+          <View style={[styles.buttonRow, { width: "100%" }]}>
             <TouchableOpacity
               style={[styles.actionButton, { backgroundColor: theme.primary, width: "45%" }]}
               onPress={() => setShowEditModal(true)}
@@ -501,7 +496,14 @@ export default function ProfileScreen() {
         onClose={() => setShowProfileImage(false)}
       />}
 
-
+      {showSocialModal &&
+        <SocialMediaModal
+          visible={showSocialModal}
+          onClose={() => setShowSocialModal(false)}
+          socialMedia={user.socialMedia || {}}
+          website={user.website}
+          businessEmail={user.businessEmail}
+        />}
 
 
     </KeyboardAvoidingView>
@@ -697,7 +699,8 @@ const styles = StyleSheet.create({
   },
   buttonRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 4,
+
     justifyContent: 'space-between',
     marginHorizontal: -Spacing.xs,
     marginBottom: Spacing.sm

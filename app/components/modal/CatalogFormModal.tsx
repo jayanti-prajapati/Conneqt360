@@ -98,7 +98,10 @@ export const CatalogFormModal: React.FC<CatalogFormModalProps> = ({
                         <Text style={[styles.sectionTitle, { color: theme.text }]}>Basic Information</Text>
 
                         <View style={styles.inputGroup}>
-                            <Text style={[styles.label, { color: theme.textSecondary }]}>Title *</Text>
+                            <Text style={[styles.label, { color: theme.textSecondary }]}>
+                                <Text >Title </Text>
+                                <Text style={{ color: 'red' }}>*</Text>
+                            </Text>
                             <TextInput
                                 style={[styles.input, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
                                 value={formData.title}
@@ -109,7 +112,10 @@ export const CatalogFormModal: React.FC<CatalogFormModalProps> = ({
                         </View>
 
                         <View style={styles.inputGroup}>
-                            <Text style={[styles.label, { color: theme.textSecondary }]}>Description *</Text>
+                            <Text style={[styles.label, { color: theme.textSecondary }]}>
+                                <Text >Description </Text>
+                                <Text style={{ color: 'red' }}>*</Text>
+                            </Text>
                             <TextInput
                                 style={[styles.textArea, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
                                 value={formData.description}

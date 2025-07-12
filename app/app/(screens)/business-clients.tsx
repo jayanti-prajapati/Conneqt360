@@ -1,23 +1,49 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Text,
     StyleSheet,
     ScrollView,
     TouchableOpacity,
-    Image
+    Image,
+    Alert
 } from 'react-native';
-import { X, Star, Calendar, Award, Plus, PlusCircle } from 'lucide-react-native';
+import { X, Star, Calendar, Award, Plus, PlusCircle, ArrowLeft, Edit, Trash2 } from 'lucide-react-native';
 import { useThemeStore } from '@/store/themeStore';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Client } from '@/types';
+import { ClientFormModal } from '@/components/modal/ClientFormModal';
 
 export default function ClientsScreen() {
     const { theme } = useThemeStore();
     const router = useRouter();
-    const { clients } = useLocalSearchParams();
+    const { clients, owner } = useLocalSearchParams();
+    const isOwner = (owner == 'true') || "false"
     const parsedClients: Client[] = JSON.parse(clients as string);
+    const [showClientForm, setShowClientForm] = useState(false);
+    const [editingClient, setEditingClient] = useState<any>(null);
 
+
+    const handleAddClient = () => {
+        setEditingClient(null);
+        setShowClientForm(true);
+    };
+
+    const handleEditClient = (client: any) => {
+        console.log(client);
+
+        setEditingClient(client);
+        setShowClientForm(true);
+    };
+
+    const handleDeleteClient = (clientId: string) => {
+        Alert.alert('Deleted', 'Client deleted successfully');
+    };
+
+    const handleSaveClient = (client: any) => {
+        // In a real app, this would save to the backend
+        Alert.alert('Success', 'Client saved successfully!');
+    };
     const renderStars = (rating: number) =>
         Array.from({ length: 5 }, (_, i) => (
             <Star
@@ -28,22 +54,27 @@ export default function ClientsScreen() {
             />
         ));
 
-    const formatDate = (date: Date | string) => {
-        const d = typeof date === 'string' ? new Date(date) : date;
-        return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+
+    const formatDate = (date: string | Date) => {
+        const d = new Date(date); // always convert
+        return d.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+        });
     };
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
             <View style={[styles.header, { borderBottomColor: theme.border }]}>
                 <TouchableOpacity onPress={() => router.back()}>
-                    <X size={24} color={theme.text} />
+                    <ArrowLeft size={24} color={theme.text} />
                 </TouchableOpacity>
                 <Text style={[styles.title, { color: theme.text }]}>Our Clients</Text>
-
-                <TouchableOpacity onPress={() => router.back()}>
-                    <PlusCircle size={24} color={theme.primary} />
-                </TouchableOpacity>
+                {isOwner ? (
+                    <TouchableOpacity onPress={() => handleAddClient()}>
+                        <PlusCircle size={24} color={theme.primary} />
+                    </TouchableOpacity>
+                ) : <View style={{ width: 24 }} />}
             </View>
 
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -73,6 +104,22 @@ export default function ClientsScreen() {
                             key={client.id}
                             style={[styles.clientCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
                         >
+                            {isOwner && (
+                                <View style={styles.clientActions}>
+                                    <TouchableOpacity
+                                        style={[styles.actionButton, { backgroundColor: theme.primary + '20' }]}
+                                        onPress={() => handleEditClient(client)}
+                                    >
+                                        <Edit size={16} color={theme.primary} />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[styles.actionButton, { backgroundColor: theme.error + '20' }]}
+                                        onPress={() => handleDeleteClient(client.id)}
+                                    >
+                                        <Trash2 size={16} color={theme.error} />
+                                    </TouchableOpacity>
+                                </View>
+                            )}
                             <View style={styles.clientHeader}>
                                 <Image
                                     source={{ uri: client.logo || 'https://via.placeholder.com/60' }}
@@ -122,6 +169,14 @@ export default function ClientsScreen() {
                     </View>
                 </View>
             </ScrollView>
+            {
+                showClientForm && <ClientFormModal
+                    visible={showClientForm}
+                    onClose={() => setShowClientForm(false)}
+                    onSave={handleSaveClient}
+                    client={editingClient}
+                    isEdit={!!editingClient}
+                />}
         </View>
     );
 }
@@ -171,4 +226,19 @@ const styles = StyleSheet.create({
     trustPoint: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
     trustBullet: { fontSize: 16, fontWeight: 'bold' },
     trustText: { flex: 1, fontSize: 14, lineHeight: 20 },
+    clientActions: {
+        position: 'absolute',
+        top: 12,
+        right: 12,
+        flexDirection: 'row',
+        gap: 8,
+        zIndex: 1,
+    },
+    actionButton: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 });
