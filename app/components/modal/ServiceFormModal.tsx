@@ -1,13 +1,22 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Modal, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { X, Save } from 'lucide-react-native';
+import {
+    View,
+    Text,
+    TextInput,
+    StyleSheet,
+    Modal,
+    ScrollView,
+    TouchableOpacity,
+    Alert,
+} from 'react-native';
+import { X, Save, Plus } from 'lucide-react-native';
 import { useThemeStore } from '@/store/themeStore';
-
+import TagsInput from '../Input/TagsInput';
 
 interface ServiceFormModalProps {
     visible: boolean;
     onClose: () => void;
-    onSave: (service: string) => void;
+    onSave: (service: any) => void;
     service?: string;
     isEdit?: boolean;
 }
@@ -21,6 +30,11 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
 }) => {
     const { theme } = useThemeStore();
     const [serviceName, setServiceName] = useState(service || '');
+    const [description, setDescription] = useState('');
+    const [tags, setTags] = useState<string[]>(['']);
+
+
+
 
     const handleSave = () => {
         if (!serviceName.trim()) {
@@ -28,20 +42,30 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
             return;
         }
 
-        onSave(serviceName.trim());
+        onSave({
+            name: serviceName.trim(),
+            description: description.trim(),
+            tags,
+        });
+
         onClose();
         setServiceName('');
+        setDescription('');
+        setTags(['']);
         Alert.alert('Success', `Service ${isEdit ? 'updated' : 'added'} successfully!`);
     };
 
     const handleClose = () => {
         setServiceName('');
+        setDescription('');
+        setTags(['']);
         onClose();
     };
 
     return (
         <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
             <View style={[styles.container, { backgroundColor: theme.background }]}>
+                {/* Header */}
                 <View style={[styles.header, { borderBottomColor: theme.border }]}>
                     <TouchableOpacity onPress={handleClose}>
                         <X size={24} color={theme.text} />
@@ -56,43 +80,42 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
 
                 <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                     <View style={styles.section}>
-                        <Text style={[styles.sectionTitle, { color: theme.text }]}>Service Information</Text>
+                        <Text style={[styles.sectionTitle, { color: theme.text }]}>Service Details</Text>
 
+                        {/* Name */}
                         <View style={styles.inputGroup}>
                             <Text style={[styles.label, { color: theme.textSecondary }]}>Service Name *</Text>
                             <TextInput
-                                style={[styles.input, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
+                                style={[
+                                    styles.input,
+                                    { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border },
+                                ]}
                                 value={serviceName}
                                 onChangeText={setServiceName}
-                                placeholder="e.g., Web Development, Mobile App Development"
+                                placeholder="e.g., Web Development"
                                 placeholderTextColor={theme.textSecondary}
-                                autoFocus
                             />
                         </View>
 
-                        <View style={[styles.examplesSection, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                            <Text style={[styles.examplesTitle, { color: theme.text }]}>Popular Services</Text>
-                            <View style={styles.examplesList}>
-                                {[
-                                    'Web Development',
-                                    'Mobile App Development',
-                                    'UI/UX Design',
-                                    'Digital Marketing',
-                                    'Cloud Solutions',
-                                    'Business Consulting',
-                                    'Data Analytics',
-                                    'E-commerce Solutions'
-                                ].map((example, index) => (
-                                    <TouchableOpacity
-                                        key={index}
-                                        style={[styles.exampleItem, { backgroundColor: theme.primary + '20' }]}
-                                        onPress={() => setServiceName(example)}
-                                    >
-                                        <Text style={[styles.exampleText, { color: theme.primary }]}>{example}</Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
+                        {/* Description */}
+                        <View style={styles.inputGroup}>
+                            <Text style={[styles.label, { color: theme.textSecondary }]}>Description</Text>
+                            <TextInput
+                                style={[
+                                    styles.textArea,
+                                    { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border },
+                                ]}
+                                multiline
+                                numberOfLines={4}
+                                value={description}
+                                onChangeText={setDescription}
+                                placeholder="Describe your service..."
+                                placeholderTextColor={theme.textSecondary}
+                            />
                         </View>
+
+                        {/* Features */}
+                        <TagsInput title='Add Features' tags={tags} setTags={setTags} />
                     </View>
 
                     <View style={styles.bottomPadding} />
@@ -145,27 +168,48 @@ const styles = StyleSheet.create({
         paddingVertical: 14,
         fontSize: 16,
     },
-    examplesSection: {
-        padding: 16,
-        borderRadius: 12,
+    textArea: {
         borderWidth: 1,
-    },
-    examplesTitle: {
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
         fontSize: 16,
-        fontWeight: '600',
-        marginBottom: 12,
+        height: 100,
+        textAlignVertical: 'top',
     },
-    examplesList: {
+    featureInputRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    featureInput: {
+        flex: 1,
+        borderWidth: 1,
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        fontSize: 14,
+    },
+    addButton: {
+        backgroundColor: '#1E88E5',
+        borderRadius: 999,
+        padding: 10,
+    },
+    featureList: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         gap: 8,
+        marginTop: 12,
     },
-    exampleItem: {
+    featureItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
         paddingHorizontal: 12,
-        paddingVertical: 8,
+        paddingVertical: 6,
         borderRadius: 16,
+        gap: 6,
     },
-    exampleText: {
+    featureText: {
         fontSize: 14,
         fontWeight: '500',
     },
