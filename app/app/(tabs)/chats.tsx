@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image, TextInput } from 'react-native';
+import {
+  View, Text, FlatList, StyleSheet,
+  TouchableOpacity, Image, TextInput
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { MessageCircle, Plus, Search, Send } from 'lucide-react-native';
+
 import { useThemeStore } from '../../store/themeStore';
 import { useAuthStore } from '../../services/demoStore';
-import { MessageCircle, Plus, Search, Send } from 'lucide-react-native';
-import { Chat, User } from '../../types';
 import { chatService } from '../../services/charService';
 import { ChatDetailModal } from '../../components/modal/ChatDetailModal';
+import { Chat, User } from '../../types';
 
-// Mock users for starting new chats
+const placeholderImage = 'https://via.placeholder.com/50';
+
+// Mock users list
 const availableUsers: User[] = [
   {
     id: 'user456',
     email: 'sarah@company.com',
     name: 'Sarah Johnson',
-    profileUrl: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
+    profileUrl: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg',
     aboutUs: 'Marketing Director',
     followersCount: 890,
     followingCount: 650,
@@ -27,7 +33,7 @@ const availableUsers: User[] = [
     id: 'user789',
     email: 'mike@startup.com',
     name: 'Mike Chen',
-    profileUrl: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
+    profileUrl: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg',
     aboutUs: 'Tech Entrepreneur',
     followersCount: 2100,
     followingCount: 450,
@@ -40,7 +46,7 @@ const availableUsers: User[] = [
     id: 'user101',
     email: 'alex@agency.com',
     name: 'Alex Rivera',
-    profileUrl: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
+    profileUrl: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg',
     aboutUs: 'Creative Director',
     followersCount: 1500,
     followingCount: 780,
@@ -64,19 +70,14 @@ export default function ChatScreen() {
   const [selectedChatUserId, setSelectedChatUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log('Fetching chats for user:', user);
-    if (user) {
-      fetchChats();
-    }
+    if (user) fetchChats();
   }, [user]);
 
   const fetchChats = async () => {
     try {
-
-
       if (user) {
         const userChats = await chatService.getUserChats(user.id);
-        setChats(userChats);
+        setChats(userChats || []);
       }
     } catch (error) {
       console.error('Error fetching chats:', error);
@@ -89,18 +90,12 @@ export default function ChatScreen() {
     if (!user || !newMessage.trim()) return;
 
     try {
-      const chatId = await chatService.createChat(
-        [user.id, targetUser.id],
-        newMessage,
-        user.id
-      );
-
+      await chatService.createChat([user.id, targetUser.id], newMessage, user.id);
       setNewMessage('');
       setSelectedUser(null);
       setShowNewChat(false);
       fetchChats();
 
-      // Open the new chat
       setSelectedChatUserId(targetUser.id);
       setShowChatModal(true);
     } catch (error) {
@@ -109,54 +104,41 @@ export default function ChatScreen() {
   };
 
   const getOtherUser = (chat: Chat): User | undefined => {
-    //@ts-ignore
-    const otherUserId = chat?.participants.find(p => p !== user?.id);
+    const otherUserId = chat?.participants?.find(p => p !== user?.id);
     return availableUsers.find(u => u.id === otherUserId);
   };
 
-  const formatTime = (date: Date) => {
+  const formatTime = (date?: string | Date) => {
+    if (!date) return '';
+    const time = typeof date === 'string' ? new Date(date) : date;
     const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor(diff / (1000 * 60));
+    const diff = now.getTime() - time.getTime();
+    const hours = diff ? Math.floor(diff / (1000 * 60 * 60)) : 0;
+    const minutes = diff ? Math.floor(diff / (1000 * 60)) : 0;
 
-    if (hours > 24) {
-      return date.toLocaleDateString();
-    } else if (hours > 0) {
-      return `${hours}h ago`;
-    } else if (minutes > 0) {
-      return `${minutes}m ago`;
-    } else {
-      return 'Just now';
-    }
-  };
-
-  const filteredUsers = availableUsers.filter(u =>
-    u.id !== user?.id &&
-    u.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const handleChatPress = (chat: Chat) => {
-    const otherUser = getOtherUser(chat);
-    if (otherUser) {
-      setSelectedChatUserId(otherUser.id);
-      setShowChatModal(true);
-    }
+    if (hours > 24) return time.toLocaleDateString();
+    else if (hours > 0) return `${hours}h ago`;
+    else if (minutes > 0) return `${minutes}m ago`;
+    return 'Just now';
   };
 
   const renderChatItem = ({ item }: { item: Chat }) => {
     const otherUser = getOtherUser(item);
+    const lastMessage = item.lastMessage || {};
 
     if (!otherUser) return null;
 
     return (
       <TouchableOpacity
         style={[styles.chatItem, { backgroundColor: theme.background, borderColor: theme.border }]}
-        onPress={() => handleChatPress(item)}
+        onPress={() => {
+          setSelectedChatUserId(otherUser.id);
+          setShowChatModal(true);
+        }}
       >
         <View style={styles.avatarContainer}>
           <Image
-            source={{ uri: otherUser.profileUrl || 'https://via.placeholder.com/50' }}
+            source={{ uri: otherUser.profileUrl || placeholderImage }}
             style={styles.chatAvatar}
           />
           {otherUser.isOnline && <View style={[styles.onlineIndicator, { backgroundColor: theme.success }]} />}
@@ -164,125 +146,32 @@ export default function ChatScreen() {
 
         <View style={styles.chatContent}>
           <View style={styles.chatHeader}>
-            <Text style={[styles.chatName, { color: theme.text }]}>
-              {otherUser.name}
-            </Text>
+            <Text style={[styles.chatName, { color: theme.text }]}>{otherUser.name}</Text>
             <Text style={[styles.timestamp, { color: theme.textSecondary }]}>
-              {formatTime(item.lastMessage.createdAt)}
+              {lastMessage.createdAt ? formatTime(new Date(lastMessage.createdAt)) : '-'}
             </Text>
           </View>
 
           <Text style={[styles.lastMessage, { color: theme.textSecondary }]} numberOfLines={1}>
-            {item.lastMessage.senderId === user?.id ? 'You: ' : ''}{item.lastMessage.content}
+            {lastMessage.senderId === user?.id ? 'You: ' : ''}
+            {lastMessage.content || ''}
           </Text>
         </View>
 
-        {!item.lastMessage.isRead && item.lastMessage.senderId !== user?.id && (
+        {!lastMessage.isRead && lastMessage.senderId !== user?.id && (
           <View style={[styles.unreadDot, { backgroundColor: theme.primary }]} />
         )}
       </TouchableOpacity>
     );
   };
 
-  const renderUserItem = ({ item }: { item: User }) => (
-    <TouchableOpacity
-      style={[styles.userItem, { backgroundColor: theme.surface, borderColor: theme.border }]}
-      onPress={() => setSelectedUser(item)}
-    >
-      <View style={styles.avatarContainer}>
-        <Image
-          source={{ uri: item.profileUrl || 'https://via.placeholder.com/50' }}
-          style={styles.chatAvatar}
-        />
-        {item.isOnline && <View style={[styles.onlineIndicator, { backgroundColor: theme.success }]} />}
-      </View>
-
-      <View style={styles.userInfo}>
-        <Text style={[styles.userName, { color: theme.text }]}>{item.name}</Text>
-        <Text style={[styles.useraboutUs, { color: theme.textSecondary }]} numberOfLines={1}>
-          {item.aboutUs}
-        </Text>
-      </View>
-    </TouchableOpacity>
+  const filteredUsers = availableUsers.filter(u =>
+    u.id !== user?.id &&
+    u.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-        <View style={styles.loadingContainer}>
-          <Text style={[styles.loadingText, { color: theme.text }]}>Loading chats...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (showNewChat) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => setShowNewChat(false)}>
-            <Text style={[styles.backButton, { color: theme.primary }]}>Back</Text>
-          </TouchableOpacity>
-          <Text style={[styles.title, { color: theme.text }]}>New Chat</Text>
-          <View style={{ width: 50 }} />
-        </View>
-
-        <View style={[styles.searchContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <Search size={20} color={theme.textSecondary} />
-          <TextInput
-            style={[styles.searchInput, { color: theme.text }]}
-            placeholder="Search users..."
-            placeholderTextColor={theme.textSecondary}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-        </View>
-
-        {selectedUser ? (
-          <View style={styles.newChatContainer}>
-            <View style={[styles.selectedUser, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-              <Image
-                source={{ uri: selectedUser.profileUrl || 'https://via.placeholder.com/50' }}
-                style={styles.chatAvatar}
-              />
-              <Text style={[styles.selectedUserName, { color: theme.text }]}>
-                {selectedUser.name}
-              </Text>
-            </View>
-
-            <View style={[styles.messageInputContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-              <TextInput
-                style={[styles.messageInput, { color: theme.text }]}
-                placeholder="Type your message..."
-                placeholderTextColor={theme.textSecondary}
-                value={newMessage}
-                onChangeText={setNewMessage}
-                multiline
-              />
-              <TouchableOpacity
-                style={[styles.sendButton, { backgroundColor: theme.primary }]}
-                onPress={() => startNewChat(selectedUser)}
-                disabled={!newMessage.trim()}
-              >
-                <Send size={20} color="#FFFFFF" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        ) : (
-          <FlatList
-            data={filteredUsers}
-            keyExtractor={(item) => item.id}
-            renderItem={renderUserItem}
-            contentContainerStyle={styles.usersList}
-            showsVerticalScrollIndicator={false}
-          />
-        )}
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.text }]}>Messages</Text>
         <TouchableOpacity
@@ -293,7 +182,78 @@ export default function ChatScreen() {
         </TouchableOpacity>
       </View>
 
-      {chats.length === 0 ? (
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <Text style={[styles.loadingText, { color: theme.text }]}>Loading chats...</Text>
+        </View>
+      ) : showNewChat ? (
+        <>
+          <View style={[styles.searchContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            <Search size={20} color={theme.textSecondary} />
+            <TextInput
+              style={[styles.searchInput, { color: theme.text }]}
+              placeholder="Search users..."
+              placeholderTextColor={theme.textSecondary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
+          {selectedUser ? (
+            <View style={styles.newChatContainer}>
+              <View style={[styles.selectedUser, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                <Image
+                  source={{ uri: selectedUser.profileUrl || placeholderImage }}
+                  style={styles.chatAvatar}
+                />
+                <Text style={[styles.selectedUserName, { color: theme.text }]}>
+                  {selectedUser.name}
+                </Text>
+              </View>
+              <View style={[styles.messageInputContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                <TextInput
+                  style={[styles.messageInput, { color: theme.text }]}
+                  placeholder="Type your message..."
+                  placeholderTextColor={theme.textSecondary}
+                  value={newMessage}
+                  onChangeText={setNewMessage}
+                  multiline
+                />
+                <TouchableOpacity
+                  style={[styles.sendButton, { backgroundColor: theme.primary }]}
+                  onPress={() => startNewChat(selectedUser)}
+                  disabled={!newMessage.trim()}
+                >
+                  <Send size={20} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : (
+            <FlatList
+              data={filteredUsers}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[styles.userItem, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                  onPress={() => setSelectedUser(item)}
+                >
+                  <Image
+                    source={{ uri: item.profileUrl || placeholderImage }}
+                    style={styles.chatAvatar}
+                  />
+                  <View style={styles.userInfo}>
+                    <Text style={[styles.userName, { color: theme.text }]}>{item.name}</Text>
+                    <Text style={[styles.useraboutUs, { color: theme.textSecondary }]} numberOfLines={1}>
+                      {item.aboutUs}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+              contentContainerStyle={styles.usersList}
+              showsVerticalScrollIndicator={false}
+            />
+          )}
+        </>
+      ) : chats.length === 0 ? (
         <View style={styles.emptyContainer}>
           <MessageCircle size={64} color={theme.textSecondary} />
           <Text style={[styles.emptyTitle, { color: theme.text }]}>No messages yet</Text>
@@ -317,18 +277,17 @@ export default function ChatScreen() {
         />
       )}
 
-      <ChatDetailModal
+      {showChatModal && <ChatDetailModal
         visible={showChatModal}
         userId={selectedChatUserId}
         onClose={() => {
           setShowChatModal(false);
           setSelectedChatUserId(null);
         }}
-      />
-    </SafeAreaView>
+      />}
+    </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

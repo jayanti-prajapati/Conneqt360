@@ -22,7 +22,7 @@ export default function OTPScreen() {
     const { verifyOtp, otpNumber, phone } = useAuthStore();
 
 
-    console.log('Received data:', otpNumber, phone);
+    // console.log('Received data:', otpNumber, phone);
     const handleChange = (text: string, index: number) => {
         if (/^\d$/.test(text)) {
             const updatedOtp = [...otp];
@@ -44,6 +44,7 @@ export default function OTPScreen() {
             const response = await verifyOtp({ phone: phone as string, otp: code });
             if (response?.status === 200 || response?.status === 201) {
                 console.log('OTP verified successfully');
+
                 setError(null);
 
                 router.push('/(tabs)');

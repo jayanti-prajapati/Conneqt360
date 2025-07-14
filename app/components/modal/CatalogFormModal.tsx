@@ -8,7 +8,7 @@ import { useThemeStore } from '@/store/themeStore';
 interface CatalogFormModalProps {
     visible: boolean;
     onClose: () => void;
-    onSave: (item: Partial<CatalogItem>) => void;
+    onSave: (item: any) => void;
     item?: CatalogItem | null;
     isEdit?: boolean;
 
@@ -37,8 +37,24 @@ export const CatalogFormModal: React.FC<CatalogFormModalProps> = ({
             return;
         }
 
+        if (!formData.price.trim()) {
+            Alert.alert('Error', 'Price are required fields.');
+            return;
+        }
+        if (!formData.category.trim()) {
+            Alert.alert('Error', 'Category are required fields.');
+            return;
+        }
+        if (!formData.images.length) {
+            Alert.alert('Error', 'Image are required fields.');
+            return;
+        }
+        if (!formData.tags.length) {
+            Alert.alert('Error', 'Category are required fields.');
+            return;
+        }
         const catalogItem: Partial<CatalogItem> = {
-            ...(isEdit && item ? { id: item.id } : {}),
+            ...(isEdit && item ? { id: item._id } : {}),
             title: formData.title,
             description: formData.description,
             price: formData.price,
@@ -47,6 +63,7 @@ export const CatalogFormModal: React.FC<CatalogFormModalProps> = ({
             tags: formData.tags.filter(tag => tag.trim() !== ''),
             createdAt: item?.createdAt || new Date(),
         };
+        // console.log(catalogItem);
 
         onSave(catalogItem);
         onClose();
@@ -130,7 +147,11 @@ export const CatalogFormModal: React.FC<CatalogFormModalProps> = ({
 
                         <View style={styles.row}>
                             <View style={[styles.inputGroup, styles.halfWidth]}>
-                                <Text style={[styles.label, { color: theme.textSecondary }]}>Price</Text>
+                                <Text style={[styles.label, { color: theme.textSecondary }]}>
+                                    <Text >Price </Text>
+                                    <Text style={{ color: 'red' }}>*</Text>
+                                </Text>
+
                                 <TextInput
                                     style={[styles.input, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
                                     value={formData.price}
@@ -141,7 +162,11 @@ export const CatalogFormModal: React.FC<CatalogFormModalProps> = ({
                             </View>
 
                             <View style={[styles.inputGroup, styles.halfWidth]}>
-                                <Text style={[styles.label, { color: theme.textSecondary }]}>Category</Text>
+                                <Text style={[styles.label, { color: theme.textSecondary }]}>
+                                    <Text >Category </Text>
+                                    <Text style={{ color: 'red' }}>*</Text>
+                                </Text>
+
                                 <TextInput
                                     style={[styles.input, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
                                     value={formData.category}
@@ -155,7 +180,11 @@ export const CatalogFormModal: React.FC<CatalogFormModalProps> = ({
 
                     <View style={styles.section}>
                         <View style={styles.arrayHeader}>
-                            <Text style={[styles.sectionTitle, { color: theme.text }]}>Images</Text>
+                            <Text style={[styles.label, { color: theme.textSecondary }]}>
+                                <Text >Image </Text>
+                                <Text style={{ color: 'red' }}>*</Text>
+                            </Text>
+
                             <TouchableOpacity
                                 style={[styles.addButton, { backgroundColor: theme.primary }]}
                                 onPress={() => addArrayField('images')}
@@ -164,7 +193,7 @@ export const CatalogFormModal: React.FC<CatalogFormModalProps> = ({
                             </TouchableOpacity>
                         </View>
 
-                        {formData.images.map((image, index) => (
+                        {formData?.images.map((image, index) => (
                             <View key={index} style={styles.arrayItem}>
                                 <TextInput
                                     style={[styles.arrayInput, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}

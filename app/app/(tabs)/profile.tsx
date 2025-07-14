@@ -37,9 +37,7 @@ export default function ProfileScreen() {
   const [showBusinessCard, setShowBusinessCard] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showProfileImage, setShowProfileImage] = useState(false);
-  const [showCatalogModal, setShowCatalogModal] = useState(false);
-  const [showServicesModal, setShowServicesModal] = useState(false);
-  const [showClientsModal, setShowClientsModal] = useState(false);
+
   const [showSocialModal, setShowSocialModal] = useState(false);
 
   const { loading, getUserById, updateUser } = useUsersStore();
@@ -164,7 +162,6 @@ export default function ProfileScreen() {
     router.push({
       pathname: '/business-catalog',
       params: {
-        catalog: JSON.stringify(HARDCODED_USER.catalog || []),
         owner: 'true'
 
       },
