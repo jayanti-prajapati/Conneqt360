@@ -12,7 +12,6 @@ const styles = StyleSheet.create({
   header: {
     zIndex: 1000,
     position: 'relative',
-    paddingTop: Platform.OS === 'ios' ? 44 : 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -121,10 +120,10 @@ export default function Header({
           ) : onLogoutPress ? (
             <Button
               variant="ghost"
-              size="small"
+              //   size="small"
               onPress={handleLogout}
               isIconOnly
-              icon={<Power size={24} color={colors.primary} />}
+              icon={<Power size={20} color={colors.primary} />}
             />
           ) : (
             <View style={{ width: 40 }} />

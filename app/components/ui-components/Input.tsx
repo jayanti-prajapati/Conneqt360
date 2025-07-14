@@ -1,13 +1,13 @@
 import React from 'react';
-import { 
-  StyleSheet, 
-  TextInput, 
-  View, 
-  Text, 
-  ViewStyle, 
+import {
+  StyleSheet,
+  TextInput,
+  View,
+  Text,
+  ViewStyle,
   TextStyle,
   KeyboardTypeOptions,
-  TouchableOpacity
+  TouchableOpacity,
 } from 'react-native';
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
@@ -59,21 +59,23 @@ export default function Input({
   return (
     <View style={[styles.container, containerStyle]}>
       {label && <Text style={[styles.label, labelStyle]}>{label}</Text>}
-      
-      <View style={[
-        styles.inputContainer,
-        error ? styles.inputError : null,
-        !editable ? styles.inputDisabled : null
-      ]}>
+
+      <View
+        style={[
+          styles.inputContainer,
+          error ? styles.inputError : null,
+          !editable ? styles.inputDisabled : null,
+        ]}
+      >
         {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
-        
+
         <TextInput
           style={[
             styles.input,
             leftIcon ? styles.inputWithLeftIcon : null,
             rightIcon ? styles.inputWithRightIcon : null,
             multiline ? styles.multilineInput : null,
-            inputStyle
+            inputStyle,
           ]}
           value={value}
           onChangeText={onChangeText}
@@ -86,10 +88,10 @@ export default function Input({
           numberOfLines={multiline ? numberOfLines : undefined}
           editable={editable}
         />
-        
+
         {rightIcon && (
-          <TouchableOpacity 
-            style={styles.rightIcon} 
+          <TouchableOpacity
+            style={styles.rightIcon}
             onPress={onRightIconPress}
             disabled={!onRightIconPress}
           >
@@ -97,7 +99,7 @@ export default function Input({
           </TouchableOpacity>
         )}
       </View>
-      
+
       {error && <Text style={[styles.errorText, errorStyle]}>{error}</Text>}
     </View>
   );
@@ -121,12 +123,14 @@ const styles = StyleSheet.create({
     padding: Spacing.sm,
     minHeight: 48,
     minWidth: 100,
+    borderWidth: 1,
+    borderColor: Colors.gray[200],
   },
   input: {
     flex: 1,
     fontSize: Typography.size.md,
     color: Colors.gray[800],
-    padding: 0,
+    padding: Spacing.sm,
   },
   inputWithLeftIcon: {
     marginLeft: Spacing.sm,

@@ -47,9 +47,47 @@ import { User } from '@/types';
 import { ProfileImageModal } from '@/components/modal/ProfileImageModal';
 import { HARDCODED_USER } from '@/components/mock/UserData';
 import { SocialMediaModal } from '@/components/profile/SocialMediaModal';
-import Header from '@/components/common/Header';
-
-// Mock user data
+const userMockData: User = {
+  id: 'user123',
+  email: 'demo@business.com',
+  name: 'Demo User',
+  profileUrl:
+    'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
+  aboutUs: 'Business professional passionate about networking and growth',
+  businessName: 'TechSolutions Pro',
+  businessType: 'Technology Consulting',
+  businessEmail: 'contact@techsolutionspro.com',
+  website: 'https://techsolutionspro.com',
+  phone: '+1 (555) 123-4567',
+  address: '123 Business Street',
+  city: 'San Francisco',
+  state: 'California',
+  postalCode: '94105',
+  country: 'United States',
+  gstNumber: '29ABCDE1234F1Z5',
+  udyamNumber: 'UDYAM-CA-12-1234567',
+  socialMedia: {
+    linkedin: 'https://linkedin.com/in/demouser',
+    twitter: 'https://twitter.com/demouser',
+    instagram: 'https://instagram.com/demouser',
+    facebook: 'https://facebook.com/demouser',
+    youtube: 'https://youtube.com/@demouser',
+  },
+  services: [
+    'Web Development',
+    'Mobile App Development',
+    'Cloud Solutions',
+    'Digital Marketing',
+    'Business Consulting',
+    'UI/UX Design',
+  ],
+  followersCount: 1250,
+  followingCount: 890,
+  postsCount: 45,
+  isOnline: true,
+  lastSeen: new Date(),
+  createdAt: new Date('2023-01-15'),
+};
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -81,12 +119,14 @@ export default function ProfileScreen() {
       }
 
       const response = await getUserById(userId);
+      console.log('response', response.data.data);
       if (response?.data?.statusCode === 200) {
         setUser(response.data.data);
       } else {
         clearAuthData();
         router.replace('/(auth)/login');
       }
+      setUser(userMockData);
     } catch (error) {
       console.error('Error fetching user:', error);
       clearAuthData();
@@ -126,7 +166,7 @@ export default function ProfileScreen() {
     try {
       if (user) {
         const updatedUser = { ...user, ...updatedData };
-
+        console.log('updatedUser', updatedUser);
         const resp = await updateUser(user?._id, {
           ...updatedUser,
           isSkip: true,
@@ -367,7 +407,7 @@ export default function ProfileScreen() {
               style={styles.featureCard}
               onPress={openCatalog}
             >
-              <Briefcase size={24} color={theme.primary} />
+              <Briefcase size={32} color={theme.primary} />
               <Text style={[styles.featureTitle, { color: theme.text }]}>
                 Catalog
               </Text>
@@ -384,7 +424,7 @@ export default function ProfileScreen() {
               style={styles.featureCard}
               onPress={openServices}
             >
-              <Settings size={24} color={theme.primary} />
+              <Settings size={32} color={theme.primary} />
               <Text>Services</Text>
               <Text
                 style={[styles.featureSubtitle, { color: theme.textSecondary }]}
@@ -399,7 +439,7 @@ export default function ProfileScreen() {
               style={styles.featureCard}
               onPress={openClients}
             >
-              <Users size={24} color={theme.primary} />
+              <Users size={32} color={theme.primary} />
               <Text>Clients</Text>
               <Text
                 style={[styles.featureSubtitle, { color: theme.textSecondary }]}
@@ -414,7 +454,7 @@ export default function ProfileScreen() {
               style={styles.featureCard}
               onPress={() => setShowSocialModal(true)}
             >
-              <Globe size={24} color={theme.primary} />
+              <Globe size={32} color={theme.primary} />
               <Text>Connect</Text>
               <Text>Social & Web</Text>
             </Button>
@@ -435,7 +475,7 @@ export default function ProfileScreen() {
 
             {user?.businessName && (
               <View style={styles.infoItem}>
-                <Building size={20} color={theme.textSecondary} />
+                <Building size={30} color={theme.textSecondary} />
                 <View style={styles.infoContent}>
                   <Text
                     style={[styles.infoLabel, { color: theme.textSecondary }]}
@@ -451,7 +491,7 @@ export default function ProfileScreen() {
 
             {user?.businessType && (
               <View style={styles.infoItem}>
-                <Hash size={20} color={theme.textSecondary} />
+                <Hash size={32} color={theme.textSecondary} />
                 <View style={styles.infoContent}>
                   <Text
                     style={[styles.infoLabel, { color: theme.textSecondary }]}
@@ -467,7 +507,7 @@ export default function ProfileScreen() {
 
             {user?.businessEmail && (
               <View style={styles.infoItem}>
-                <AtSign size={20} color={theme.textSecondary} />
+                <AtSign size={32} color={theme.textSecondary} />
                 <View style={styles.infoContent}>
                   <Text
                     style={[styles.infoLabel, { color: theme.textSecondary }]}
@@ -483,7 +523,7 @@ export default function ProfileScreen() {
 
             {user?.website && (
               <View style={styles.infoItem}>
-                <Globe size={20} color={theme.textSecondary} />
+                <Globe size={32} color={theme.textSecondary} />
                 <View style={styles.infoContent}>
                   <Text
                     style={[styles.infoLabel, { color: theme.textSecondary }]}
@@ -499,7 +539,7 @@ export default function ProfileScreen() {
 
             {user?.gstNumber && (
               <View style={styles.infoItem}>
-                <Hash size={20} color={theme.textSecondary} />
+                <Hash size={32} color={theme.textSecondary} />
                 <View style={styles.infoContent}>
                   <Text
                     style={[styles.infoLabel, { color: theme.textSecondary }]}
@@ -515,7 +555,7 @@ export default function ProfileScreen() {
 
             {user?.udyamNumber && (
               <View style={styles.infoItem}>
-                <Hash size={20} color={theme.textSecondary} />
+                <Hash size={32} color={theme.textSecondary} />
                 <View style={styles.infoContent}>
                   <Text
                     style={[styles.infoLabel, { color: theme.textSecondary }]}
@@ -548,7 +588,7 @@ export default function ProfileScreen() {
 
           {user?.email && (
             <View style={styles.infoItem}>
-              <Mail size={20} color={theme.textSecondary} />
+              <Mail size={32} color={theme.textSecondary} />
               <View style={styles.infoContent}>
                 <Text
                   style={[styles.infoLabel, { color: theme.textSecondary }]}
@@ -564,7 +604,7 @@ export default function ProfileScreen() {
 
           {user?.phone && (
             <View style={styles.infoItem}>
-              <Phone size={20} color={theme.textSecondary} />
+              <Phone size={32} color={theme.textSecondary} />
               <View style={styles.infoContent}>
                 <Text
                   style={[styles.infoLabel, { color: theme.textSecondary }]}
@@ -580,7 +620,7 @@ export default function ProfileScreen() {
 
           {(user?.address || user?.city || user?.state || user?.country) && (
             <View style={styles.infoItem}>
-              <MapPin size={20} color={theme.textSecondary} />
+              <MapPin size={32} color={theme.textSecondary} />
               <View style={styles.infoContent}>
                 <Text
                   style={[styles.infoLabel, { color: theme.textSecondary }]}
@@ -727,9 +767,9 @@ const styles = StyleSheet.create({
   },
   profileImageContainer: {
     position: 'relative',
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 110,
+    height: 110,
+    borderRadius: '100%',
     alignSelf: 'center',
     marginTop: Spacing.xs,
     marginBottom: Spacing.md,
@@ -737,7 +777,7 @@ const styles = StyleSheet.create({
   profileImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 60,
+    borderRadius: '100%',
     borderWidth: 1,
     borderColor: '#e0e0e0',
   },
@@ -746,17 +786,17 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: Colors.gray[200],
-    borderRadius: 20,
+    borderRadius: '100%',
     padding: 8,
     zIndex: 1,
   },
   uploadButton: {
-    width: 20,
-    height: 20,
+    width: 100,
+    height: 100,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: Colors.gray[200],
-    borderRadius: 20,
+    borderRadius: '100%',
     borderWidth: 2,
     borderColor: 'white',
   },
@@ -768,9 +808,9 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 16,
+    fontSize: Typography.size.lg,
+    fontWeight: Typography.weight.bold as any,
+    marginBottom: Spacing.md,
   },
   featuresGrid: {
     flexDirection: 'row',
@@ -807,7 +847,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary[500],
     width: 20,
     height: 20,
-    borderRadius: 10,
+    borderRadius: '100%',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -980,12 +1020,13 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
   businessCardContainer: {
     margin: 20,
     borderRadius: 16,
     overflow: 'hidden',
+    backgroundColor: Colors.white,
   },
   closeBusinessCardButton: {
     paddingVertical: 16,
@@ -1000,13 +1041,12 @@ const styles = StyleSheet.create({
     marginVertical: 12,
     padding: 16,
     borderRadius: 12,
-    borderWidth: 1,
   },
   infoItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 12,
-    gap: 12,
+    marginBottom: Spacing.md,
+    gap: Spacing.md,
   },
   infoContent: {
     flex: 1,
@@ -1014,10 +1054,11 @@ const styles = StyleSheet.create({
   infoLabel: {
     fontSize: 12,
     fontWeight: '500',
-    marginBottom: 2,
+    marginBottom: Spacing.xs,
   },
   infoValue: {
     fontSize: 16,
+    fontWeight: '500',
     lineHeight: 22,
   },
 });
