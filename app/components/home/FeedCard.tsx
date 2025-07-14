@@ -264,6 +264,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
     width: width - Spacing.sm * 2,
     alignSelf: 'center',
+    // height: 300
     // minHeight: 450, // Example: increase to your desired height
     // paddingBottom: Spacing.md,
 
@@ -344,13 +345,13 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
   },
   contentText: {
-    fontSize: Typography.size.md,
+    fontSize: Typography.size.sm,
     color: Colors.gray[800],
     lineHeight: 22,
   },
   image: {
     width: "100%",
-    height: 400,
+    height: 200,
     borderRadius: 12,
     marginBottom: Spacing.md,
     // paddingTop: Spacing.lg,

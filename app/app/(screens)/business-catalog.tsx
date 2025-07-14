@@ -149,7 +149,24 @@ export default function BusinessCatalogScreen() {
     const handleSaveCatalogItem = async (item: any) => {
         try {
             const existingCatalog = Array.isArray(catalog) ? catalog : [];
-            let updatedCatalog = existingCatalog.length > 0 ? [...existingCatalog, item] : [item];
+
+            let updatedCatalog: typeof existingCatalog;
+
+            if (item?.id) {
+                const index = existingCatalog.findIndex((c) => c._id === item.id);
+
+                if (index !== -1) {
+                    // Replace existing catalog item
+                    updatedCatalog = [...existingCatalog];
+                    updatedCatalog[index] = item;
+                } else {
+                    // Append if item.id is new
+                    updatedCatalog = [...existingCatalog, item];
+                }
+            } else {
+                // No ID: treat as new item
+                updatedCatalog = [...existingCatalog, item];
+            }
             await updateUserService(user?._id, {
                 catalog: updatedCatalog,
             });

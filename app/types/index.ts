@@ -39,13 +39,21 @@ export interface User {
 }
 
 export interface Client {
-  id: string;
+  _id: string;
   name: string;
-  logo?: string;
-  testimonial?: string;
-  rating?: number;
-  projectType?: string;
-  completedDate?: Date;
+  logo: string;
+  testimonial: string;
+  rating: string;
+  projectType: string;
+  completedDate: string;
+}
+
+
+export interface Service {
+  _id?: string;
+  title: string;
+  description: string;
+  features: string[];
 }
 export interface Post {
   id: string;

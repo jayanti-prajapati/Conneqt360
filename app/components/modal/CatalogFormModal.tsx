@@ -181,7 +181,7 @@ export const CatalogFormModal: React.FC<CatalogFormModalProps> = ({
                     <View style={styles.section}>
                         <View style={styles.arrayHeader}>
                             <Text style={[styles.label, { color: theme.textSecondary }]}>
-                                <Text >Image </Text>
+                                <Text >Images </Text>
                                 <Text style={{ color: 'red' }}>*</Text>
                             </Text>
 
@@ -216,7 +216,10 @@ export const CatalogFormModal: React.FC<CatalogFormModalProps> = ({
 
                     <View style={styles.section}>
                         <View style={styles.arrayHeader}>
-                            <Text style={[styles.sectionTitle, { color: theme.text }]}>Tags</Text>
+                            <Text style={[styles.label, { color: theme.textSecondary }]}>
+                                <Text >Tags </Text>
+                                <Text style={{ color: 'red' }}>*</Text>
+                            </Text>
                             <TouchableOpacity
                                 style={[styles.addButton, { backgroundColor: theme.primary }]}
                                 onPress={() => addArrayField('tags')}

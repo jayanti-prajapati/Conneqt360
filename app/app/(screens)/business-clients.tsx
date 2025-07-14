@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -13,15 +13,47 @@ import { useThemeStore } from '@/store/themeStore';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Client } from '@/types';
 import { ClientFormModal } from '@/components/modal/ClientFormModal';
+import useUserServiceStore from '@/store/useUserBusinessServices';
+import { clearAuthData, getAuthData } from '@/services/secureStore';
 
 export default function ClientsScreen() {
     const { theme } = useThemeStore();
     const router = useRouter();
-    const { clients, owner } = useLocalSearchParams();
+    const { owner } = useLocalSearchParams();
     const isOwner = (owner == 'true') || "false"
-    const parsedClients: Client[] = JSON.parse(clients as string);
+    // const parsedClients: Client[] = JSON.parse(clients as string);
     const [showClientForm, setShowClientForm] = useState(false);
     const [editingClient, setEditingClient] = useState<any>(null);
+
+    const { response, getUserServicesByUserId, updateUserService, loading } = useUserServiceStore();
+    const parsedClients: Client[] = response?.data?.data?.client || [];
+    const [user, setUser] = useState<any>(null);
+
+
+    const fetchCatalogByUserId = async () => {
+        try {
+            const data = await getAuthData();
+            const userId = data?.userData?.data?._id;
+
+            if (!userId) {
+                clearAuthData();
+                router.replace('/(auth)/login');
+                return;
+            }
+            setUser(data?.userData?.data)
+
+            await getUserServicesByUserId(userId);
+
+        } catch (error) {
+            console.error('Error fetching user:', error);
+            clearAuthData();
+            router.replace('/(auth)/login');
+        }
+    };
+
+    useEffect(() => {
+        fetchCatalogByUserId()
+    }, [])
 
 
     const handleAddClient = () => {
@@ -30,19 +62,64 @@ export default function ClientsScreen() {
     };
 
     const handleEditClient = (client: any) => {
-        console.log(client);
-
         setEditingClient(client);
         setShowClientForm(true);
     };
 
-    const handleDeleteClient = (clientId: string) => {
-        Alert.alert('Deleted', 'Client deleted successfully');
+    const handleDeleteClient = (id: string) => {
+        Alert.alert('Confirm Delete', 'Are you sure?', [
+            { text: 'Cancel', style: 'cancel' },
+            {
+                text: 'Delete',
+                style: 'destructive',
+                onPress: async () => {
+                    try {
+                        const updatedClients = parsedClients?.filter((item: Client) => item._id !== id);
+                        await updateUserService(user?._id, {
+                            "client": updatedClients,
+                        });
+
+                        Alert.alert('Deleted', 'Catalog item deleted');
+                    } catch (err: any) {
+                        Alert.alert('Error', err.message);
+                    }
+                },
+            },
+        ]);
     };
 
-    const handleSaveClient = (client: any) => {
-        // In a real app, this would save to the backend
-        Alert.alert('Success', 'Client saved successfully!');
+    const handleSaveClient = async (client: any) => {
+        try {
+            const existingClients = Array.isArray(parsedClients) ? parsedClients : [];
+            let updatedCatalog: typeof existingClients;
+
+            if (client?.id) {
+                const index = existingClients?.findIndex((c) => c._id === client.id);
+
+                if (index !== -1) {
+                    // Replace existing client
+                    updatedCatalog = [...existingClients];
+                    updatedCatalog[index] = client;
+                } else {
+                    // Append if id is new
+                    updatedCatalog = [...existingClients, client];
+                }
+            } else {
+                // If no id present, treat as new
+                updatedCatalog = [...existingClients, client];
+            }
+
+            // let updatedCatalog = existingClients.length > 0 ? [...existingClients, client] : [client];
+            await updateUserService(user?._id, {
+                client: updatedCatalog,
+            });
+
+            Alert.alert('Success', `Catalog item ${editingClient ? 'updated' : 'added'}!`);
+            setShowClientForm(false);
+            setEditingClient(null);
+        } catch (err: any) {
+            Alert.alert('Error', err.message);
+        }
     };
     const renderStars = (rating: number) =>
         Array.from({ length: 5 }, (_, i) => (
@@ -88,7 +165,7 @@ export default function ClientsScreen() {
                     <View style={[styles.statCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
                         <Star size={24} color="#FFD700" />
                         <Text style={[styles.statNumber, { color: theme.text }]}>
-                            {(parsedClients.reduce((sum, client) => sum + (client.rating || 0), 0) / parsedClients.length).toFixed(1)}
+                            {(parsedClients.reduce((sum, client) => sum + (Number(client.rating) || 0), 0) / parsedClients.length).toFixed(1)}
                         </Text>
                         <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Average Rating</Text>
                     </View>
@@ -101,7 +178,7 @@ export default function ClientsScreen() {
                 <View style={styles.clientsList}>
                     {parsedClients.map((client) => (
                         <View
-                            key={client.id}
+                            key={client._id}
                             style={[styles.clientCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
                         >
                             {isOwner && (
@@ -114,7 +191,7 @@ export default function ClientsScreen() {
                                     </TouchableOpacity>
                                     <TouchableOpacity
                                         style={[styles.actionButton, { backgroundColor: theme.error + '20' }]}
-                                        onPress={() => handleDeleteClient(client.id)}
+                                        onPress={() => handleDeleteClient(client._id)}
                                     >
                                         <Trash2 size={16} color={theme.error} />
                                     </TouchableOpacity>
@@ -130,7 +207,7 @@ export default function ClientsScreen() {
                                     <Text style={[styles.clientName, { color: theme.text }]}>{client.name}</Text>
                                     <Text style={[styles.projectType, { color: theme.primary }]}>{client.projectType}</Text>
                                     <View style={styles.clientMeta}>
-                                        <View style={styles.rating}>{renderStars(client.rating || 0)}</View>
+                                        <View style={styles.rating}>{renderStars(Number(client.rating) || 0)}</View>
                                         <View style={styles.dateContainer}>
                                             <Calendar size={14} color={theme.textSecondary} />
                                             <Text style={[styles.completedDate, { color: theme.textSecondary }]}>

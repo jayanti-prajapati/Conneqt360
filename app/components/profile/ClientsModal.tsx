@@ -76,7 +76,7 @@ export const ClientsModal: React.FC<ClientsModalProps> = ({
                     <View style={styles.clientsList}>
                         {clients.map((client) => (
                             <View
-                                key={client.id}
+                                key={client._id}
                                 style={[styles.clientCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
                             >
                                 <View style={styles.clientHeader}>

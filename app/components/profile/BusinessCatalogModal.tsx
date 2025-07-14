@@ -23,7 +23,7 @@ export const BusinessCatalogModal: React.FC<BusinessCatalogModalProps> = ({
 
     const renderCatalogItem = (item: CatalogItem) => (
         <TouchableOpacity
-            key={item.id}
+            key={item._id}
             style={[styles.catalogItem, { backgroundColor: theme.surface, borderColor: theme.border }]}
             onPress={() => setSelectedItem(item)}
         >

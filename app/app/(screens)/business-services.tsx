@@ -4,29 +4,77 @@ import { X, CircleCheck as CheckCircle, PlusCircle, Edit, Trash2, ArrowLeft } fr
 import { useThemeStore } from '@/store/themeStore';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ServiceFormModal } from '@/components/modal/ServiceFormModal';
+import { Service } from '@/types';
+
+const services = [
+    {
+        title: 'Web Development',
+        description: 'We build responsive and fast-loading websites tailored to your business needs.',
+        features: [
+            'Responsive Design',
+            'SEO Optimized',
+            'Performance Tuning',
+            'E-commerce Integration'
+        ]
+    },
+    {
+        title: 'Mobile App Development',
+        description: 'Cross-platform mobile apps with a native feel for iOS and Android.',
+        features: [
+            'Flutter & React Native',
+            'Push Notifications',
+            'App Store Deployment',
+            'Offline Support'
+        ]
+    },
+    {
+        title: 'UI/UX Design',
+        description: 'Design experiences that are user-centered and visually stunning.',
+        features: [
+            'Wireframing',
+            'Prototyping',
+            'User Testing',
+            'Design Systems'
+        ]
+    },
+    {
+        title: 'Cloud Solutions',
+        description: 'We offer scalable cloud architecture and cost-optimized deployments.',
+        features: [
+            'AWS & Azure Integration',
+            'Auto Scaling',
+            'CI/CD Pipelines',
+            'Monitoring & Alerts'
+        ]
+    },
+    {
+        title: 'Digital Marketing',
+        description: 'Grow your brand online through data-driven marketing strategies.',
+        features: [
+            'SEO & SEM',
+            'Social Media Campaigns',
+            'Analytics & Reporting',
+            'Email Marketing'
+        ]
+    }
+];
 
 export default function ServicesScreen() {
     const { theme } = useThemeStore();
     const router = useRouter();
     const params = useLocalSearchParams();
     const [showServiceForm, setShowServiceForm] = useState(false);
-    const [editingService, setEditingService] = useState<{ service: string; index: number } | null>(null);
-    const services: string[] = JSON.parse(params.services as string);
+    const [editingService, setEditingService] = useState<any>();
+
     const isOwner = (params.owner == 'true') || "false"
-    const serviceCategories = {
-        'Development': ['Web Development', 'Mobile App Development'],
-        'Cloud & Infrastructure': ['Cloud Solutions'],
-        'Design & Marketing': ['UI/UX Design', 'Digital Marketing'],
-        'Consulting': ['Business Consulting'],
-    };
 
     const handleAddService = () => {
         setEditingService(null);
         setShowServiceForm(true);
     };
 
-    const handleEditService = (service: string, index: number) => {
-        setEditingService({ service, index });
+    const handleEditService = (service: Service) => {
+        setEditingService(service);
         setShowServiceForm(true);
     };
 
@@ -34,25 +82,12 @@ export default function ServicesScreen() {
         Alert.alert('Deleted', 'Service deleted successfully');
     };
 
-    const handleSaveService = (service: string) => {
+    const handleSaveService = (service: Service) => {
         // In a real app, this would save to the backend
         Alert.alert('Success', 'Service saved successfully!');
     };
 
 
-    const getCategoryForService = (service: string) => {
-        for (const [category, categoryServices] of Object.entries(serviceCategories)) {
-            if (categoryServices.includes(service)) return category;
-        }
-        return 'Other Services';
-    };
-
-    const groupedServices = services.reduce((acc, service) => {
-        const category = getCategoryForService(service);
-        if (!acc[category]) acc[category] = [];
-        acc[category].push(service);
-        return acc;
-    }, {} as Record<string, string[]>);
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -73,55 +108,52 @@ export default function ServicesScreen() {
 
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-                    {isOwner ? 'Manage your services' : 'Professional services we offer to help grow your business'}
+                    {isOwner
+                        ? 'Manage your services'
+                        : 'Professional services we offer to help grow your business'}
                 </Text>
 
-                {Object.entries(groupedServices).map(([category, categoryServices]) => (
-                    <View key={category} style={styles.categorySection}>
-                        <Text style={[styles.categoryTitle, { color: theme.text }]}>{category}</Text>
-
-                        {categoryServices.map((service, index) => (
-                            <View
-                                key={index}
-                                style={[styles.serviceItem, { backgroundColor: theme.surface, borderColor: theme.border }]}
-                            >
-                                {isOwner && (
-                                    <View style={styles.serviceActions}>
-                                        <TouchableOpacity
-                                            style={[styles.actionButton, { backgroundColor: theme.primary + '20' }]}
-                                            onPress={() => handleEditService?.(service, index)}
-                                        >
-                                            <Edit size={16} color={theme.primary} />
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                            style={[styles.actionButton, { backgroundColor: theme.error + '20' }]}
-                                            onPress={() => handleDeleteService(index)}
-                                        >
-                                            <Trash2 size={16} color={theme.error} />
-                                        </TouchableOpacity>
-                                    </View>
-                                )}
-                                <View style={styles.serviceHeader}>
-                                    <CheckCircle size={20} color={theme.success} />
-                                    <Text style={[styles.serviceName, { color: theme.text }]}>{service}</Text>
-                                </View>
-
-                                <Text style={[styles.serviceDescription, { color: theme.textSecondary }]}>
-                                    {getServiceDescription(service)}
-                                </Text>
-
-                                <View style={styles.serviceFeatures}>
-                                    {getServiceFeatures(service).map((feature, i) => (
-                                        <Text key={i} style={[styles.feature, { color: theme.textSecondary }]}>
-                                            • {feature}
-                                        </Text>
-                                    ))}
-                                </View>
+                {services.map((service, index) => (
+                    <View
+                        key={index}
+                        style={[styles.serviceItem, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                    >
+                        {isOwner && (
+                            <View style={styles.serviceActions}>
+                                <TouchableOpacity
+                                    style={[styles.actionButton, { backgroundColor: theme.primary + '20' }]}
+                                    onPress={() => handleEditService(service)}
+                                >
+                                    <Edit size={16} color={theme.primary} />
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[styles.actionButton, { backgroundColor: theme.error + '20' }]}
+                                    onPress={() => handleDeleteService(index)}
+                                >
+                                    <Trash2 size={16} color={theme.error} />
+                                </TouchableOpacity>
                             </View>
-                        ))}
+                        )}
+                        <View style={styles.serviceHeader}>
+                            <CheckCircle size={20} color={theme.success} />
+                            <Text style={[styles.serviceName, { color: theme.text }]}>{service.title}</Text>
+                        </View>
+
+                        <Text style={[styles.serviceDescription, { color: theme.textSecondary }]}>
+                            {service.description}
+                        </Text>
+
+                        <View style={styles.serviceFeatures}>
+                            {service.features.map((feature, i) => (
+                                <Text key={i} style={[styles.feature, { color: theme.textSecondary }]}>
+                                    • {feature}
+                                </Text>
+                            ))}
+                        </View>
                     </View>
                 ))}
 
+                {/* Call to Action */}
                 <View style={[styles.contactSection, { backgroundColor: theme.surface, borderColor: theme.border }]}>
                     <Text style={[styles.contactTitle, { color: theme.text }]}>Ready to Get Started?</Text>
                     <Text style={[styles.contactDescription, { color: theme.textSecondary }]}>
@@ -132,41 +164,20 @@ export default function ServicesScreen() {
                     </TouchableOpacity>
                 </View>
             </ScrollView>
-            <ServiceFormModal
-                visible={showServiceForm}
-                onClose={() => setShowServiceForm(false)}
-                onSave={handleSaveService}
-                service={editingService?.service}
-                isEdit={!!editingService}
-            />
+            {
+                showServiceForm && <ServiceFormModal
+                    visible={showServiceForm}
+                    onClose={() => setShowServiceForm(false)}
+                    onSave={handleSaveService}
+                    service={editingService}
+                    isEdit={!!editingService}
+                />}
 
         </View>
     );
 }
 
-const getServiceDescription = (service: string): string => {
-    const descriptions: Record<string, string> = {
-        'Web Development': 'Custom websites and web applications built with modern technologies',
-        'Mobile App Development': 'Native and cross-platform mobile applications for iOS and Android',
-        'Cloud Solutions': 'Cloud infrastructure setup, migration, and optimization services',
-        'Digital Marketing': 'SEO, social media marketing, and digital advertising campaigns',
-        'Business Consulting': 'Strategic business advice and process optimization',
-        'UI/UX Design': 'User-centered design for web and mobile applications',
-    };
-    return descriptions[service] || 'Professional service tailored to your business needs';
-};
 
-const getServiceFeatures = (service: string): string[] => {
-    const features: Record<string, string[]> = {
-        'Web Development': ['Responsive Design', 'SEO Optimized', 'Fast Loading', 'Secure'],
-        'Mobile App Development': ['Cross-platform', 'Native Performance', 'App Store Ready', 'Push Notifications'],
-        'Cloud Solutions': ['Scalable Infrastructure', '24/7 Monitoring', 'Cost Optimization', 'Security'],
-        'Digital Marketing': ['SEO Strategy', 'Social Media', 'Analytics', 'ROI Tracking'],
-        'Business Consulting': ['Process Analysis', 'Strategy Development', 'Implementation', 'Training'],
-        'UI/UX Design': ['User Research', 'Wireframing', 'Prototyping', 'Testing'],
-    };
-    return features[service] || ['Professional Service', 'Quality Delivery', 'Support'];
-};
 
 const styles = StyleSheet.create({
     container: { flex: 1, paddingTop: 40 },

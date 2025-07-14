@@ -12,12 +12,13 @@ import {
 import { X, Save, Plus } from 'lucide-react-native';
 import { useThemeStore } from '@/store/themeStore';
 import TagsInput from '../Input/TagsInput';
+import { Service } from '@/types';
 
 interface ServiceFormModalProps {
     visible: boolean;
     onClose: () => void;
-    onSave: (service: any) => void;
-    service?: string;
+    onSave: (service: Service) => void;
+    service: Service;
     isEdit?: boolean;
 }
 
@@ -29,24 +30,26 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
     isEdit = false,
 }) => {
     const { theme } = useThemeStore();
-    const [serviceName, setServiceName] = useState(service || '');
-    const [description, setDescription] = useState('');
-    const [tags, setTags] = useState<string[]>(['']);
+    const [serviceName, setServiceName] = useState(service?.title || '');
 
-
+    const [description, setDescription] = useState(service?.description || '');
+    const [tags, setTags] = useState<string[]>(service?.features || ['']);
 
 
     const handleSave = () => {
-        if (!serviceName.trim()) {
+        if (!serviceName) {
             Alert.alert('Error', 'Service name is required.');
             return;
         }
 
-        onSave({
-            name: serviceName.trim(),
-            description: description.trim(),
-            tags,
-        });
+        onSave(
+            {
+                title: serviceName.trim(),
+                description: description.trim(),
+                features: tags,
+            }
+
+        );
 
         onClose();
         setServiceName('');
@@ -84,7 +87,11 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
 
                         {/* Name */}
                         <View style={styles.inputGroup}>
-                            <Text style={[styles.label, { color: theme.textSecondary }]}>Service Name *</Text>
+                            <Text style={[styles.label, { color: theme.textSecondary }]}>
+                                <Text >Service Name </Text>
+                                <Text style={{ color: 'red' }}>*</Text>
+                            </Text>
+
                             <TextInput
                                 style={[
                                     styles.input,
@@ -99,7 +106,11 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
 
                         {/* Description */}
                         <View style={styles.inputGroup}>
-                            <Text style={[styles.label, { color: theme.textSecondary }]}>Description</Text>
+                            <Text style={[styles.label, { color: theme.textSecondary }]}>
+                                <Text >Description</Text>
+                                <Text style={{ color: 'red' }}>*</Text>
+                            </Text>
+
                             <TextInput
                                 style={[
                                     styles.textArea,
