@@ -333,12 +333,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* Profile Completion */}
-        <View
-          style={[
-            styles.card,
-            { marginTop: Spacing.md, marginHorizontal: Spacing.lg },
-          ]}
-        >
+        <View style={[styles.card]}>
           <View style={styles.progressHeader}>
             <Text style={styles.progressTitle}>Profile Completion</Text>
             <Text
@@ -611,7 +606,7 @@ const styles = StyleSheet.create({
   },
   profileSection: {
     alignItems: 'center',
-    padding: Spacing.lg,
+    padding: Spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: Colors.gray[100],
   },
@@ -729,7 +724,7 @@ const styles = StyleSheet.create({
     gap: 4,
 
     justifyContent: 'space-between',
-    marginHorizontal: -Spacing.xs,
+    marginHorizontal: Spacing.md,
     marginBottom: Spacing.md,
   },
   button: {
@@ -751,9 +746,9 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: Colors.white,
     borderRadius: 12,
-    padding: Spacing.lg,
-    marginBottom: Spacing.md,
-    // marginHorizontal: Spacing.lg,
+    padding: Spacing.md,
+    marginHorizontal: Spacing.md,
+    marginVertical: Spacing.sm,
     shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
