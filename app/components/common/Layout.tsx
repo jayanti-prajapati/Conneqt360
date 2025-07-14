@@ -74,7 +74,7 @@ export default function Layout({
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: Colors.white }}>
+    <View style={{ flex: 1, backgroundColor: Colors.gray[100] }}>
       <StatusBar
         barStyle={statusBarStyle}
         backgroundColor={statusBarColor}
@@ -119,5 +119,6 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     padding: Spacing.md,
+    backgroundColor: Colors.gray[200],
   },
 });

@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: '100%',
-    backgroundColor: Colors.gray[100],
+    backgroundColor: Colors.white,
   },
   loadingContainer: {
     flex: 1,
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary[600],
   },
   ghostButton: {
-    backgroundColor: Colors.transparent,
+    backgroundColor: Colors.white,
   },
   smallButton: {
     minHeight: 40,

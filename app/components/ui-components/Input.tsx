@@ -123,8 +123,11 @@ const styles = StyleSheet.create({
     padding: Spacing.sm,
     minHeight: 48,
     minWidth: 100,
-    borderWidth: 1,
-    borderColor: Colors.gray[200],
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   input: {
     flex: 1,

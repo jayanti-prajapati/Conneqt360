@@ -1,15 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  Image,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Share,
-  ViewStyle,
-} from 'react-native';
+import { StyleSheet, View, Text, Image, Share, ViewStyle } from 'react-native';
 import Button from '@/components/ui-components/Button';
 
 import { useRouter } from 'expo-router';
@@ -17,7 +7,6 @@ import Layout from '@/components/common/Layout';
 
 import {
   Check,
-  LogOut,
   Mail,
   Phone,
   MapPin,
@@ -35,7 +24,6 @@ import Colors from '@/constants/Colors';
 import Spacing from '@/constants/Spacing';
 import Form from '@/components/profile/Form';
 import useUsersStore from '@/store/useUsersStore';
-import CustomLoader from '@/components/loader/CustomLoader';
 import About from '@/components/profile/About';
 import { Ionicons } from '@expo/vector-icons';
 import Typography from '@/constants/Typography';
@@ -47,6 +35,8 @@ import { User } from '@/types';
 import { ProfileImageModal } from '@/components/modal/ProfileImageModal';
 import { HARDCODED_USER } from '@/components/mock/UserData';
 import { SocialMediaModal } from '@/components/profile/SocialMediaModal';
+import InfoItem from '@/components/common/InfoItem';
+import InfoCard from '@/components/common/InfoCard';
 const userMockData: User = {
   id: 'user123',
   email: 'demo@business.com',
@@ -373,27 +363,6 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* About */}
-        {/* <View style={styles.section}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={styles.sectionTitle}>About</Text>
-            <Button
-              variant="ghost"
-              onPress={() => setIsAbout(true)}
-              style={{ marginLeft: 8 }}
-              isIconOnly
-            >
-              <Edit size={18} color={Colors.primary[900]} />
-            </Button>
-          </View>
-          {user?.aboutUs ? (
-            <View style={styles.card}>
-              <Text style={styles.aboutText}>{user.aboutUs}</Text>
-            </View>
-          ) : (
-            <Text style={{ color: Colors.gray[400] }}>No description available.</Text>
-          )}
-        </View> */}
         {/* catalogue */}
         <View style={styles.businessFeaturesSection}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>
@@ -463,234 +432,120 @@ export default function ProfileScreen() {
 
         {/* Business Information */}
         {(user?.businessName || user?.businessType) && (
-          <View
-            style={[
-              styles.infoSection,
-              { backgroundColor: theme.surface, borderColor: theme.border },
+          <InfoCard
+            title="Business Information"
+            items={[
+              {
+                label: 'Business Name',
+                value: user?.businessName,
+                icon: <Building size={30} color={theme.textSecondary} />,
+              },
+              {
+                label: 'Business Type',
+                value: user?.businessType,
+                icon: <Hash size={32} color={Colors.gray[400]} />,
+              },
+              {
+                label: 'Business Email',
+                value: user?.businessEmail,
+                icon: <AtSign size={32} color={Colors.gray[400]} />,
+              },
+              {
+                label: 'Website',
+                value: user?.website,
+                icon: <Globe size={32} color={Colors.gray[400]} />,
+              },
+              {
+                label: 'GST Number',
+                value: user?.gstNumber,
+                icon: <Hash size={32} color={Colors.gray[400]} />,
+              },
+              {
+                label: 'Udyam Number',
+                value: user?.udyamNumber,
+                icon: <Hash size={32} color={Colors.gray[400]} />,
+              },
             ]}
-          >
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              Business Information
-            </Text>
+          />
+        )}
 
-            {user?.businessName && (
-              <View style={styles.infoItem}>
-                <Building size={30} color={theme.textSecondary} />
-                <View style={styles.infoContent}>
-                  <Text
-                    style={[styles.infoLabel, { color: theme.textSecondary }]}
-                  >
-                    Business Name
-                  </Text>
-                  <Text style={[styles.infoValue, { color: theme.text }]}>
-                    {user.businessName}
-                  </Text>
-                </View>
-              </View>
-            )}
+        <InfoCard
+          title="Contact Information"
+          items={[
+            {
+              label: 'Email',
+              value: user?.email,
+              icon: <Mail size={32} color={Colors.gray[400]} />,
+            },
+            {
+              label: 'Phone',
+              value: user?.phone,
+              icon: <Phone size={32} color={Colors.gray[400]} />,
+            },
+            {
+              label: 'Address',
+              value: [
+                user?.address,
+                user?.city,
+                user?.state,
+                user?.postalCode,
+                user?.country,
+              ]
+                .filter(Boolean)
+                .join(', '),
+              icon: <MapPin size={32} color={Colors.gray[400]} />,
+            },
+          ]}
+        />
 
-            {user?.businessType && (
-              <View style={styles.infoItem}>
-                <Hash size={32} color={theme.textSecondary} />
-                <View style={styles.infoContent}>
-                  <Text
-                    style={[styles.infoLabel, { color: theme.textSecondary }]}
-                  >
-                    Business Type
-                  </Text>
-                  <Text style={[styles.infoValue, { color: theme.text }]}>
-                    {user.businessType}
-                  </Text>
-                </View>
-              </View>
-            )}
-
-            {user?.businessEmail && (
-              <View style={styles.infoItem}>
-                <AtSign size={32} color={theme.textSecondary} />
-                <View style={styles.infoContent}>
-                  <Text
-                    style={[styles.infoLabel, { color: theme.textSecondary }]}
-                  >
-                    Business Email
-                  </Text>
-                  <Text style={[styles.infoValue, { color: theme.text }]}>
-                    {user.businessEmail}
-                  </Text>
-                </View>
-              </View>
-            )}
-
-            {user?.website && (
-              <View style={styles.infoItem}>
-                <Globe size={32} color={theme.textSecondary} />
-                <View style={styles.infoContent}>
-                  <Text
-                    style={[styles.infoLabel, { color: theme.textSecondary }]}
-                  >
-                    Website
-                  </Text>
-                  <Text style={[styles.infoValue, { color: theme.text }]}>
-                    {user.website}
-                  </Text>
-                </View>
-              </View>
-            )}
-
-            {user?.gstNumber && (
-              <View style={styles.infoItem}>
-                <Hash size={32} color={theme.textSecondary} />
-                <View style={styles.infoContent}>
-                  <Text
-                    style={[styles.infoLabel, { color: theme.textSecondary }]}
-                  >
-                    GST Number
-                  </Text>
-                  <Text style={[styles.infoValue, { color: theme.text }]}>
-                    {user.gstNumber}
-                  </Text>
-                </View>
-              </View>
-            )}
-
-            {user?.udyamNumber && (
-              <View style={styles.infoItem}>
-                <Hash size={32} color={theme.textSecondary} />
-                <View style={styles.infoContent}>
-                  <Text
-                    style={[styles.infoLabel, { color: theme.textSecondary }]}
-                  >
-                    Udyam Number
-                  </Text>
-                  <Text style={[styles.infoValue, { color: theme.text }]}>
-                    {user.udyamNumber}
-                  </Text>
-                </View>
-              </View>
-            )}
+        {showBusinessCard && user && (
+          <View style={styles.businessCardModal}>
+            <Button
+              variant="ghost"
+              style={styles.businessCardOverlay as ViewStyle}
+              onPress={() => setShowBusinessCard(false)}
+            />
+            <View style={styles.businessCardContainer}>
+              <BusinessCard user={user} />
+              <Button
+                variant="outline"
+                size="small"
+                onPress={() => setShowBusinessCard(false)}
+                style={styles.closeBusinessCardButton}
+              >
+                Close
+              </Button>
+            </View>
           </View>
         )}
 
-        {/* Contact Information */}
-        <View
-          style={[
-            styles.infoSection,
-            {
-              backgroundColor: theme.surface,
-              borderColor: theme.border,
-              marginBottom: 100,
-            },
-          ]}
-        >
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>
-            Contact Information
-          </Text>
-
-          {user?.email && (
-            <View style={styles.infoItem}>
-              <Mail size={32} color={theme.textSecondary} />
-              <View style={styles.infoContent}>
-                <Text
-                  style={[styles.infoLabel, { color: theme.textSecondary }]}
-                >
-                  Email
-                </Text>
-                <Text style={[styles.infoValue, { color: theme.text }]}>
-                  {user?.email}
-                </Text>
-              </View>
-            </View>
-          )}
-
-          {user?.phone && (
-            <View style={styles.infoItem}>
-              <Phone size={32} color={theme.textSecondary} />
-              <View style={styles.infoContent}>
-                <Text
-                  style={[styles.infoLabel, { color: theme.textSecondary }]}
-                >
-                  Phone
-                </Text>
-                <Text style={[styles.infoValue, { color: theme.text }]}>
-                  {user?.phone}
-                </Text>
-              </View>
-            </View>
-          )}
-
-          {(user?.address || user?.city || user?.state || user?.country) && (
-            <View style={styles.infoItem}>
-              <MapPin size={32} color={theme.textSecondary} />
-              <View style={styles.infoContent}>
-                <Text
-                  style={[styles.infoLabel, { color: theme.textSecondary }]}
-                >
-                  Address
-                </Text>
-                <Text style={[styles.infoValue, { color: theme.text }]}>
-                  {[
-                    user.address,
-                    user.city,
-                    user.state,
-                    user.postalCode,
-                    user.country,
-                  ]
-                    .filter(Boolean)
-                    .join(', ')}
-                </Text>
-              </View>
-            </View>
-          )}
-        </View>
-      </View>
-
-      {showBusinessCard && user && (
-        <View style={styles.businessCardModal}>
-          <Button
-            variant="ghost"
-            style={styles.businessCardOverlay as ViewStyle}
-            onPress={() => setShowBusinessCard(false)}
+        {showEditModal && user && (
+          <EditProfileModal
+            visible={showEditModal}
+            onClose={() => setShowEditModal(false)}
+            user={user}
+            onSave={handleSubmit}
           />
-          <View style={styles.businessCardContainer}>
-            <BusinessCard user={user} />
-            <Button
-              variant="outline"
-              size="small"
-              onPress={() => setShowBusinessCard(false)}
-              style={styles.closeBusinessCardButton}
-            >
-              Close
-            </Button>
-          </View>
-        </View>
-      )}
+        )}
 
-      {showEditModal && user && (
-        <EditProfileModal
-          visible={showEditModal}
-          onClose={() => setShowEditModal(false)}
-          user={user}
-          onSave={handleSubmit}
-        />
-      )}
+        {showProfileImage && user?.profileUrl && (
+          <ProfileImageModal
+            visible={showProfileImage}
+            imageUri={user.profileUrl}
+            onClose={() => setShowProfileImage(false)}
+          />
+        )}
 
-      {showProfileImage && user?.profileUrl && (
-        <ProfileImageModal
-          visible={showProfileImage}
-          imageUri={user.profileUrl}
-          onClose={() => setShowProfileImage(false)}
-        />
-      )}
-
-      {showSocialModal && user && (
-        <SocialMediaModal
-          visible={showSocialModal}
-          onClose={() => setShowSocialModal(false)}
-          socialMedia={user.socialMedia || {}}
-          website={user.website}
-          businessEmail={user.businessEmail}
-        />
-      )}
+        {showSocialModal && user && (
+          <SocialMediaModal
+            visible={showSocialModal}
+            onClose={() => setShowSocialModal(false)}
+            socialMedia={user.socialMedia || {}}
+            website={user.website}
+            businessEmail={user.businessEmail}
+          />
+        )}
+      </View>
     </Layout>
   );
 }
@@ -821,7 +676,7 @@ const styles = StyleSheet.create({
     width: '48%',
     padding: 16,
     borderRadius: 12,
-    backgroundColor: Colors.gray[100],
+    backgroundColor: Colors.white,
     alignItems: 'center',
     gap: 8,
   },
@@ -1041,6 +896,7 @@ const styles = StyleSheet.create({
     marginVertical: 12,
     padding: 16,
     borderRadius: 12,
+    backgroundColor: Colors.white,
   },
   infoItem: {
     flexDirection: 'row',
