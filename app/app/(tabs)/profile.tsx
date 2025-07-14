@@ -835,7 +835,7 @@ const styles = StyleSheet.create({
 
     justifyContent: 'space-between',
     marginHorizontal: -Spacing.xs,
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.md,
   },
   button: {
     margin: Spacing.xs,
