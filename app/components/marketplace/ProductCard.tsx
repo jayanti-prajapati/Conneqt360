@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
-import Card from '@/components/common/Card';
-import Button from '@/components/common/Button';
+import Card from '@/components/ui-components/Card';
+import Button from '@/components/ui-components/Button';
 import { Star } from 'lucide-react-native';
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';

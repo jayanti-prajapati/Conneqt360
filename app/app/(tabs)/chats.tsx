@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image, TextInput } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  TextInput,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeStore } from '../../store/themeStore';
 import { useAuthStore } from '../../services/demoStore';
@@ -7,6 +15,8 @@ import { MessageCircle, Plus, Search, Send } from 'lucide-react-native';
 import { Chat, User } from '../../types';
 import { chatService } from '../../services/charService';
 import { ChatDetailModal } from '../../components/modal/ChatDetailModal';
+import Input from '@/components/ui-components/Input';
+import Layout from '@/components/common/Layout';
 
 // Mock users for starting new chats
 const availableUsers: User[] = [
@@ -14,7 +24,8 @@ const availableUsers: User[] = [
     id: 'user456',
     email: 'sarah@company.com',
     name: 'Sarah Johnson',
-    profileUrl: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
+    profileUrl:
+      'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
     aboutUs: 'Marketing Director',
     followersCount: 890,
     followingCount: 650,
@@ -27,7 +38,8 @@ const availableUsers: User[] = [
     id: 'user789',
     email: 'mike@startup.com',
     name: 'Mike Chen',
-    profileUrl: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
+    profileUrl:
+      'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
     aboutUs: 'Tech Entrepreneur',
     followersCount: 2100,
     followingCount: 450,
@@ -40,7 +52,8 @@ const availableUsers: User[] = [
     id: 'user101',
     email: 'alex@agency.com',
     name: 'Alex Rivera',
-    profileUrl: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
+    profileUrl:
+      'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
     aboutUs: 'Creative Director',
     followersCount: 1500,
     followingCount: 780,
@@ -61,7 +74,9 @@ export default function ChatScreen() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [showChatModal, setShowChatModal] = useState(false);
-  const [selectedChatUserId, setSelectedChatUserId] = useState<string | null>(null);
+  const [selectedChatUserId, setSelectedChatUserId] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     console.log('Fetching chats for user:', user);
@@ -72,8 +87,6 @@ export default function ChatScreen() {
 
   const fetchChats = async () => {
     try {
-
-
       if (user) {
         const userChats = await chatService.getUserChats(user.id);
         setChats(userChats);
@@ -110,8 +123,8 @@ export default function ChatScreen() {
 
   const getOtherUser = (chat: Chat): User | undefined => {
     //@ts-ignore
-    const otherUserId = chat?.participants.find(p => p !== user?.id);
-    return availableUsers.find(u => u.id === otherUserId);
+    const otherUserId = chat?.participants.find((p) => p !== user?.id);
+    return availableUsers.find((u) => u.id === otherUserId);
   };
 
   const formatTime = (date: Date) => {
@@ -131,9 +144,10 @@ export default function ChatScreen() {
     }
   };
 
-  const filteredUsers = availableUsers.filter(u =>
-    u.id !== user?.id &&
-    u.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = availableUsers.filter(
+    (u) =>
+      u.id !== user?.id &&
+      u.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleChatPress = (chat: Chat) => {
@@ -151,15 +165,27 @@ export default function ChatScreen() {
 
     return (
       <TouchableOpacity
-        style={[styles.chatItem, { backgroundColor: theme.background, borderColor: theme.border }]}
+        style={[
+          styles.chatItem,
+          { backgroundColor: theme.background, borderColor: theme.border },
+        ]}
         onPress={() => handleChatPress(item)}
       >
         <View style={styles.avatarContainer}>
           <Image
-            source={{ uri: otherUser.profileUrl || 'https://via.placeholder.com/50' }}
+            source={{
+              uri: otherUser.profileUrl || 'https://via.placeholder.com/50',
+            }}
             style={styles.chatAvatar}
           />
-          {otherUser.isOnline && <View style={[styles.onlineIndicator, { backgroundColor: theme.success }]} />}
+          {otherUser.isOnline && (
+            <View
+              style={[
+                styles.onlineIndicator,
+                { backgroundColor: theme.success },
+              ]}
+            />
+          )}
         </View>
 
         <View style={styles.chatContent}>
@@ -172,13 +198,19 @@ export default function ChatScreen() {
             </Text>
           </View>
 
-          <Text style={[styles.lastMessage, { color: theme.textSecondary }]} numberOfLines={1}>
-            {item.lastMessage.senderId === user?.id ? 'You: ' : ''}{item.lastMessage.content}
+          <Text
+            style={[styles.lastMessage, { color: theme.textSecondary }]}
+            numberOfLines={1}
+          >
+            {item.lastMessage.senderId === user?.id ? 'You: ' : ''}
+            {item.lastMessage.content}
           </Text>
         </View>
 
         {!item.lastMessage.isRead && item.lastMessage.senderId !== user?.id && (
-          <View style={[styles.unreadDot, { backgroundColor: theme.primary }]} />
+          <View
+            style={[styles.unreadDot, { backgroundColor: theme.primary }]}
+          />
         )}
       </TouchableOpacity>
     );
@@ -186,7 +218,10 @@ export default function ChatScreen() {
 
   const renderUserItem = ({ item }: { item: User }) => (
     <TouchableOpacity
-      style={[styles.userItem, { backgroundColor: theme.surface, borderColor: theme.border }]}
+      style={[
+        styles.userItem,
+        { backgroundColor: theme.surface, borderColor: theme.border },
+      ]}
       onPress={() => setSelectedUser(item)}
     >
       <View style={styles.avatarContainer}>
@@ -194,12 +229,21 @@ export default function ChatScreen() {
           source={{ uri: item.profileUrl || 'https://via.placeholder.com/50' }}
           style={styles.chatAvatar}
         />
-        {item.isOnline && <View style={[styles.onlineIndicator, { backgroundColor: theme.success }]} />}
+        {item.isOnline && (
+          <View
+            style={[styles.onlineIndicator, { backgroundColor: theme.success }]}
+          />
+        )}
       </View>
 
       <View style={styles.userInfo}>
-        <Text style={[styles.userName, { color: theme.text }]}>{item.name}</Text>
-        <Text style={[styles.useraboutUs, { color: theme.textSecondary }]} numberOfLines={1}>
+        <Text style={[styles.userName, { color: theme.text }]}>
+          {item.name}
+        </Text>
+        <Text
+          style={[styles.useraboutUs, { color: theme.textSecondary }]}
+          numberOfLines={1}
+        >
           {item.aboutUs}
         </Text>
       </View>
@@ -208,9 +252,13 @@ export default function ChatScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: theme.background }]}
+      >
         <View style={styles.loadingContainer}>
-          <Text style={[styles.loadingText, { color: theme.text }]}>Loading chats...</Text>
+          <Text style={[styles.loadingText, { color: theme.text }]}>
+            Loading chats...
+          </Text>
         </View>
       </SafeAreaView>
     );
@@ -218,31 +266,43 @@ export default function ChatScreen() {
 
   if (showNewChat) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: theme.background }]}
+      >
         <View style={styles.header}>
           <TouchableOpacity onPress={() => setShowNewChat(false)}>
-            <Text style={[styles.backButton, { color: theme.primary }]}>Back</Text>
+            <Text style={[styles.backButton, { color: theme.primary }]}>
+              Back
+            </Text>
           </TouchableOpacity>
           <Text style={[styles.title, { color: theme.text }]}>New Chat</Text>
           <View style={{ width: 50 }} />
         </View>
 
-        <View style={[styles.searchContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <Search size={20} color={theme.textSecondary} />
-          <TextInput
-            style={[styles.searchInput, { color: theme.text }]}
+        <View style={styles.searchContainer}>
+          <Input
             placeholder="Search users..."
-            placeholderTextColor={theme.textSecondary}
             value={searchQuery}
             onChangeText={setSearchQuery}
+            leftIcon={<Search size={20} color="#666" />}
+            inputStyle={styles.searchInput}
+            containerStyle={styles.searchContainer}
           />
         </View>
 
         {selectedUser ? (
           <View style={styles.newChatContainer}>
-            <View style={[styles.selectedUser, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            <View
+              style={[
+                styles.selectedUser,
+                { backgroundColor: theme.surface, borderColor: theme.border },
+              ]}
+            >
               <Image
-                source={{ uri: selectedUser.profileUrl || 'https://via.placeholder.com/50' }}
+                source={{
+                  uri:
+                    selectedUser.profileUrl || 'https://via.placeholder.com/50',
+                }}
                 style={styles.chatAvatar}
               />
               <Text style={[styles.selectedUserName, { color: theme.text }]}>
@@ -250,7 +310,12 @@ export default function ChatScreen() {
               </Text>
             </View>
 
-            <View style={[styles.messageInputContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            <View
+              style={[
+                styles.messageInputContainer,
+                { backgroundColor: theme.surface, borderColor: theme.border },
+              ]}
+            >
               <TextInput
                 style={[styles.messageInput, { color: theme.text }]}
                 placeholder="Type your message..."
@@ -282,21 +347,13 @@ export default function ChatScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.text }]}>Messages</Text>
-        <TouchableOpacity
-          style={[styles.newChatButton, { backgroundColor: theme.primary }]}
-          onPress={() => setShowNewChat(true)}
-        >
-          <Plus size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-      </View>
-
+    <Layout title={'Chat'} scrollable>
       {chats.length === 0 ? (
         <View style={styles.emptyContainer}>
           <MessageCircle size={64} color={theme.textSecondary} />
-          <Text style={[styles.emptyTitle, { color: theme.text }]}>No messages yet</Text>
+          <Text style={[styles.emptyTitle, { color: theme.text }]}>
+            No messages yet
+          </Text>
           <Text style={[styles.emptySubtitle, { color: theme.textSecondary }]}>
             Start a conversation with someone from the community
           </Text>
@@ -325,7 +382,7 @@ export default function ChatScreen() {
           setSelectedChatUserId(null);
         }}
       />
-    </SafeAreaView>
+    </Layout>
   );
 }
 
@@ -361,16 +418,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: 16,
-    marginVertical: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 25,
+    marginTop: 16,
+    backgroundColor: '#fff',
+    borderColor: '#ddd',
     borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
   },
   searchInput: {
-    flex: 1,
     fontSize: 16,
-    marginLeft: 12,
+    color: '#333',
   },
   chatsList: {
     paddingVertical: 8,

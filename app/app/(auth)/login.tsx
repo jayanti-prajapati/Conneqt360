@@ -1,9 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Platform, KeyboardAvoidingView, BackHandler } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  BackHandler,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AntDesign, Feather, FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-
+import Button from '@/components/ui-components/Button';
+import Input from '@/components/ui-components/Input';
 
 import Spacing from '@/constants/Spacing';
 import useAuthStore from '@/store/useAuthStore';
@@ -18,7 +26,6 @@ export default function LoginScreen() {
   const [phone, setPhone] = useState('');
   const { login, loading, reset, sendOtp } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
-
 
   useEffect(() => {
     reset(); // clear Zustand store on mount
@@ -38,9 +45,7 @@ export default function LoginScreen() {
     return () => backHandler.remove();
   }, [reset]);
 
-
   const handleLogin = async () => {
-
     if (isEmailLogin) {
       if (email && password) {
         const data = await login({ email, password });
@@ -50,12 +55,9 @@ export default function LoginScreen() {
         if (data?.status === 200 || data?.status === 201) {
           setError(null);
           router.push('/(tabs)');
-        }
-        else {
+        } else {
           setError('User not found or invalid credentials');
         }
-
-
       } else {
         setError('Email and password are required for email login');
       }
@@ -67,19 +69,14 @@ export default function LoginScreen() {
           setError(null);
           router.push('/(auth)/otp');
           // Clear any previous error
-
         } else {
           setError('Something went wrong Please try again later.');
         }
-
-
       } else {
         setError('Phone Number is required for login');
       }
-
     }
     // In a real app, implement actual authentication
-
   };
 
   const handleSignUp = () => {
@@ -94,16 +91,13 @@ export default function LoginScreen() {
   };
 
   return (
-
     <View style={styles.container}>
-
       <View style={styles.card}>
         <View style={styles.iconContainer}>
           <LinearGradient
             colors={['#1F73C6', '#F7941E']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
-
             style={styles.iconGradient}
           >
             <Feather name="user" size={32} color="white" />
@@ -112,73 +106,71 @@ export default function LoginScreen() {
 
         <Text style={styles.title}>Welcome</Text>
         <Text style={styles.subtitle}> Login to your business account</Text>
-        {isEmailLogin ?
+        {isEmailLogin ? (
           <>
-            <View style={styles.inputContainer}>
-              <Feather name="mail" size={20} color="#aaa" style={styles.inputIcon} />
-              <TextInput
-                placeholder="Email address"
-                value={email}
-                onChangeText={setEmail}
-                style={styles.input}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </View>
+            <Input
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Email address"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              leftIcon={<Feather name="mail" size={20} color="#aaa" />}
+              style={styles.input}
+            />
 
-            <View style={styles.inputContainer}>
-              <Feather name="lock" size={20} color="#aaa" style={styles.inputIcon} />
-              <TextInput
-                placeholder="Password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                style={styles.input}
-              />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
-                <Feather name={showPassword ? "eye-off" : "eye"} size={20} color="#aaa" />
-              </TouchableOpacity>
-            </View>
-          </> :
-          <>
-            <View style={styles.inputContainer}>
-              <Feather name="phone" size={20} color="#aaa" style={styles.inputIcon} />
-              <TextInput
-                placeholder="Phone Number"
-                value={phone}
-                onChangeText={setPhone}
-                style={styles.input}
-                keyboardType="phone-pad"
-                autoCapitalize="none"
-              />
-            </View>
-
-
+            <Input
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Password"
+              secureTextEntry={!showPassword}
+              leftIcon={<Feather name="lock" size={20} color="#aaa" />}
+              rightIcon={
+                <Feather
+                  name={showPassword ? 'eye' : 'eye-off'}
+                  size={20}
+                  color="#aaa"
+                />
+              }
+              onRightIconPress={() => setShowPassword(!showPassword)}
+              style={styles.input}
+            />
           </>
-        }
+        ) : (
+          <>
+            <Input
+              value={phone}
+              onChangeText={setPhone}
+              placeholder="Phone Number"
+              keyboardType="phone-pad"
+              autoCapitalize="none"
+              leftIcon={<Feather name="phone" size={20} color="#aaa" />}
+              style={styles.input}
+            />
+          </>
+        )}
 
-        {/* <TouchableOpacity style={styles.forgotPassword}>
-          <Text style={styles.forgotText}>Forgot password?</Text>
-        </TouchableOpacity> */}
-
-        <TouchableOpacity style={styles.button} onPress={handleLogin} >
-          <LinearGradient colors={['#1F73C6', '#F7941E']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }} style={styles.button}>
-
-            <Text style={styles.buttonText}>{isEmailLogin ? "Login" : "Send OTP"}</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+        <Button
+          title={isEmailLogin ? 'Login' : 'Send OTP'}
+          variant="primary"
+          onPress={handleLogin}
+          style={{ width: '100%' }}
+          //  loading={loading}
+        />
 
         {error && (
           <Text style={{ color: 'red', textAlign: 'center' }}>{error}</Text>
         )}
 
-        {/* <TouchableOpacity style={styles.toggleMethodButton} onPress={toggleLoginMethod}>
-          <Text style={styles.forgotText}>  {isEmailLogin
-            ? "Login with Phone Number"
-            : "Login with Email & Password"}</Text>
-        </TouchableOpacity> */}
+        <Button
+          title={
+            isEmailLogin
+              ? 'Login with Phone Number'
+              : 'Login with Email & Password'
+          }
+          variant="outline"
+          onPress={toggleLoginMethod}
+          style={{ marginTop: Spacing.sm, width: '100%' }}
+        />
 
         {/* <Text style={styles.orText}>Or continue with</Text>
 
@@ -204,7 +196,6 @@ export default function LoginScreen() {
         </View> */}
       </View>
     </View>
-
   );
 }
 
@@ -247,29 +238,8 @@ const styles = StyleSheet.create({
     color: '#555',
     marginVertical: 8,
   },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    marginVertical: 10,
-    width: '100%',
-  },
-  toggleMethodButton: {
-    alignSelf: 'center',
-    padding: Spacing.sm,
-    marginBottom: Spacing.lg,
-  },
-  inputIcon: {
-    marginRight: 8,
-  },
   input: {
-    flex: 1,
-    height: 44,
-  },
-  eyeIcon: {
+    marginBottom: Spacing.md,
     padding: 4,
   },
   forgotPassword: {
@@ -317,7 +287,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   footerText: {
-
     color: '#444',
   },
   linkText: {

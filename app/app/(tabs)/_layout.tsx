@@ -87,7 +87,6 @@ export default function TabLayout() {
           }}
         /> */}
 
-
       {/* </Tabs > */}
       <BottomView />
       {/* Uncomment the following line to add a center button */}

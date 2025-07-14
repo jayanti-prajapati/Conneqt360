@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
-import Button from '@/components/common/Button';
+import Button from '@/components/ui-components/Button';
 import { MapPin, Phone, Mail, Edit2 } from 'lucide-react-native';
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
@@ -35,13 +35,15 @@ export default function ProfileHeader({
 }: ProfileHeaderProps) {
   return (
     <View style={styles.container}>
-      <Image 
-        source={{ 
-          uri: coverImage || 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg'
+      <Image
+        source={{
+          uri:
+            coverImage ||
+            'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg',
         }}
         style={styles.coverImage}
       />
-      
+
       <View style={styles.profileContent}>
         <View style={styles.avatarContainer}>
           {avatar ? (
@@ -51,52 +53,52 @@ export default function ProfileHeader({
               <Text style={styles.avatarText}>{name.charAt(0)}</Text>
             </View>
           )}
-          
+
           {verified && (
             <View style={styles.verifiedBadge}>
               <Text style={styles.verifiedBadgeText}>✓</Text>
             </View>
           )}
         </View>
-        
+
         <View style={styles.nameContainer}>
           <Text style={styles.name}>{name}</Text>
           <View style={styles.businessTypeContainer}>
             <Text style={styles.businessType}>{businessType}</Text>
           </View>
         </View>
-        
+
         <View style={styles.actionButtons}>
           {isOwnProfile ? (
             <Button
               title="Edit Profile"
               variant="outline"
-              size="small"
+              size="medium"
               onPress={onEditProfile}
-              icon={<Edit2 size={16} color={Colors.primary[600]} />}
+              icon={<Edit2 size={20} color={Colors.primary[600]} />}
               iconPosition="left"
             />
           ) : (
             <Button
               title="Connect"
               variant="primary"
-              size="small"
+              size="medium"
               onPress={onConnect}
             />
           )}
         </View>
-        
+
         <View style={styles.contactInfo}>
           <View style={styles.contactItem}>
             <MapPin size={16} color={Colors.gray[600]} />
             <Text style={styles.contactText}>{location}</Text>
           </View>
-          
+
           <View style={styles.contactItem}>
             <Phone size={16} color={Colors.gray[600]} />
             <Text style={styles.contactText}>{phone}</Text>
           </View>
-          
+
           <View style={styles.contactItem}>
             <Mail size={16} color={Colors.gray[600]} />
             <Text style={styles.contactText}>{email}</Text>
@@ -179,7 +181,10 @@ const styles = StyleSheet.create({
     color: Colors.gray[600],
   },
   actionButtons: {
-    marginTop: Spacing.sm,
+    marginTop: Spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
   },
   contactInfo: {
     marginTop: Spacing.md,

@@ -31,6 +31,7 @@ interface InputProps {
   inputStyle?: TextStyle;
   labelStyle?: TextStyle;
   errorStyle?: TextStyle;
+  style?: ViewStyle;
   editable?: boolean;
 }
 
@@ -52,6 +53,7 @@ export default function Input({
   inputStyle,
   labelStyle,
   errorStyle,
+  style,
   editable = true,
 }: InputProps) {
   return (
@@ -108,51 +110,53 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: Typography.size.sm,
-    color: Colors.gray[700],
-    marginBottom: Spacing.xs,
-    fontWeight: Typography.weight.medium as any,
+    color: Colors.gray[600],
+    marginBottom: Spacing.sm,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.gray[300],
-    borderRadius: 8,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.gray[50],
+    borderRadius: 24,
+    padding: Spacing.sm,
+    minHeight: 48,
+    minWidth: 100,
   },
   input: {
     flex: 1,
-    height: 48,
-    paddingHorizontal: Spacing.md,
     fontSize: Typography.size.md,
     color: Colors.gray[800],
+    padding: 0,
   },
   inputWithLeftIcon: {
-    paddingLeft: Spacing.xs,
+    marginLeft: Spacing.sm,
   },
   inputWithRightIcon: {
-    paddingRight: Spacing.xs,
+    marginRight: Spacing.sm,
   },
   multilineInput: {
-    minHeight: 100,
+    height: 120,
     textAlignVertical: 'top',
-    paddingTop: Spacing.sm,
   },
   leftIcon: {
-    paddingLeft: Spacing.sm,
+    padding: Spacing.sm,
   },
   rightIcon: {
-    paddingRight: Spacing.sm,
+    padding: Spacing.sm,
   },
   inputError: {
+    backgroundColor: Colors.error[50],
     borderColor: Colors.error[500],
+    borderRadius: 24,
   },
   inputDisabled: {
     backgroundColor: Colors.gray[100],
+    opacity: 0.5,
+    borderRadius: 24,
   },
   errorText: {
     fontSize: Typography.size.sm,
     color: Colors.error[500],
-    marginTop: Spacing.xs,
+    marginTop: Spacing.sm,
   },
 });

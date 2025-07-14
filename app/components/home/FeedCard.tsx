@@ -1,6 +1,6 @@
 import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity, Dimensions, Alert } from 'react-native';
-import Card from '@/components/common/Card';
+import Card from '@/components/ui-components/Card';
 import { Heart, MessageSquare, Share, MoreVertical } from 'lucide-react-native';
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';

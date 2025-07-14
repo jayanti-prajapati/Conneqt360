@@ -1,17 +1,23 @@
-import React, { use, useEffect } from 'react';
-import { StyleSheet, View, Text, Image, Dimensions, TouchableOpacity, ImageBackground } from 'react-native';
+import React, { useEffect } from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Image,
+  Dimensions,
+  ImageBackground,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
 import Spacing from '@/constants/Spacing';
-import { LinearGradient } from 'expo-linear-gradient';
+import Button from '@/components/ui-components/Button';
 import { getAuthData } from '@/services/secureStore';
 
 const { width } = Dimensions.get('window');
 
 export default function OnboardingScreen() {
   const router = useRouter();
-
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -34,11 +40,12 @@ export default function OnboardingScreen() {
     router.push('/(auth)/login');
   };
   return (
-
     <View style={styles.container}>
       <View style={styles.logoContainer}>
         <Image
-          source={{ uri: 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg' }}
+          source={{
+            uri: 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg',
+          }}
           style={styles.image}
         />
         <Image
@@ -52,24 +59,19 @@ export default function OnboardingScreen() {
       <View style={styles.contentContainer}>
         <Text style={styles.title}>Connect. Collaborate. Grow.</Text>
         <Text style={styles.subtitle}>
-          Build your local business network, discover opportunities,
-          and grow your business with Connect360.
+          Build your local business network, discover opportunities, and grow
+          your business with Connect360.
         </Text>
       </View>
 
       <View style={styles.footer}>
-
-        <TouchableOpacity style={styles.button} onPress={handleGetStarted} >
-          <LinearGradient
-            colors={['#1F73C6', '#F7941E']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.button}
-          >
-
-            <Text style={styles.buttonText}>Get Started</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+        <Button
+          title="Get Started"
+          onPress={handleGetStarted}
+          variant="primary"
+          size="large"
+          style={styles.button}
+        />
 
         {/* <Button
           title="Get Started"
@@ -83,7 +85,6 @@ export default function OnboardingScreen() {
         </Text>
       </View>
     </View>
-
   );
 }
 
@@ -114,11 +115,7 @@ const styles = StyleSheet.create({
 
     marginTop: Spacing.md,
   },
-  buttonText: {
-    color: 'white',
-    fontWeight: '600',
-    fontSize: 16,
-  },
+
   contentContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -142,9 +139,6 @@ const styles = StyleSheet.create({
   },
   button: {
     width: '100%',
-    padding: 14,
-    borderRadius: 12,
-    alignItems: 'center',
     // marginBottom: 20,
   },
   logoImage: {

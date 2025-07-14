@@ -1,9 +1,34 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Share } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Image,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Share,
+  ViewStyle,
+} from 'react-native';
+import Button from '@/components/ui-components/Button';
 
 import { useRouter } from 'expo-router';
+import Layout from '@/components/common/Layout';
 
-import { Check, LogOut, Mail, Phone, MapPin, Globe, Users, Settings, Briefcase, Building, Hash, AtSign } from 'lucide-react-native';
+import {
+  Check,
+  LogOut,
+  Mail,
+  Phone,
+  MapPin,
+  Globe,
+  Users,
+  Settings,
+  Briefcase,
+  Building,
+  Hash,
+  AtSign,
+} from 'lucide-react-native';
 import { pickImage } from '@/utils/imageUtils';
 import { clearAuthData, getAuthData } from '@/services/secureStore';
 import Colors from '@/constants/Colors';
@@ -22,10 +47,9 @@ import { User } from '@/types';
 import { ProfileImageModal } from '@/components/modal/ProfileImageModal';
 import { HARDCODED_USER } from '@/components/mock/UserData';
 import { SocialMediaModal } from '@/components/profile/SocialMediaModal';
+import Header from '@/components/common/Header';
 
 // Mock user data
-
-
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -89,7 +113,7 @@ export default function ProfileScreen() {
       'address',
       'city',
       'state',
-      "website",
+      'website',
       'aboutUs',
       'profileUrl',
     ];
@@ -98,33 +122,35 @@ export default function ProfileScreen() {
     return Math.round((completed / fields?.length) * 100);
   };
 
-
   const handleSubmit = async (updatedData: Partial<User>) => {
-
-
     try {
       if (user) {
         const updatedUser = { ...user, ...updatedData };
 
-        const resp = await updateUser(user?._id, { ...updatedUser, isSkip: true });
+        const resp = await updateUser(user?._id, {
+          ...updatedUser,
+          isSkip: true,
+        });
         if (resp?.data?.statusCode === 201 || resp?.data?.statusCode === 200) {
           setUser(resp.data.data);
-
-
         } else {
-          throw new Error(resp.data?.message || "Failed to update user");
+          throw new Error(resp.data?.message || 'Failed to update user');
         }
       }
     } catch (error: any) {
-      console.error("Error updating user:", error);
+      console.error('Error updating user:', error);
     }
   };
   const handleShare = async () => {
-    console.log("Share");
+    console.log('Share');
 
     try {
       await Share.share({
-        message: `Connect with ${user.name} - ${user.businessName || 'Business Professional'}\n\nEmail: ${user.email}\nPhone: ${user.phone || 'Not provided'}\n\nShared via Business Network App`,
+        message: `Connect with ${user.name} - ${
+          user.businessName || 'Business Professional'
+        }\n\nEmail: ${user.email}\nPhone: ${
+          user.phone || 'Not provided'
+        }\n\nShared via Business Network App`,
         title: `${user.name}'s Business Card`,
       });
     } catch (error) {
@@ -150,7 +176,6 @@ export default function ProfileScreen() {
 
   const handleLogout = () => {
     setIsLogout(true);
-
   };
 
   const close = () => {
@@ -165,73 +190,78 @@ export default function ProfileScreen() {
       pathname: '/business-catalog',
       params: {
         catalog: JSON.stringify(HARDCODED_USER.catalog || []),
-        owner: 'true'
-
+        owner: 'true',
       },
     });
   };
   const openClients = () => {
     router.push({
       pathname: '/business-clients',
-      params: { clients: JSON.stringify(HARDCODED_USER.clients || []), owner: 'true' },
+      params: {
+        clients: JSON.stringify(HARDCODED_USER.clients || []),
+        owner: 'true',
+      },
     });
   };
   const openServices = () => {
     router.push({
       pathname: '/business-services',
-      params: { services: JSON.stringify(HARDCODED_USER.services || []), owner: 'true' },
+      params: {
+        services: JSON.stringify(HARDCODED_USER.services || []),
+        owner: 'true',
+      },
     });
   };
+  // if (loading) {
+  //   return <CustomLoader visible={loading} />;
+  // }
   return (
-
-    // <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <Form isPresent={isPresent} onClose={close} closeText="Close" users={user} />
+    <Layout showBackButton title={'Profile'} scrollable>
+      <Form
+        isPresent={isPresent}
+        onClose={close}
+        closeText="Close"
+        users={user}
+      />
       <About isAbout={isAbout} onClose={close} userId={user?._id} />
-      {/* Replace LogOut icon with a custom Logout modal/component if needed */}
       <LogoutModal isLogout={isLogout} onClose={close} />
-      {loading && <CustomLoader visible={loading} />}
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={router.back} style={styles.backButton} />
-        <Text style={styles.headerTitle}>
-          <Image source={require('../../assets/images/logo.png')} style={styles.logoImage} resizeMode="contain" />
-        </Text>
-        <TouchableOpacity onPress={handleLogout} style={styles.iconButton}>
-          <LogOut />
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+      <View style={styles.scrollContent}>
         {/* Profile Section */}
         <View style={styles.profileSection}>
           <View style={styles.profileImageContainer}>
-            {user?.profileUrl ?
-              <TouchableOpacity onPress={() => setShowProfileImage(true)}>
+            {user?.profileUrl ? (
+              <Button
+                onPress={() => setShowProfileImage(true)}
+                variant="ghost"
+                style={{ padding: 0 }}
+              >
                 <Image
                   source={{
                     uri: user?.profileUrl,
                   }}
                   style={styles.profileImage}
                 />
-              </TouchableOpacity> :
+              </Button>
+            ) : (
               <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{user?.username?.charAt(0) ? user?.username?.charAt(0)?.toUpperCase() : "U"}</Text>
+                <Text style={styles.avatarText}>
+                  {user?.username?.charAt(0)
+                    ? user?.username?.charAt(0)?.toUpperCase()
+                    : 'U'}
+                </Text>
               </View>
-            }
+            )}
 
             <View style={styles.imageUploadOverlay}>
-              <TouchableOpacity style={styles.uploadButton} onPress={handleProfileImageUpload}>
-                <Ionicons name="camera" size={15} color="black" />
-              </TouchableOpacity>
+              <Button
+                variant="ghost"
+                size="small"
+                onPress={handleProfileImageUpload}
+                style={styles.uploadButton}
+                isIconOnly
+                icon={<Ionicons name="camera" size={15} color="black" />}
+              />
             </View>
           </View>
 
@@ -246,46 +276,57 @@ export default function ProfileScreen() {
           <Text style={styles.username}>{user?.username || '-'}</Text>
           <Text style={styles.title}>{user?.jobTitle || '-'}</Text>
 
-          <View style={[styles.buttonRow, { width: "100%" }]}>
-            <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: theme.primary, width: "45%" }]}
+          <View style={[styles.buttonRow, { width: '100%' }]}>
+            <Button
+              title="Edit Profile"
+              variant="outline"
+              size="medium"
               onPress={() => setShowEditModal(true)}
-            >
-              <Text style={styles.actionButtonText}>Edit Profile</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: theme.primary, width: "45%" }]}
-              onPress={() => handleShare()}
-            >
-              <Text style={styles.actionButtonText}>Share Card</Text>
-            </TouchableOpacity>
-            {/* <Button title="Edit Profile" variant="outline" size="small" onPress={() => setShowEditModal(true)} style={styles.button} />
-            <Button title="Share Card" variant="outline" size="small" onPress={() => handleShare()} style={styles.button} /> */}
+              style={styles.actionButton}
+            />
 
-
-
-            {/* <Button title="View Business" variant="primary" size="small" onPress={() => setShowBusinessCard(true)} style={styles.button} /> */}
+            <Button
+              title="Share Card"
+              variant="outline"
+              size="medium"
+              onPress={handleShare}
+              style={styles.actionButton}
+            ></Button>
           </View>
-          <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: theme.primary, width: "100%" }]}
+          <Button
+            title="View Business"
+            variant="primary"
+            size="medium"
             onPress={() => setShowBusinessCard(true)}
-          >
-            <Text style={styles.actionButtonText}>View Business</Text>
-          </TouchableOpacity>
+            style={{ ...styles.actionButton, width: '100%' }}
+          />
         </View>
 
         {/* Profile Completion */}
-        <View style={[styles.card, { marginTop: Spacing.md, marginHorizontal: Spacing.lg }]}>
+        <View
+          style={[
+            styles.card,
+            { marginTop: Spacing.md, marginHorizontal: Spacing.lg },
+          ]}
+        >
           <View style={styles.progressHeader}>
             <Text style={styles.progressTitle}>Profile Completion</Text>
-            <Text style={profileCompletion === 100 ? styles.progressPercentSuccess : styles.progressPercent}>
+            <Text
+              style={
+                profileCompletion === 100
+                  ? styles.progressPercentSuccess
+                  : styles.progressPercent
+              }
+            >
               {profileCompletion}%
             </Text>
           </View>
           <View style={styles.progressBar}>
             <View
               style={[
-                profileCompletion === 100 ? styles.progressSuccess : styles.progressFill,
+                profileCompletion === 100
+                  ? styles.progressSuccess
+                  : styles.progressFill,
                 { width: `${profileCompletion}%` },
               ]}
             />
@@ -296,9 +337,14 @@ export default function ProfileScreen() {
         {/* <View style={styles.section}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text style={styles.sectionTitle}>About</Text>
-            <TouchableOpacity onPress={() => setIsAbout(true)}>
-              <Edit size={18} color={Colors.primary[900]} style={{ marginLeft: 8 }} />
-            </TouchableOpacity>
+            <Button
+              variant="ghost"
+              onPress={() => setIsAbout(true)}
+              style={{ marginLeft: 8 }}
+              isIconOnly
+            >
+              <Edit size={18} color={Colors.primary[900]} />
+            </Button>
           </View>
           {user?.aboutUs ? (
             <View style={styles.card}>
@@ -310,67 +356,95 @@ export default function ProfileScreen() {
         </View> */}
         {/* catalogue */}
         <View style={styles.businessFeaturesSection}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>Business Features</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>
+            Business Features
+          </Text>
 
           <View style={styles.featuresGrid}>
-            <TouchableOpacity
-              style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => openCatalog()}
+            <Button
+              title="Catalog"
+              variant="ghost"
+              style={styles.featureCard}
+              onPress={openCatalog}
             >
               <Briefcase size={24} color={theme.primary} />
-              <Text style={[styles.featureTitle, { color: theme.text }]}>Catalog</Text>
-              <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
+              <Text style={[styles.featureTitle, { color: theme.text }]}>
+                Catalog
+              </Text>
+              <Text
+                style={[styles.featureSubtitle, { color: theme.textSecondary }]}
+              >
                 {user?.catalog?.length || 0} items
               </Text>
-            </TouchableOpacity>
+            </Button>
 
-            <TouchableOpacity
-              style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => openServices()}
+            <Button
+              title="Services"
+              variant="ghost"
+              style={styles.featureCard}
+              onPress={openServices}
             >
               <Settings size={24} color={theme.primary} />
-              <Text style={[styles.featureTitle, { color: theme.text }]}>Services</Text>
-              <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
+              <Text>Services</Text>
+              <Text
+                style={[styles.featureSubtitle, { color: theme.textSecondary }]}
+              >
                 {user?.services?.length || 0} services
               </Text>
-            </TouchableOpacity>
+            </Button>
 
-            <TouchableOpacity
-              style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => openClients()}
+            <Button
+              title="Clients"
+              variant="ghost"
+              style={styles.featureCard}
+              onPress={openClients}
             >
               <Users size={24} color={theme.primary} />
-              <Text style={[styles.featureTitle, { color: theme.text }]}>Clients</Text>
-              <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
+              <Text>Clients</Text>
+              <Text
+                style={[styles.featureSubtitle, { color: theme.textSecondary }]}
+              >
                 {user?.clients?.length || 0} clients
               </Text>
-            </TouchableOpacity>
+            </Button>
 
-            <TouchableOpacity
-              style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
+            <Button
+              title="Connect"
+              variant="ghost"
+              style={styles.featureCard}
               onPress={() => setShowSocialModal(true)}
             >
               <Globe size={24} color={theme.primary} />
-              <Text style={[styles.featureTitle, { color: theme.text }]}>Connect</Text>
-              <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
-                Social & Web
-              </Text>
-            </TouchableOpacity>
+              <Text>Connect</Text>
+              <Text>Social & Web</Text>
+            </Button>
           </View>
         </View>
 
-
         {/* Business Information */}
         {(user?.businessName || user?.businessType) && (
-          <View style={[styles.infoSection, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Business Information</Text>
+          <View
+            style={[
+              styles.infoSection,
+              { backgroundColor: theme.surface, borderColor: theme.border },
+            ]}
+          >
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              Business Information
+            </Text>
 
             {user?.businessName && (
               <View style={styles.infoItem}>
                 <Building size={20} color={theme.textSecondary} />
                 <View style={styles.infoContent}>
-                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Business Name</Text>
-                  <Text style={[styles.infoValue, { color: theme.text }]}>{user.businessName}</Text>
+                  <Text
+                    style={[styles.infoLabel, { color: theme.textSecondary }]}
+                  >
+                    Business Name
+                  </Text>
+                  <Text style={[styles.infoValue, { color: theme.text }]}>
+                    {user.businessName}
+                  </Text>
                 </View>
               </View>
             )}
@@ -379,8 +453,14 @@ export default function ProfileScreen() {
               <View style={styles.infoItem}>
                 <Hash size={20} color={theme.textSecondary} />
                 <View style={styles.infoContent}>
-                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Business Type</Text>
-                  <Text style={[styles.infoValue, { color: theme.text }]}>{user.businessType}</Text>
+                  <Text
+                    style={[styles.infoLabel, { color: theme.textSecondary }]}
+                  >
+                    Business Type
+                  </Text>
+                  <Text style={[styles.infoValue, { color: theme.text }]}>
+                    {user.businessType}
+                  </Text>
                 </View>
               </View>
             )}
@@ -389,8 +469,14 @@ export default function ProfileScreen() {
               <View style={styles.infoItem}>
                 <AtSign size={20} color={theme.textSecondary} />
                 <View style={styles.infoContent}>
-                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Business Email</Text>
-                  <Text style={[styles.infoValue, { color: theme.text }]}>{user.businessEmail}</Text>
+                  <Text
+                    style={[styles.infoLabel, { color: theme.textSecondary }]}
+                  >
+                    Business Email
+                  </Text>
+                  <Text style={[styles.infoValue, { color: theme.text }]}>
+                    {user.businessEmail}
+                  </Text>
                 </View>
               </View>
             )}
@@ -399,8 +485,14 @@ export default function ProfileScreen() {
               <View style={styles.infoItem}>
                 <Globe size={20} color={theme.textSecondary} />
                 <View style={styles.infoContent}>
-                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Website</Text>
-                  <Text style={[styles.infoValue, { color: theme.text }]}>{user.website}</Text>
+                  <Text
+                    style={[styles.infoLabel, { color: theme.textSecondary }]}
+                  >
+                    Website
+                  </Text>
+                  <Text style={[styles.infoValue, { color: theme.text }]}>
+                    {user.website}
+                  </Text>
                 </View>
               </View>
             )}
@@ -409,8 +501,14 @@ export default function ProfileScreen() {
               <View style={styles.infoItem}>
                 <Hash size={20} color={theme.textSecondary} />
                 <View style={styles.infoContent}>
-                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>GST Number</Text>
-                  <Text style={[styles.infoValue, { color: theme.text }]}>{user.gstNumber}</Text>
+                  <Text
+                    style={[styles.infoLabel, { color: theme.textSecondary }]}
+                  >
+                    GST Number
+                  </Text>
+                  <Text style={[styles.infoValue, { color: theme.text }]}>
+                    {user.gstNumber}
+                  </Text>
                 </View>
               </View>
             )}
@@ -419,8 +517,14 @@ export default function ProfileScreen() {
               <View style={styles.infoItem}>
                 <Hash size={20} color={theme.textSecondary} />
                 <View style={styles.infoContent}>
-                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Udyam Number</Text>
-                  <Text style={[styles.infoValue, { color: theme.text }]}>{user.udyamNumber}</Text>
+                  <Text
+                    style={[styles.infoLabel, { color: theme.textSecondary }]}
+                  >
+                    Udyam Number
+                  </Text>
+                  <Text style={[styles.infoValue, { color: theme.text }]}>
+                    {user.udyamNumber}
+                  </Text>
                 </View>
               </View>
             )}
@@ -428,23 +532,48 @@ export default function ProfileScreen() {
         )}
 
         {/* Contact Information */}
-        <View style={[styles.infoSection, { backgroundColor: theme.surface, borderColor: theme.border, marginBottom: 100 }]}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>Contact Information</Text>
+        <View
+          style={[
+            styles.infoSection,
+            {
+              backgroundColor: theme.surface,
+              borderColor: theme.border,
+              marginBottom: 100,
+            },
+          ]}
+        >
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>
+            Contact Information
+          </Text>
 
-          {user?.email && <View style={styles.infoItem}>
-            <Mail size={20} color={theme.textSecondary} />
-            <View style={styles.infoContent}>
-              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Email</Text>
-              <Text style={[styles.infoValue, { color: theme.text }]}>{user?.email}</Text>
+          {user?.email && (
+            <View style={styles.infoItem}>
+              <Mail size={20} color={theme.textSecondary} />
+              <View style={styles.infoContent}>
+                <Text
+                  style={[styles.infoLabel, { color: theme.textSecondary }]}
+                >
+                  Email
+                </Text>
+                <Text style={[styles.infoValue, { color: theme.text }]}>
+                  {user?.email}
+                </Text>
+              </View>
             </View>
-          </View>}
+          )}
 
           {user?.phone && (
             <View style={styles.infoItem}>
               <Phone size={20} color={theme.textSecondary} />
               <View style={styles.infoContent}>
-                <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Phone</Text>
-                <Text style={[styles.infoValue, { color: theme.text }]}>{user?.phone}</Text>
+                <Text
+                  style={[styles.infoLabel, { color: theme.textSecondary }]}
+                >
+                  Phone
+                </Text>
+                <Text style={[styles.infoValue, { color: theme.text }]}>
+                  {user?.phone}
+                </Text>
               </View>
             </View>
           )}
@@ -453,9 +582,19 @@ export default function ProfileScreen() {
             <View style={styles.infoItem}>
               <MapPin size={20} color={theme.textSecondary} />
               <View style={styles.infoContent}>
-                <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Address</Text>
+                <Text
+                  style={[styles.infoLabel, { color: theme.textSecondary }]}
+                >
+                  Address
+                </Text>
                 <Text style={[styles.infoValue, { color: theme.text }]}>
-                  {[user.address, user.city, user.state, user.postalCode, user.country]
+                  {[
+                    user.address,
+                    user.city,
+                    user.state,
+                    user.postalCode,
+                    user.country,
+                  ]
                     .filter(Boolean)
                     .join(', ')}
                 </Text>
@@ -463,64 +602,61 @@ export default function ProfileScreen() {
             </View>
           )}
         </View>
+      </View>
 
-      </ScrollView>
-      {showBusinessCard && (
+      {showBusinessCard && user && (
         <View style={styles.businessCardModal}>
-          <TouchableOpacity
-            style={styles.businessCardOverlay}
+          <Button
+            variant="ghost"
+            style={styles.businessCardOverlay as ViewStyle}
             onPress={() => setShowBusinessCard(false)}
           />
           <View style={styles.businessCardContainer}>
             <BusinessCard user={user} />
-            <TouchableOpacity
-              style={[styles.closeBusinessCardButton, { backgroundColor: theme.surface }]}
+            <Button
+              variant="outline"
+              size="small"
               onPress={() => setShowBusinessCard(false)}
+              style={styles.closeBusinessCardButton}
             >
-              <Text style={[styles.closeBusinessCardText, { color: theme.text }]}>Close</Text>
-            </TouchableOpacity>
+              Close
+            </Button>
           </View>
         </View>
       )}
 
-      {showEditModal && <EditProfileModal
-        visible={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        user={user}
-        onSave={handleSubmit}
-      />}
+      {showEditModal && user && (
+        <EditProfileModal
+          visible={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          user={user}
+          onSave={handleSubmit}
+        />
+      )}
 
-      {showProfileImage && <ProfileImageModal
-        visible={showProfileImage}
-        imageUri={user.profileUrl || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=2'}
-        onClose={() => setShowProfileImage(false)}
-      />}
+      {showProfileImage && user?.profileUrl && (
+        <ProfileImageModal
+          visible={showProfileImage}
+          imageUri={user.profileUrl}
+          onClose={() => setShowProfileImage(false)}
+        />
+      )}
 
-      {showSocialModal &&
+      {showSocialModal && user && (
         <SocialMediaModal
           visible={showSocialModal}
           onClose={() => setShowSocialModal(false)}
           socialMedia={user.socialMedia || {}}
           website={user.website}
           businessEmail={user.businessEmail}
-        />}
-
-
-    </KeyboardAvoidingView>
-    // </SafeAreaView>
+        />
+      )}
+    </Layout>
   );
 }
 
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: Spacing.md,
-    backgroundColor: Colors.white,
-  },
   avatarText: {
-    // width: '100%',
-    // height: '100%',
     color: Colors.primary[700],
     fontSize: 40,
     fontWeight: Typography.weight.bold as any,
@@ -540,30 +676,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 10,
     gap: 6,
   },
   actionButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: Typography.size.sm,
+    fontWeight: Typography.weight.bold as any,
     color: '#FFFFFF',
   },
   header: {
+    marginTop: Spacing.md,
+    paddingVertical: Spacing.xs,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.gray[200],
+    borderBottomColor: Colors.gray[100],
   },
-  backButton: {
-    padding: Spacing.xs,
-  },
+
   headerTitle: {
-    fontSize: 20,
-    fontWeight: '600',
+    fontSize: Typography.size.md,
+    fontWeight: Typography.weight.bold as any,
     color: Colors.gray[800],
   },
   headerIcons: {
@@ -572,7 +704,8 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     color: Colors.primary[900],
-    fontSize: 14,
+    fontSize: Typography.size.sm,
+    fontWeight: Typography.weight.bold as any,
   },
   scrollView: {
     flex: 1,
@@ -598,8 +731,8 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 60,
     alignSelf: 'center',
-    marginTop: 20,
-    marginBottom: 20,
+    marginTop: Spacing.xs,
+    marginBottom: Spacing.md,
   },
   profileImage: {
     width: '100%',
@@ -648,7 +781,7 @@ const styles = StyleSheet.create({
     width: '48%',
     padding: 16,
     borderRadius: 12,
-    borderWidth: 1,
+    backgroundColor: Colors.gray[100],
     alignItems: 'center',
     gap: 8,
   },
@@ -695,7 +828,6 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 16,
     color: Colors.gray[600],
-
   },
   buttonRow: {
     flexDirection: 'row',
@@ -703,7 +835,7 @@ const styles = StyleSheet.create({
 
     justifyContent: 'space-between',
     marginHorizontal: -Spacing.xs,
-    marginBottom: Spacing.sm
+    marginBottom: Spacing.sm,
   },
   button: {
     margin: Spacing.xs,
@@ -768,7 +900,7 @@ const styles = StyleSheet.create({
   },
   progressSuccess: {
     height: '100%',
-    backgroundColor: "green",
+    backgroundColor: 'green',
     borderRadius: 4,
   },
   aboutText: {

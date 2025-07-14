@@ -10,12 +10,14 @@ import {
   FlatList,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Search, Filter, Plus } from 'lucide-react-native';
+import { Filter, Plus } from 'lucide-react-native';
 import ProductCard from '@/components/marketplace/ProductCard';
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
 import Spacing from '@/constants/Spacing';
 import { Product } from '@/types';
+import Layout from '@/components/common/Layout';
+import Search from '@/components/common/Search';
 
 // Mock data for products
 const mockProducts: Product[] = [
@@ -124,29 +126,8 @@ export default function MarketplaceScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>B2B Marketplace</Text>
-      </View>
-
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Search
-            size={20}
-            color={Colors.gray[500]}
-            style={styles.searchIcon}
-          />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search products & services..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-        </View>
-        <TouchableOpacity style={styles.filterButton}>
-          <Filter size={20} color={Colors.gray[700]} />
-        </TouchableOpacity>
-      </View>
+    <Layout title={'Business Marketplace'} scrollable>
+      <Search />
 
       <View style={styles.categoryTabs}>
         <ScrollView
@@ -207,7 +188,7 @@ export default function MarketplaceScreen() {
       >
         <Plus size={24} color={Colors.white} />
       </TouchableOpacity>
-    </SafeAreaView>
+    </Layout>
   );
 }
 
@@ -262,6 +243,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   categoryTabs: {
+    paddingVertical: Spacing.md,
     backgroundColor: Colors.white,
     borderBottomWidth: 1,
     borderBottomColor: Colors.gray[200],
