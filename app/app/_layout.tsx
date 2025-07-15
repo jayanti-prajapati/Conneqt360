@@ -38,10 +38,9 @@ function AppContent() {
     <Stack
       screenOptions={{
         headerShown: false,
-        animation: 'fade',
-        contentStyle: { backgroundColor: '#fff' },
       }}
     >
+      <Stack.Screen name="splash" options={{ headerShown: false }} />
       <Stack.Screen
         name="index"
         options={{
