@@ -1,26 +1,15 @@
-import { getAuthData } from '@/services/secureStore';
-import { Redirect } from 'expo-router';
 import { useEffect, useState } from 'react';
+import SplashScreen from './splash';
+import { Redirect } from 'expo-router';
 
 export default function IndexScreen() {
-
-  const [isLogin, setIsLogin] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const authData = await getAuthData();
-        if (authData?.userData) {
-          setIsLogin(true);
-
-        }
-      } catch (err) {
-        console.error('Error checking auth:', err);
-      }
-    };
-
-    checkAuth();
+    const timeout = setTimeout(() => setShowSplash(false), 5000);
+    return () => clearTimeout(timeout);
   }, []);
-  if (isLogin) return <Redirect href="/(tabs)" />
-  return <Redirect href="/(auth)/onboarding" />;
+
+  if (showSplash) return <SplashScreen />;
+  return <Redirect href="/(auth)/login" />;
 }

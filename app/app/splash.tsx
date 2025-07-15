@@ -14,7 +14,18 @@ import Colors from '@/constants/Colors';
 
 const { width } = Dimensions.get('window');
 
+import { useEffect } from 'react';
+import { useRouter } from 'expo-router';
+
 export default function SplashScreen() {
+  const router = useRouter();
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      router.replace('/(auth)/login');
+    }, 5000);
+    return () => clearTimeout(timeout);
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={styles.card}>
