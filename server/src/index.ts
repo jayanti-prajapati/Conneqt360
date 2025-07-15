@@ -9,6 +9,7 @@ import userRoutes from "./modules/user/routes";
 import customRoutes from "./modules/custom-files/routes"
 import communityRoutes from "./modules/community-feeds/routes";
 import userservicesRoutes from './modules/user-services/routes';
+import messageRoutes from './modules/message/routes';
 
 dotenv.config();
 
@@ -28,7 +29,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/community-feeds", communityRoutes);
 app.use("/api/custom-file", customRoutes);
 app.use("/api/user-services", userservicesRoutes);
-
+app.use('/api/messages', messageRoutes);
 
 
 app.use(
