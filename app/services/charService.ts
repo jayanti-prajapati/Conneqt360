@@ -3,7 +3,7 @@ import { Chat, Message, User } from '../types';
 // Mock users for chat
 const mockUsers: User[] = [
     {
-        id: 'user456',
+        _id: 'user456',
         email: 'sarah@company.com',
         name: 'Sarah Johnson',
         profileUrl: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
@@ -16,7 +16,7 @@ const mockUsers: User[] = [
         createdAt: new Date('2023-02-20'),
     },
     {
-        id: 'user789',
+        _id: 'user789',
         email: 'mike@startup.com',
         name: 'Mike Chen',
         profileUrl: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',

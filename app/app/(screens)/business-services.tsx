@@ -67,6 +67,7 @@ export default function ServicesScreen() {
     const [editingService, setEditingService] = useState<any>();
 
     const isOwner = (params.owner == 'true') || "false"
+    const userId = params?.userId
 
     const handleAddService = () => {
         setEditingService(null);
@@ -96,7 +97,7 @@ export default function ServicesScreen() {
                     <ArrowLeft size={24} color={theme.text} />
                 </TouchableOpacity>
                 <Text style={[styles.title, { color: theme.text }]}>Our Services</Text>
-                {isOwner ? (
+                {(isOwner != 'false') ? (
                     <TouchableOpacity onPress={() => handleAddService()}>
                         <PlusCircle size={24} color={theme.primary} />
                     </TouchableOpacity>
@@ -108,7 +109,7 @@ export default function ServicesScreen() {
 
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-                    {isOwner
+                    {(isOwner != 'false')
                         ? 'Manage your services'
                         : 'Professional services we offer to help grow your business'}
                 </Text>
@@ -118,7 +119,7 @@ export default function ServicesScreen() {
                         key={index}
                         style={[styles.serviceItem, { backgroundColor: theme.surface, borderColor: theme.border }]}
                     >
-                        {isOwner && (
+                        {(isOwner != 'false') && (
                             <View style={styles.serviceActions}>
                                 <TouchableOpacity
                                     style={[styles.actionButton, { backgroundColor: theme.primary + '20' }]}

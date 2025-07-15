@@ -15,12 +15,14 @@ import { Client } from '@/types';
 import { ClientFormModal } from '@/components/modal/ClientFormModal';
 import useUserServiceStore from '@/store/useUserBusinessServices';
 import { clearAuthData, getAuthData } from '@/services/secureStore';
+import useUsersStore from '@/store/useUsersStore';
 
 export default function ClientsScreen() {
     const { theme } = useThemeStore();
     const router = useRouter();
-    const { owner } = useLocalSearchParams();
+    const { owner, userId } = useLocalSearchParams();
     const isOwner = (owner == 'true') || "false"
+
     // const parsedClients: Client[] = JSON.parse(clients as string);
     const [showClientForm, setShowClientForm] = useState(false);
     const [editingClient, setEditingClient] = useState<any>(null);
@@ -28,21 +30,15 @@ export default function ClientsScreen() {
     const { response, getUserServicesByUserId, updateUserService, loading } = useUserServiceStore();
     const parsedClients: Client[] = response?.data?.data?.client || [];
     const [user, setUser] = useState<any>(null);
-
+    const { getUserById } = useUsersStore();
 
     const fetchCatalogByUserId = async () => {
         try {
-            const data = await getAuthData();
-            const userId = data?.userData?.data?._id;
-
-            if (!userId) {
-                clearAuthData();
-                router.replace('/(auth)/login');
-                return;
+            const data = await getUserById(userId as string)
+            if (data?.data?.statusCode === 200) {
+                setUser(data.data.data);
             }
-            setUser(data?.userData?.data)
-
-            await getUserServicesByUserId(userId);
+            await getUserServicesByUserId(userId as string);
 
         } catch (error) {
             console.error('Error fetching user:', error);
@@ -52,7 +48,9 @@ export default function ClientsScreen() {
     };
 
     useEffect(() => {
-        fetchCatalogByUserId()
+        if (userId) {
+            fetchCatalogByUserId()
+        }
     }, [])
 
 
@@ -147,7 +145,7 @@ export default function ClientsScreen() {
                     <ArrowLeft size={24} color={theme.text} />
                 </TouchableOpacity>
                 <Text style={[styles.title, { color: theme.text }]}>Our Clients</Text>
-                {isOwner ? (
+                {(isOwner != 'false') ? (
                     <TouchableOpacity onPress={() => handleAddClient()}>
                         <PlusCircle size={24} color={theme.primary} />
                     </TouchableOpacity>
@@ -181,7 +179,7 @@ export default function ClientsScreen() {
                             key={client._id}
                             style={[styles.clientCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
                         >
-                            {isOwner && (
+                            {(isOwner != 'false') && (
                                 <View style={styles.clientActions}>
                                     <TouchableOpacity
                                         style={[styles.actionButton, { backgroundColor: theme.primary + '20' }]}

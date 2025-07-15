@@ -10,7 +10,7 @@ import { formatTimestamp } from '../utils/dateconverter';
 import CustomVideoPlayer from '../utils/CustomVideoPlayer';
 
 import { CommunityPost } from '@/types/feeds';
-import { PostOptionsModal } from '../modal/PostOptionsModal';
+
 import { CommentSection } from '../comments/CommentSection';
 import { Comment } from '@/types';
 

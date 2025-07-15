@@ -9,7 +9,7 @@ import { chatService } from '../../services/charService';
 // Mock users for demo
 const mockUsers: User[] = [
     {
-        id: 'user456',
+        _id: 'user456',
         email: 'sarah@company.com',
         name: 'Sarah Johnson',
         profileUrl: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
@@ -22,7 +22,7 @@ const mockUsers: User[] = [
         createdAt: new Date('2023-02-20'),
     },
     {
-        id: 'user789',
+        _id: 'user789',
         email: 'mike@startup.com',
         name: 'Mike Chen',
         profileUrl: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
@@ -63,7 +63,7 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
     const fetchChatData = async () => {
         try {
             // Find the other user based on chat ID
-            const foundUser = mockUsers.find(u => u.id === userId);
+            const foundUser = mockUsers.find(u => u._id === userId);
             setOtherUser(foundUser || null);
 
             // Mock messages for demo
@@ -71,14 +71,14 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
                 {
                     id: 'msg1',
                     senderId: userId as string,
-                    receiverId: user?.id || '',
+                    receiverId: user?._id || '',
                     content: 'Hey! How did the presentation go today?',
                     isRead: true,
                     createdAt: new Date(Date.now() - 3600000),
                 },
                 {
                     id: 'msg2',
-                    senderId: user?.id || '',
+                    senderId: user?._id || '',
                     receiverId: userId as string,
                     content: 'It went really well! Thanks for asking. The client loved our proposal.',
                     isRead: true,
@@ -87,14 +87,14 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
                 {
                     id: 'msg3',
                     senderId: userId as string,
-                    receiverId: user?.id || '',
+                    receiverId: user?._id || '',
                     content: 'That\'s fantastic! I knew you\'d nail it. Want to celebrate over coffee?',
                     isRead: true,
                     createdAt: new Date(Date.now() - 1800000),
                 },
                 {
                     id: 'msg4',
-                    senderId: user?.id || '',
+                    senderId: user?._id || '',
                     receiverId: userId as string,
                     content: 'Absolutely! How about tomorrow at 3 PM at the usual place?',
                     isRead: false,
@@ -115,8 +115,8 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
 
         const message: Message = {
             id: Date.now().toString(),
-            senderId: user.id,
-            receiverId: otherUser.id,
+            senderId: user._id,
+            receiverId: otherUser._id,
             content: newMessage.trim(),
             isRead: false,
             createdAt: new Date(),
@@ -126,7 +126,7 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
         setNewMessage('');
 
         try {
-            await chatService.sendMessage(userId as string, user.id, otherUser.id, newMessage.trim());
+            await chatService.sendMessage(userId as string, user._id, otherUser._id, newMessage.trim());
         } catch (error) {
             console.error('Error sending message:', error);
         }
@@ -137,7 +137,7 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
     };
 
     const renderMessage = ({ item }: { item: Message }) => {
-        const isOwnMessage = item.senderId === user?.id;
+        const isOwnMessage = item.senderId === user?._id;
 
         return (
             <View style={[styles.messageContainer, isOwnMessage ? styles.ownMessage : styles.otherMessage]}>

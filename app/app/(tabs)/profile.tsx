@@ -37,7 +37,7 @@ export default function ProfileScreen() {
   const [showBusinessCard, setShowBusinessCard] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showProfileImage, setShowProfileImage] = useState(false);
-
+  const [isAboutExpanded, setIsAboutExpanded] = useState(false);
   const [showSocialModal, setShowSocialModal] = useState(false);
 
   const { loading, getUserById, updateUser } = useUsersStore();
@@ -162,21 +162,21 @@ export default function ProfileScreen() {
     router.push({
       pathname: '/business-catalog',
       params: {
-        owner: 'true'
-
+        owner: 'true',
+        userId: user?._id
       },
     });
   };
   const openClients = () => {
     router.push({
       pathname: '/business-clients',
-      params: { clients: JSON.stringify(HARDCODED_USER.clients || []), owner: 'true' },
+      params: { owner: 'true', userId: user?._id },
     });
   };
   const openServices = () => {
     router.push({
       pathname: '/business-services',
-      params: { services: JSON.stringify(HARDCODED_USER.services || []), owner: 'true' },
+      params: { owner: 'true', userId: user?._id },
     });
   };
   return (
@@ -233,14 +233,14 @@ export default function ProfileScreen() {
           </View>
 
           <View style={styles.nameContainer}>
-            <Text style={styles.name}>{user?.name || 'Unknown User'}</Text>
+            <Text style={styles.name}>{user?.businessName || 'Unknown User'}</Text>
             {user?.verified && (
               <View style={styles.verifiedBadge}>
                 <Check size={16} color={Colors.white} />
               </View>
             )}
           </View>
-          <Text style={styles.username}>{user?.username || '-'}</Text>
+          <Text style={styles.username}>{user?.name || '-'}</Text>
           <Text style={styles.title}>{user?.jobTitle || '-'}</Text>
 
           <View style={[styles.buttonRow, { width: "100%" }]}>
@@ -289,22 +289,39 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* About */}
-        {/* <View style={styles.section}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={styles.sectionTitle}>About</Text>
-            <TouchableOpacity onPress={() => setIsAbout(true)}>
-              <Edit size={18} color={Colors.primary[900]} style={{ marginLeft: 8 }} />
-            </TouchableOpacity>
+
+
+        {/* Abour us */}
+        {user?.aboutUs && (
+          <View
+            style={[
+              styles.infoSection,
+              { backgroundColor: theme.surface, borderColor: theme.border },
+            ]}
+          >
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>About Us</Text>
+
+            <Text
+              style={[styles.infoValue, { color: theme.text }]}
+              numberOfLines={isAboutExpanded ? undefined : 5}
+              ellipsizeMode="tail"
+            >
+              {user.aboutUs}
+            </Text>
+
+            {user?.aboutUs?.length > 100 && ( // show toggle only if content is long
+              <TouchableOpacity
+                onPress={() => setIsAboutExpanded((prev) => !prev)}
+                style={{ marginTop: 8 }}
+              >
+                <Text style={{ color: theme.primary, fontWeight: '600' }}>
+                  {isAboutExpanded ? 'See less' : 'See more'}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
-          {user?.aboutUs ? (
-            <View style={styles.card}>
-              <Text style={styles.aboutText}>{user.aboutUs}</Text>
-            </View>
-          ) : (
-            <Text style={{ color: Colors.gray[400] }}>No description available.</Text>
-          )}
-        </View> */}
+        )}
+
         {/* catalogue */}
         <View style={styles.businessFeaturesSection}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>Business Features</Text>
@@ -463,19 +480,20 @@ export default function ProfileScreen() {
 
       </ScrollView>
       {showBusinessCard && (
+
         <View style={styles.businessCardModal}>
           <TouchableOpacity
             style={styles.businessCardOverlay}
             onPress={() => setShowBusinessCard(false)}
           />
           <View style={styles.businessCardContainer}>
-            <BusinessCard user={user} />
-            <TouchableOpacity
+            <BusinessCard user={user} setShowBusinessCard={setShowBusinessCard} />
+            {/* <TouchableOpacity
               style={[styles.closeBusinessCardButton, { backgroundColor: theme.surface }]}
               onPress={() => setShowBusinessCard(false)}
             >
               <Text style={[styles.closeBusinessCardText, { color: theme.text }]}>Close</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </View>
       )}
@@ -515,6 +533,10 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.md,
     backgroundColor: Colors.white,
   },
+  content: {
+    flex: 1,
+  },
+
   avatarText: {
     // width: '100%',
     // height: '100%',
@@ -836,6 +858,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+    // marginBottom: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },

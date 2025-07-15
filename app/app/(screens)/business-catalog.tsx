@@ -8,6 +8,7 @@ import { CatalogFormModal } from '@/components/modal/CatalogFormModal';
 import useUserServiceStore from '@/store/useUserBusinessServices';
 import { CatalogDetailModal } from '@/components/modal/CatalogDetailModal';
 import { clearAuthData, getAuthData } from '@/services/secureStore';
+import useUsersStore from '@/store/useUsersStore';
 
 const { width } = Dimensions.get('window');
 
@@ -17,16 +18,17 @@ export default function BusinessCatalogScreen() {
     const params = useLocalSearchParams();
     // const catalog = JSON.parse(params?.catalog as string) as CatalogItem[];
     const isOwner = (params?.owner == 'true') || "false"
+    const userId = params?.userId
     const [user, setUser] = useState<any>(null);
 
     const [showCatalogForm, setShowCatalogForm] = useState(false);
     const [editingCatalogItem, setEditingCatalogItem] = useState<any>(null);
     const [catalogDetailModal, setCatalogDetailModal] = useState(false)
     const [selectedItem, setSelectedItem] = useState<CatalogItem | null>(null);
-    const { response, getUserServicesByUserId, updateUserService, createUserService, loading } = useUserServiceStore();
+    const { response, getUserServicesByUserId, updateUserService } = useUserServiceStore();
     const catalog = response?.data?.data?.catalog || [];
+    const { getUserById } = useUsersStore();
 
-    // console.log(response?.data?.data, "asdasd");
 
 
     const handleAddCatalogItem = () => {
@@ -35,17 +37,15 @@ export default function BusinessCatalogScreen() {
     };
     const fetchCatalogByUserId = async () => {
         try {
-            const data = await getAuthData();
-            const userId = data?.userData?.data?._id;
+            // const data = await getAuthData();
+            // const userId = data?.userData?.data?._id;
 
-            if (!userId) {
-                clearAuthData();
-                router.replace('/(auth)/login');
-                return;
+            const data = await getUserById(userId as string)
+            if (data?.data?.statusCode === 200) {
+                setUser(data.data.data);
             }
-            setUser(data?.userData?.data)
 
-            await getUserServicesByUserId(userId);
+            await getUserServicesByUserId(userId as string);
 
         } catch (error) {
             console.error('Error fetching user:', error);
@@ -97,7 +97,7 @@ export default function BusinessCatalogScreen() {
                 setCatalogDetailModal(true)
             }}
         >
-            {isOwner && (
+            {(isOwner != 'false') && (
                 <View style={styles.itemActions}>
                     <TouchableOpacity
                         style={[styles.actionButton, { backgroundColor: theme.primary + '20' }]}
@@ -190,7 +190,7 @@ export default function BusinessCatalogScreen() {
 
                 <Text style={[styles.title, { color: theme.text }]}>Business Catalog</Text>
 
-                {isOwner ? (
+                {(isOwner != 'false') ? (
                     <TouchableOpacity onPress={() => handleAddCatalogItem()}>
                         <PlusCircle size={24} color={theme.primary} />
                     </TouchableOpacity>

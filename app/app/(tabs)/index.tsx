@@ -21,7 +21,6 @@ import FeedCard from '@/components/home/FeedCard';
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
 import Spacing from '@/constants/Spacing';
-import { Post } from '@/types';
 import Form from '@/components/profile/Form';
 import useCommunityFeedsStore from '@/store/useCommunityFeeds';
 import CustomLoader from '@/components/loader/CustomLoader';
@@ -31,6 +30,7 @@ import NotFound from '@/components/utils/NotFound';
 import { PostDetailModal } from '@/components/modal/PostDetailModal';
 import { CommunityPost } from '@/types/feeds';
 import { PostOptionsModal } from '@/components/modal/PostOptionsModal';
+import { UserProfileModal } from '@/components/modal/UserProfileModal';
 
 
 
@@ -113,6 +113,7 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
   const [showPostModal, setShowPostModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   const [users, setUsers] = useState<any>(null);
   const onViewRef = useRef(({ viewableItems }: { viewableItems: Array<{ item: any }> }) => {
@@ -284,6 +285,7 @@ export default function HomeScreen() {
           onRefresh={refreshSelectedPost}
 
         />
+        {selectedPost?.user && <UserProfileModal visible={showProfileModal} onClose={() => setShowProfileModal(false)} userId={selectedPost?.user?._id} />}
         <PostOptionsModal
           visible={showOptions}
           onClose={() => setShowOptions(false)}
@@ -294,6 +296,9 @@ export default function HomeScreen() {
           onCopyLink={() => handleCopyLink()}
           onBlock={() => handleBlock()}
           onDelete={() => handleDelete()}
+          onViewProfile={() => {
+            setShowProfileModal(true)
+          }}
         />
       </KeyboardAvoidingView>
     </SafeAreaView>

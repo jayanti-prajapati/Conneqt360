@@ -1,26 +1,79 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Modal, ScrollView, TouchableOpacity, Image } from 'react-native';
-import { X, MapPin, Phone, Mail, Building, Hash, Globe, AtSign, Users, Award, Briefcase } from 'lucide-react-native';
+import { X, MapPin, Phone, Mail, Building, Hash, Globe, AtSign, Users, Briefcase, Check, Settings } from 'lucide-react-native';
 import { useThemeStore } from '@/store/themeStore';
-import { User } from '@/types';
+import { BusinessCard } from '../profile/BusinessCard';
+import { ProfileImageModal } from './ProfileImageModal';
+import { SocialMediaModal } from '../profile/SocialMediaModal';
+import Colors from '@/constants/Colors';
+import Spacing from '@/constants/Spacing';
+import Typography from '@/constants/Typography';
+import { useRouter } from 'expo-router';
+;
+import useUsersStore from '@/store/useUsersStore';
 
 interface UserProfileModalProps {
     visible: boolean;
     onClose: () => void;
-    user: User;
+    userId: string;
 }
 
 export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     visible,
     onClose,
-    user,
+    userId,
 }) => {
     const { theme } = useThemeStore();
+    const router = useRouter();
+    const [user, setUser] = useState<any>(null)
+    const [showBusinessCard, setShowBusinessCard] = useState(false);
+    const [showProfileImage, setShowProfileImage] = useState(false);
+    const [showSocialModal, setShowSocialModal] = useState(false);
+    const [isAboutExpanded, setIsAboutExpanded] = useState(false);
+    const { getUserById } = useUsersStore();
 
+    useEffect(() => {
+        if (userId) {
+            getUserData()
+        }
+
+    }, [userId])
+
+    const getUserData = async () => {
+        const data = await getUserById(userId)
+        if (data?.data?.statusCode === 200) {
+            setUser(data.data.data);
+        }
+    }
     const formatDate = (date: Date) => {
         return date.toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long'
+        });
+    };
+
+
+
+
+    const openCatalog = () => {
+        router.push({
+            pathname: '/business-catalog',
+            params: {
+                userId: userId
+
+            },
+        });
+    };
+    const openClients = () => {
+        router.push({
+            pathname: '/business-clients',
+            params: { userId: userId },
+        });
+    };
+    const openServices = () => {
+        router.push({
+            pathname: '/business-services',
+            params: { userId: userId },
         });
     };
 
@@ -32,50 +85,149 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             onRequestClose={onClose}
         >
             <View style={[styles.container, { backgroundColor: theme.background }]}>
-                <View style={[styles.header, { borderBottomColor: theme.border }]}>
-                    <TouchableOpacity onPress={onClose}>
+                <View style={styles.header}>
+                    <Text style={[styles.name, { fontSize: 20 }]}>{user?.businessName || 'Unknown User'}</Text>
+                    <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                         <X size={24} color={theme.text} />
                     </TouchableOpacity>
-                    <Text style={[styles.title, { color: theme.text }]}>Profile</Text>
-                    <View style={{ width: 24 }} />
                 </View>
-
-                <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+                <ScrollView
+                    style={styles.scrollView}
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
+                >
                     {/* Profile Section */}
                     <View style={styles.profileSection}>
-                        <Image
-                            source={{ uri: user.profileUrl || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&dpr=2' }}
-                            style={styles.profileImage}
-                        />
-                        <Text style={[styles.profileName, { color: theme.text }]}>{user.name}</Text>
-                        <Text style={[styles.profileEmail, { color: theme.textSecondary }]}>{user.email}</Text>
-                        {user.aboutUs && (
-                            <Text style={[styles.profileBio, { color: theme.text }]}>{user.aboutUs}</Text>
-                        )}
+                        <View style={styles.profileImageContainer}>
+                            {user?.profileUrl ?
+                                <TouchableOpacity onPress={() => setShowProfileImage(true)}>
+                                    <Image
+                                        source={{
+                                            uri: user?.profileUrl,
+                                        }}
+                                        style={styles.profileImage}
+                                    />
+                                </TouchableOpacity> :
+                                <View style={styles.avatar}>
+                                    <Text style={styles.avatarText}>{user?.username?.charAt(0) ? user?.username?.charAt(0)?.toUpperCase() : "U"}</Text>
+                                </View>
+                            }
+                            {/*  */}
+                        </View>
+
+                        <View style={styles.nameContainer}>
+                            <Text style={styles.name}>{user?.businessName || 'Unknown User'}</Text>
+                            {user?.verified && (
+                                <View style={styles.verifiedBadge}>
+                                    <Check size={16} color={Colors.white} />
+                                </View>
+                            )}
+                        </View>
+                        <Text style={styles.username}>{user?.name || '-'}</Text>
+                        <Text style={styles.title}>{user?.jobTitle || '-'}</Text>
+
+
+                        <TouchableOpacity
+                            style={[styles.actionButton, { backgroundColor: theme.primary, width: "100%" }]}
+                            onPress={() => setShowBusinessCard(true)}
+                        >
+                            <Text style={styles.actionButtonText}>View Business</Text>
+                        </TouchableOpacity>
                     </View>
 
-                    {/* Stats Section */}
-                    <View style={styles.statsSection}>
-                        <View style={styles.statItem}>
-                            <Text style={[styles.statNumber, { color: theme.text }]}>{user.postsCount || 0}</Text>
-                            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Posts</Text>
+
+
+
+
+                    {/* Abour us */}
+                    {user?.aboutUs && (
+                        <View
+                            style={[
+                                styles.infoSection,
+                                { backgroundColor: theme.surface, borderColor: theme.border },
+                            ]}
+                        >
+                            <Text style={[styles.sectionTitle, { color: theme.text }]}>About Us</Text>
+
+                            <Text
+                                style={[styles.infoValue, { color: theme.text }]}
+                                numberOfLines={isAboutExpanded ? undefined : 5}
+                                ellipsizeMode="tail"
+                            >
+                                {user.aboutUs}
+                            </Text>
+
+                            {user?.aboutUs?.length > 100 && ( // show toggle only if content is long
+                                <TouchableOpacity
+                                    onPress={() => setIsAboutExpanded((prev) => !prev)}
+                                    style={{ marginTop: 8 }}
+                                >
+                                    <Text style={{ color: theme.primary, fontWeight: '600' }}>
+                                        {isAboutExpanded ? 'See less' : 'See more'}
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
                         </View>
-                        <View style={styles.statItem}>
-                            <Text style={[styles.statNumber, { color: theme.text }]}>{user.followersCount || 0}</Text>
-                            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Followers</Text>
-                        </View>
-                        <View style={styles.statItem}>
-                            <Text style={[styles.statNumber, { color: theme.text }]}>{user.followingCount || 0}</Text>
-                            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Following</Text>
+                    )}
+
+                    {/* catalogue */}
+                    <View style={styles.businessFeaturesSection}>
+                        <Text style={[styles.sectionTitle, { color: theme.text }]}>Business Features</Text>
+
+                        <View style={styles.featuresGrid}>
+                            <TouchableOpacity
+                                style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                                onPress={() => openCatalog()}
+                            >
+                                <Briefcase size={24} color={theme.primary} />
+                                <Text style={[styles.featureTitle, { color: theme.text }]}>Catalog</Text>
+                                <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
+                                    {user?.catalog?.length || 0} items
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                                onPress={() => openServices()}
+                            >
+                                <Settings size={24} color={theme.primary} />
+                                <Text style={[styles.featureTitle, { color: theme.text }]}>Services</Text>
+                                <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
+                                    {user?.services?.length || 0} services
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                                onPress={() => openClients()}
+                            >
+                                <Users size={24} color={theme.primary} />
+                                <Text style={[styles.featureTitle, { color: theme.text }]}>Clients</Text>
+                                <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
+                                    {user?.clients?.length || 0} clients
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                                onPress={() => setShowSocialModal(true)}
+                            >
+                                <Globe size={24} color={theme.primary} />
+                                <Text style={[styles.featureTitle, { color: theme.text }]}>Connect</Text>
+                                <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
+                                    Social & Web
+                                </Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
+
 
                     {/* Business Information */}
-                    {(user.businessName || user.businessType) && (
+                    {(user?.businessName || user?.businessType) && (
                         <View style={[styles.infoSection, { backgroundColor: theme.surface, borderColor: theme.border }]}>
                             <Text style={[styles.sectionTitle, { color: theme.text }]}>Business Information</Text>
 
-                            {user.businessName && (
+                            {user?.businessName && (
                                 <View style={styles.infoItem}>
                                     <Building size={20} color={theme.textSecondary} />
                                     <View style={styles.infoContent}>
@@ -85,7 +237,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                                 </View>
                             )}
 
-                            {user.businessType && (
+                            {user?.businessType && (
                                 <View style={styles.infoItem}>
                                     <Hash size={20} color={theme.textSecondary} />
                                     <View style={styles.infoContent}>
@@ -95,7 +247,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                                 </View>
                             )}
 
-                            {user.businessEmail && (
+                            {user?.businessEmail && (
                                 <View style={styles.infoItem}>
                                     <AtSign size={20} color={theme.textSecondary} />
                                     <View style={styles.infoContent}>
@@ -105,12 +257,32 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                                 </View>
                             )}
 
-                            {user.website && (
+                            {user?.website && (
                                 <View style={styles.infoItem}>
                                     <Globe size={20} color={theme.textSecondary} />
                                     <View style={styles.infoContent}>
                                         <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Website</Text>
                                         <Text style={[styles.infoValue, { color: theme.text }]}>{user.website}</Text>
+                                    </View>
+                                </View>
+                            )}
+
+                            {user?.gstNumber && (
+                                <View style={styles.infoItem}>
+                                    <Hash size={20} color={theme.textSecondary} />
+                                    <View style={styles.infoContent}>
+                                        <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>GST Number</Text>
+                                        <Text style={[styles.infoValue, { color: theme.text }]}>{user.gstNumber}</Text>
+                                    </View>
+                                </View>
+                            )}
+
+                            {user?.udyamNumber && (
+                                <View style={styles.infoItem}>
+                                    <Hash size={20} color={theme.textSecondary} />
+                                    <View style={styles.infoContent}>
+                                        <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Udyam Number</Text>
+                                        <Text style={[styles.infoValue, { color: theme.text }]}>{user.udyamNumber}</Text>
                                     </View>
                                 </View>
                             )}
@@ -121,25 +293,25 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     <View style={[styles.infoSection, { backgroundColor: theme.surface, borderColor: theme.border }]}>
                         <Text style={[styles.sectionTitle, { color: theme.text }]}>Contact Information</Text>
 
-                        <View style={styles.infoItem}>
+                        {user?.email && <View style={styles.infoItem}>
                             <Mail size={20} color={theme.textSecondary} />
                             <View style={styles.infoContent}>
                                 <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Email</Text>
-                                <Text style={[styles.infoValue, { color: theme.text }]}>{user.email}</Text>
+                                <Text style={[styles.infoValue, { color: theme.text }]}>{user?.email}</Text>
                             </View>
-                        </View>
+                        </View>}
 
-                        {user.phone && (
+                        {user?.phone && (
                             <View style={styles.infoItem}>
                                 <Phone size={20} color={theme.textSecondary} />
                                 <View style={styles.infoContent}>
                                     <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Phone</Text>
-                                    <Text style={[styles.infoValue, { color: theme.text }]}>{user.phone}</Text>
+                                    <Text style={[styles.infoValue, { color: theme.text }]}>{user?.phone}</Text>
                                 </View>
                             </View>
                         )}
 
-                        {(user.address || user.city || user.state || user.country) && (
+                        {(user?.address || user?.city || user?.state || user?.country) && (
                             <View style={styles.infoItem}>
                                 <MapPin size={20} color={theme.textSecondary} />
                                 <View style={styles.infoContent}>
@@ -152,64 +324,41 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                                 </View>
                             </View>
                         )}
+
                     </View>
-
-                    {/* Services Preview */}
-                    {user.services && user.services.length > 0 && (
-                        <View style={[styles.infoSection, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                            <View style={styles.sectionHeader}>
-                                <Briefcase size={20} color={theme.primary} />
-                                <Text style={[styles.sectionTitle, { color: theme.text }]}>Services</Text>
-                            </View>
-                            <View style={styles.servicesList}>
-                                {user.services.slice(0, 6).map((service: any, index: any) => (
-                                    <View key={index} style={[styles.serviceTag, { backgroundColor: theme.primary + '20' }]}>
-                                        <Text style={[styles.serviceTagText, { color: theme.primary }]}>{service}</Text>
-                                    </View>
-                                ))}
-                                {user.services.length > 6 && (
-                                    <Text style={[styles.moreText, { color: theme.textSecondary }]}>
-                                        +{user.services.length - 6} more
-                                    </Text>
-                                )}
-                            </View>
-                        </View>
-                    )}
-
-                    {/* Quick Stats */}
-                    <View style={[styles.infoSection, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                        <Text style={[styles.sectionTitle, { color: theme.text }]}>Quick Stats</Text>
-
-                        <View style={styles.quickStats}>
-                            <View style={styles.quickStatItem}>
-                                <Users size={24} color={theme.primary} />
-                                <Text style={[styles.quickStatNumber, { color: theme.text }]}>{user.clients?.length || 0}</Text>
-                                <Text style={[styles.quickStatLabel, { color: theme.textSecondary }]}>Clients</Text>
-                            </View>
-
-                            <View style={styles.quickStatItem}>
-                                <Award size={24} color={theme.success} />
-                                <Text style={[styles.quickStatNumber, { color: theme.text }]}>{user.catalog?.length || 0}</Text>
-                                <Text style={[styles.quickStatLabel, { color: theme.textSecondary }]}>Projects</Text>
-                            </View>
-
-                            <View style={styles.quickStatItem}>
-                                <Briefcase size={24} color={theme.warning} />
-                                <Text style={[styles.quickStatNumber, { color: theme.text }]}>{user.services?.length || 0}</Text>
-                                <Text style={[styles.quickStatLabel, { color: theme.textSecondary }]}>Services</Text>
-                            </View>
-                        </View>
-                    </View>
-
                     {/* Member Since */}
                     <View style={[styles.memberSection, { backgroundColor: theme.surface, borderColor: theme.border }]}>
                         <Text style={[styles.memberText, { color: theme.textSecondary }]}>
-                            Member since {formatDate(user.createdAt)}
+                            Member since {user?.createdAt ? formatDate(new Date(user?.createdAt)) : '-'}
                         </Text>
                     </View>
-
-                    <View style={styles.bottomPadding} />
                 </ScrollView>
+                {showBusinessCard && (
+
+                    <View style={styles.businessCardModal}>
+                        <TouchableOpacity
+                            style={styles.businessCardOverlay}
+                            onPress={() => setShowBusinessCard(false)}
+                        />
+                        <View style={styles.businessCardContainer}>
+                            {user && <BusinessCard user={user} setShowBusinessCard={setShowBusinessCard} />}
+                        </View>
+                    </View>
+                )}
+                {showProfileImage && <ProfileImageModal
+                    visible={showProfileImage}
+                    imageUri={user?.profileUrl || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=2'}
+                    onClose={() => setShowProfileImage(false)}
+                />}
+
+                {showSocialModal &&
+                    <SocialMediaModal
+                        visible={showSocialModal}
+                        onClose={() => setShowSocialModal(false)}
+                        socialMedia={user?.socialMedia || {}}
+                        website={user?.website}
+                        businessEmail={user?.businessEmail}
+                    />}
             </View>
         </Modal>
     );
@@ -218,65 +367,366 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        // paddingTop: Spacing.md,
+        backgroundColor: Colors.white,
+    },
+    closeButton: {
+        padding: Spacing.sm,
+    },
+    avatarText: {
+        // width: '100%',
+        // height: '100%',
+        color: Colors.primary[700],
+        fontSize: 40,
+        fontWeight: Typography.weight.bold as any,
+    },
+    avatar: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 60,
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        backgroundColor: Colors.primary[100],
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    actionButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        borderRadius: 10,
+        gap: 6,
+    },
+    actionButtonText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#FFFFFF',
     },
     header: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 16,
+        justifyContent: 'space-between',
+        padding: Spacing.md,
         borderBottomWidth: 1,
+        borderBottomColor: Colors.gray[200],
     },
-    title: {
-        fontSize: 18,
+    backButton: {
+        padding: Spacing.xs,
+    },
+    headerTitle: {
+        fontSize: 20,
         fontWeight: '600',
+        color: Colors.gray[800],
     },
-    content: {
+    headerIcons: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    logoutText: {
+        color: Colors.primary[900],
+        fontSize: 14,
+    },
+    scrollView: {
         flex: 1,
+    },
+    scrollContent: {
+        paddingBottom: Spacing.xl,
+        paddingTop: Spacing.md,
     },
     profileSection: {
         alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 24,
+        padding: Spacing.lg,
+        borderBottomWidth: 1,
+        borderBottomColor: Colors.gray[100],
     },
-    profileImage: {
+    logoImage: {
+        width: 150,
+        height: 30,
+        marginBottom: 12,
+    },
+    profileImageContainer: {
+        position: 'relative',
         width: 120,
         height: 120,
         borderRadius: 60,
+        alignSelf: 'center',
+        marginTop: 20,
+        marginBottom: 20,
+    },
+    profileImage: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 60,
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+    },
+    imageUploadOverlay: {
+        position: 'absolute',
+        right: 0,
+        bottom: 0,
+        backgroundColor: Colors.gray[200],
+        borderRadius: 20,
+        padding: 8,
+        zIndex: 1,
+    },
+    uploadButton: {
+        width: 20,
+        height: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: Colors.gray[200],
+        borderRadius: 20,
+        borderWidth: 2,
+        borderColor: 'white',
+    },
+    profileImageContainerActive: {
+        opacity: 1,
+    },
+    businessFeaturesSection: {
+        paddingHorizontal: 16,
+        paddingVertical: 20,
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: '600',
         marginBottom: 16,
     },
-    profileName: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 4,
-    },
-    profileEmail: {
-        fontSize: 16,
-        marginBottom: 8,
-    },
-    profileBio: {
-        fontSize: 14,
-        textAlign: 'center',
-        lineHeight: 20,
-    },
-    statsSection: {
+    featuresGrid: {
         flexDirection: 'row',
-        justifyContent: 'space-around',
-        paddingHorizontal: 16,
-        paddingVertical: 24,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E5E7EB',
+        flexWrap: 'wrap',
+        gap: 12,
     },
-    statItem: {
+    featureCard: {
+        width: '48%',
+        padding: 16,
+        borderRadius: 12,
+        borderWidth: 1,
+        alignItems: 'center',
+        gap: 8,
+    },
+    featureTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    featureSubtitle: {
+        fontSize: 12,
+        textAlign: 'center',
+    },
+    nameContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: Spacing.xs / 2, // Using xs/2 instead of undefined xxs
+    },
+    name: {
+        fontSize: 24,
+        fontWeight: '600',
+        marginRight: Spacing.xs,
+    },
+    verifiedBadge: {
+        backgroundColor: Colors.primary[500],
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        justifyContent: 'center',
         alignItems: 'center',
     },
-    statNumber: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 4,
+    unverifiedText: {
+        color: Colors.gray[600],
+        fontSize: 12,
+        fontWeight: '600',
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        textAlign: 'center',
+        alignItems: 'center',
     },
-    statLabel: {
+    title: {
+        fontSize: 16,
+        color: Colors.gray[600],
+        marginBottom: Spacing.lg,
+    },
+    username: {
+        fontSize: 16,
+        color: Colors.gray[600],
+
+    },
+    buttonRow: {
+        flexDirection: 'row',
+        gap: 4,
+
+        justifyContent: 'space-between',
+        marginHorizontal: -Spacing.xs,
+        marginBottom: Spacing.sm
+    },
+    button: {
+        margin: Spacing.xs,
+        flex: 1,
+        minWidth: 100,
+    },
+    section: {
+        padding: Spacing.lg,
+        borderBottomWidth: 1,
+        borderBottomColor: Colors.gray[100],
+    },
+    memberSection: {
+        marginHorizontal: 16,
+        marginVertical: 12,
+        padding: 16,
+        borderRadius: 12,
+        borderWidth: 1,
+        alignItems: 'center',
+    },
+    memberText: {
         fontSize: 14,
+        fontStyle: 'italic',
+    },
+    bottomPadding: {
+        height: 40,
+    },
+    card: {
+        backgroundColor: Colors.white,
+        borderRadius: 12,
+        padding: Spacing.lg,
+        marginBottom: Spacing.md,
+        // marginHorizontal: Spacing.lg,
+        shadowColor: Colors.black,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    progressHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: Spacing.sm,
+    },
+    progressTitle: {
+        fontSize: 16,
+        fontWeight: '500',
+        color: Colors.gray[800],
+    },
+    progressPercent: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: Colors.primary[600],
+    },
+    progressPercentSuccess: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: 'green',
+    },
+    progressBar: {
+        height: 8,
+        backgroundColor: Colors.gray[200],
+        borderRadius: 4,
+        overflow: 'hidden',
+        marginTop: Spacing.sm,
+    },
+    progressFill: {
+        height: '100%',
+        backgroundColor: Colors.primary[500],
+        borderRadius: 4,
+    },
+    progressSuccess: {
+        height: '100%',
+        backgroundColor: "green",
+        borderRadius: 4,
+    },
+    aboutText: {
+        fontSize: 14,
+        color: Colors.gray[700],
+        lineHeight: 22,
+    },
+    detailRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: Spacing.sm,
+        alignItems: 'center',
+    },
+    detailLabel: {
+        fontSize: 14,
+
+        color: Colors.gray[600],
+        flexShrink: 1,
+    },
+    detailValue: {
+        textAlign: 'right',
+        fontSize: 14,
+        fontWeight: '500',
+        color: Colors.gray[900],
+        flex: 1,
+        marginLeft: Spacing.md,
+        flexShrink: 1,
+        flexWrap: 'wrap',
+    },
+    referralText: {
+        fontSize: 14,
+        color: Colors.primary[900],
+    },
+    contactSection: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: Spacing.lg,
+        marginBottom: Spacing.md,
+        // paddingBottom: Spacing.md,
+        borderBottomWidth: 2,
+        borderBottomColor: Colors.gray[100],
+    },
+    contactInfo: {
+        flex: 1,
+    },
+    contactItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: Spacing.xs,
+    },
+    contactText: {
+        fontSize: 14,
+        marginLeft: Spacing.sm,
+        color: Colors.gray[800],
+    },
+    businessButton: {
+        marginLeft: Spacing.md,
+        width: 150,
+    },
+    iconButton: {
+        padding: Spacing.xs,
+    },
+
+    businessCardModal: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        // marginBottom: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    businessCardOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    businessCardContainer: {
+        margin: 20,
+        borderRadius: 16,
+        overflow: 'hidden',
+    },
+    closeBusinessCardButton: {
+        paddingVertical: 16,
+        alignItems: 'center',
+    },
+    closeBusinessCardText: {
+        fontSize: 16,
+        fontWeight: '600',
     },
     infoSection: {
         marginHorizontal: 16,
@@ -284,17 +734,6 @@ const styles = StyleSheet.create({
         padding: 16,
         borderRadius: 12,
         borderWidth: 1,
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        marginBottom: 16,
-    },
-    sectionHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 16,
-        gap: 8,
     },
     infoItem: {
         flexDirection: 'row',
@@ -313,54 +752,5 @@ const styles = StyleSheet.create({
     infoValue: {
         fontSize: 16,
         lineHeight: 22,
-    },
-    servicesList: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 8,
-        alignItems: 'center',
-    },
-    serviceTag: {
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 16,
-    },
-    serviceTagText: {
-        fontSize: 12,
-        fontWeight: '500',
-    },
-    moreText: {
-        fontSize: 12,
-        fontStyle: 'italic',
-    },
-    quickStats: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-    },
-    quickStatItem: {
-        alignItems: 'center',
-        gap: 8,
-    },
-    quickStatNumber: {
-        fontSize: 20,
-        fontWeight: 'bold',
-    },
-    quickStatLabel: {
-        fontSize: 12,
-    },
-    memberSection: {
-        marginHorizontal: 16,
-        marginVertical: 12,
-        padding: 16,
-        borderRadius: 12,
-        borderWidth: 1,
-        alignItems: 'center',
-    },
-    memberText: {
-        fontSize: 14,
-        fontStyle: 'italic',
-    },
-    bottomPadding: {
-        height: 40,
     },
 });

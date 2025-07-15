@@ -17,7 +17,7 @@ const placeholderImage = 'https://via.placeholder.com/50';
 // Mock users list
 const availableUsers: User[] = [
   {
-    id: 'user456',
+    _id: 'user456',
     email: 'sarah@company.com',
     name: 'Sarah Johnson',
     profileUrl: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg',
@@ -30,7 +30,7 @@ const availableUsers: User[] = [
     createdAt: new Date('2023-02-20'),
   },
   {
-    id: 'user789',
+    _id: 'user789',
     email: 'mike@startup.com',
     name: 'Mike Chen',
     profileUrl: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg',
@@ -43,7 +43,7 @@ const availableUsers: User[] = [
     createdAt: new Date('2022-11-10'),
   },
   {
-    id: 'user101',
+    _id: 'user101',
     email: 'alex@agency.com',
     name: 'Alex Rivera',
     profileUrl: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg',
@@ -76,7 +76,7 @@ export default function ChatScreen() {
   const fetchChats = async () => {
     try {
       if (user) {
-        const userChats = await chatService.getUserChats(user.id);
+        const userChats = await chatService.getUserChats(user._id);
         setChats(userChats || []);
       }
     } catch (error) {
@@ -90,13 +90,13 @@ export default function ChatScreen() {
     if (!user || !newMessage.trim()) return;
 
     try {
-      await chatService.createChat([user.id, targetUser.id], newMessage, user.id);
+      await chatService.createChat([user._id, targetUser._id], newMessage, user._id);
       setNewMessage('');
       setSelectedUser(null);
       setShowNewChat(false);
       fetchChats();
 
-      setSelectedChatUserId(targetUser.id);
+      setSelectedChatUserId(targetUser._id);
       setShowChatModal(true);
     } catch (error) {
       console.error('Error starting chat:', error);
@@ -104,8 +104,8 @@ export default function ChatScreen() {
   };
 
   const getOtherUser = (chat: Chat): User | undefined => {
-    const otherUserId = chat?.participants?.find(p => p !== user?.id);
-    return availableUsers.find(u => u.id === otherUserId);
+    const otherUserId = chat?.participants?.find(p => p !== user?._id);
+    return availableUsers.find(u => u._id === otherUserId);
   };
 
   const formatTime = (date?: string | Date) => {
@@ -132,7 +132,7 @@ export default function ChatScreen() {
       <TouchableOpacity
         style={[styles.chatItem, { backgroundColor: theme.background, borderColor: theme.border }]}
         onPress={() => {
-          setSelectedChatUserId(otherUser.id);
+          setSelectedChatUserId(otherUser._id);
           setShowChatModal(true);
         }}
       >
@@ -153,12 +153,12 @@ export default function ChatScreen() {
           </View>
 
           <Text style={[styles.lastMessage, { color: theme.textSecondary }]} numberOfLines={1}>
-            {lastMessage.senderId === user?.id ? 'You: ' : ''}
+            {lastMessage.senderId === user?._id ? 'You: ' : ''}
             {lastMessage.content || ''}
           </Text>
         </View>
 
-        {!lastMessage.isRead && lastMessage.senderId !== user?.id && (
+        {!lastMessage.isRead && lastMessage.senderId !== user?._id && (
           <View style={[styles.unreadDot, { backgroundColor: theme.primary }]} />
         )}
       </TouchableOpacity>
@@ -166,7 +166,7 @@ export default function ChatScreen() {
   };
 
   const filteredUsers = availableUsers.filter(u =>
-    u.id !== user?.id &&
+    u._id !== user?._id &&
     u.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -230,7 +230,7 @@ export default function ChatScreen() {
           ) : (
             <FlatList
               data={filteredUsers}
-              keyExtractor={(item) => item.id}
+              keyExtractor={(item) => item._id}
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={[styles.userItem, { backgroundColor: theme.surface, borderColor: theme.border }]}

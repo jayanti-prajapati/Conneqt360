@@ -1,11 +1,12 @@
 export interface User {
-  id: string;
+  _id: string;
   username?: string;
   jobTitle?: string;
 
   email: string;
   name: string;
   profileUrl?: string;
+  verified?: boolean
 
   aboutUs?: string;
   businessName?: string;
