@@ -29,7 +29,7 @@ export const pickVideo = async (): Promise<string | null> => {
             };
             // console.log('File upload response:', result.assets[0]);
             const data = await uploadFile(file);
-            console.log("asdasdasdasd", data);
+            // console.log("asdasdasdasd", data);
 
 
             return "http://84.247.177.87/api/custom-file/fetch-doc?fileName=" + data?.data?.data?.fileName;

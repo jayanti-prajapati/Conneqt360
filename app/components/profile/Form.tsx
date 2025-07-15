@@ -39,7 +39,7 @@ export default function Form({ isPresent, onClose, closeText = "Skip", users }: 
         businessType: '',
         udyamNumber: '',
         gstNumber: '',
-        address: '',
+        // address: '',
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -54,7 +54,7 @@ export default function Form({ isPresent, onClose, closeText = "Skip", users }: 
             businessType: users?.businessType ?? '',
             udyamNumber: users?.udyamNumber ?? '',
             gstNumber: users?.gstNumber ?? '',
-            address: users?.location ?? '',
+            // address: users?.location ?? '',
         });
     }, [users]);
 
@@ -87,9 +87,9 @@ export default function Form({ isPresent, onClose, closeText = "Skip", users }: 
         if (!formData.name) newErrors.name = "Name is required";
         if (!formData.jobTitle) newErrors.jobTitle = "Job title is required";
         if (!formData.businessType) newErrors.businessType = "Business type is required";
-        if (!formData.udyamNumber) newErrors.udyamNumber = "Udyam number is required";
+        // if (!formData.udyamNumber) newErrors.udyamNumber = "Udyam number is required";
         if (!formData.gstNumber) newErrors.gstNumber = "GST number is required";
-        if (!formData.address) newErrors.address = "Address is required";
+        // if (!formData.address) newErrors.address = "Address is required";
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -122,7 +122,7 @@ export default function Form({ isPresent, onClose, closeText = "Skip", users }: 
         if (!validateForm()) return;
 
         try {
-            const resp = await updateUser(userData?._id, { ...formData, isSkip: true, location: formData.address });
+            const resp = await updateUser(userData?._id, { ...formData, isSkip: true });
             if (resp?.data?.statusCode === 201 || resp?.data?.statusCode === 200) {
                 setUserData(resp.data.data);
                 setIsVisible(false);
@@ -162,12 +162,12 @@ export default function Form({ isPresent, onClose, closeText = "Skip", users }: 
                 {renderField("Business Type", "businessType")}
                 {renderField("Udyam Number", "udyamNumber")}
                 {renderField("GST Number", "gstNumber")}
-                {renderField("Address/Location", "address")}
+                {/* {renderField("Address/Location", "address")} */}
 
                 {errors.apiError && <Text style={{ color: 'red' }}>{errors.apiError}</Text>}
 
                 <View style={{ flexDirection: 'row', justifyContent: "space-between", width: '95%' }}>
-                    <GradientButton title={closeText} onPress={handleSkip} />
+                    {/* <GradientButton title={closeText} onPress={handleSkip} /> */}
                     <GradientButton title="Submit" onPress={handleSubmit} />
                 </View>
             </View>
@@ -176,9 +176,9 @@ export default function Form({ isPresent, onClose, closeText = "Skip", users }: 
 }
 
 const styles = StyleSheet.create({
-    button: { padding: 10, borderRadius: 5 },
+    button: { padding: 10, borderRadius: 5, width: "100%" },
     container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    buttonText: { color: '#fff', fontSize: 12, textAlign: 'center' },
+    buttonText: { color: '#fff', fontSize: 12, textAlign: "center" },
     inputContainer: { width: '90%', marginVertical: 5 },
     input: { height: 44, borderWidth: 1, borderColor: '#ddd', borderRadius: 12, paddingHorizontal: 12 },
 });

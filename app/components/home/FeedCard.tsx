@@ -1,13 +1,18 @@
-import React, { useEffect, useRef } from 'react';
-import { StyleSheet, View, Text, Image, TouchableOpacity, Dimensions } from 'react-native';
+import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import { StyleSheet, View, Text, Image, TouchableOpacity, Dimensions, Alert } from 'react-native';
 import Card from '@/components/common/Card';
 import { Heart, MessageSquare, Share, MoreVertical } from 'lucide-react-native';
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
 import Spacing from '@/constants/Spacing';
 import { formatTimestamp } from '../utils/dateconverter';
-import { ResizeMode, Video } from 'expo-av';
-import { getAuthData } from '@/services/secureStore';
+
+import CustomVideoPlayer from '../utils/CustomVideoPlayer';
+
+import { CommunityPost } from '@/types/feeds';
+import { PostOptionsModal } from '../modal/PostOptionsModal';
+import { CommentSection } from '../comments/CommentSection';
+import { Comment } from '@/types';
 
 const { width } = Dimensions.get('window');
 
@@ -17,24 +22,25 @@ interface FeedCardProps {
   id: string;
   // type: PostType;
   phone?: string;
-  userId?: string;
+  user?: any;
   username: string;
   businessName: string;
   timestamp: string;
   content: string;
   imageUrl?: string;
   likes: number;
-  comments: number;
   videoUrl: string;
   verified?: boolean;
   profileImage?: string;
   isVisible?: boolean;
   likesIds?: string[];
-  onLike: (id: string, likes: string[]) => void;
-  onComment: (id: string) => void;
   onShare: (id: string) => void;
-  onMoreOptions: (id: string) => void;
-  onPress: (id: string) => void;
+  onMoreOptions: (post: CommunityPost) => void;
+  onPress: (post: CommunityPost) => void;
+  post: any;
+  onLike: (id: any, likes: any) => void;
+  onComment: (id: any, comments: any) => void;
+
 
 }
 
@@ -47,37 +53,63 @@ export default function FeedCard({
   content,
   imageUrl,
   videoUrl,
-  likes,
-  likesIds,
-  userId,
-  comments,
-  onLike,
-  onComment,
+  user,
+  post,
   onShare,
   onMoreOptions,
   onPress,
+  onLike,
+  onComment,
   profileImage,
   isVisible = false,
   verified = false,
 }: FeedCardProps) {
 
-  const videoRef = useRef<Video>(null);
+  // const isliked = user?.data?._id ? likesIds?.includes(user?.data?._id) : false;
 
-
-  const isliked = userId ? likesIds?.includes(userId) : false;
-
+  // console.log("isliked", likesIds, userId);
+  const [comments, setComments] = useState<Comment[]>(post.comments);
+  const [showComments, setShowComments] = useState(false);
+  const [showFullText, setShowFullText] = useState(false);
+  const [isLiked, setIsLiked] = useState(post.likes.includes(user?.data?._id || false));
+  const [likesCount, setLikesCount] = useState(post.likes.length);
 
   useEffect(() => {
-    if (videoRef.current) {
-      if (isVisible) {
-        videoRef.current.playAsync();
-      } else {
-        videoRef.current.pauseAsync();
-      }
+    if (post && post?.likes && Array.isArray(post.likes) && user?.data?._id) {
+      setIsLiked(post.likes.includes(user.data._id));
+      setLikesCount(post.likes.length);
     }
-  }, [isVisible]);
+
+    if (post && post.comments) {
+      setComments(post.comments);
+    }
+  }, [post]);
+
+
+  const handleAddComment = (content: string) => {
+    if (!user) return;
+
+    const newComment: Comment = {
+      user: user?.data?._id,
+      content,
+    };
+
+    // setComments(prev => [...prev, newComment]);
+    onComment(post?._id, newComment)
+  };
+  const handleLike = () => {
+    const updatedLikes = isLiked
+      ? post?.likes?.filter((id: string) => id !== user?.data?._id)
+      : [...post?.likes, user?.data?._id];
+
+    setIsLiked(!isLiked);
+    setLikesCount((prev: any) => (isLiked ? prev - 1 : prev + 1));
+    onLike(post._id, updatedLikes);
+  };
+
+
   return (
-    <TouchableOpacity activeOpacity={0.9} onPress={() => onPress(id)}>
+    <TouchableOpacity activeOpacity={0.9} onPress={() => onPress(post)}>
       <Card style={styles.card}>
         <View style={styles.header}>
           <View style={styles.profileContainer}>
@@ -109,52 +141,99 @@ export default function FeedCard({
             {/* <View style={[styles.postTypeTag, { backgroundColor: getPostTypeColor(type) }]}>
               <Text style={styles.postTypeText}>{getPostTypeLabel(type)}</Text>
             </View> */}
-            <TouchableOpacity onPress={() => onMoreOptions(id)} hitSlop={10}>
+            <TouchableOpacity onPress={() => onMoreOptions(post)} hitSlop={10}>
               <MoreVertical size={20} color={Colors.gray[600]} />
             </TouchableOpacity>
           </View>
         </View>
 
-        {content && (<View style={styles.content}>
-          <Text style={styles.contentText}>{content}</Text>
-        </View>)}
+        {content && (
+          <View style={styles.content}>
+            <Text
+              style={styles.contentText}
+              numberOfLines={showFullText ? undefined : 3}
+            >
+              {content}
+            </Text>
+
+            {content.length > 100 && (
+              <TouchableOpacity onPress={() => setShowFullText(!showFullText)}>
+                <Text style={styles.seeMoreText}>
+                  {showFullText ? 'See less' : 'See more'}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+
 
         {imageUrl && (
-          <Image
-            source={{ uri: imageUrl }}
-            style={styles.image}
-            resizeMode="cover"
-          />
+          <View style={{ width: '100%' }}>
+            <Image
+
+              source={{ uri: imageUrl }}
+              style={styles.image}
+              resizeMode='contain'
+            />
+          </View>
         )}
 
         {videoUrl && (
-          <Video
-            source={{ uri: videoUrl }}
-            style={styles.video}
-            ref={videoRef}
-            useNativeControls
-            resizeMode={ResizeMode.CONTAIN}
-            shouldPlay={true} // Set true to autoplay
-            isLooping
+          <CustomVideoPlayer
+            videoUrl={videoUrl}
+            isVisible={isVisible}
           />
+          // <View style={styles.videoContainer}>
+          //   <Video
+          //     source={{ uri: videoUrl }}
+          //     style={styles.video}
+          //     ref={videoRef}
+          //     useNativeControls
+          //     resizeMode={ResizeMode.CONTAIN}
+          //     shouldPlay={true} // Set true to autoplay
+          //     isLooping
+          //     isMuted={isMuted}
+          //   />
+          //   <TouchableOpacity
+          //     style={styles.muteButton}
+          //     onPress={() => setIsMuted(!isMuted)}
+          //   >
+          //     {isMuted ? (
+          //       <VolumeX size={15} color="#fff" />
+          //     ) : (
+          //       <Volume2 size={15} color="#fff" />
+          //     )}
+          //   </TouchableOpacity>
+          //   <TouchableOpacity style={styles.playButton} onPress={togglePlayPause}>
+          //     {isPlaying ? (
+          //       <Pause size={15} color="#fff" />
+          //     ) : (
+          //       <Play size={15} color="#fff" />
+          //     )}
+          //   </TouchableOpacity>
+          // </View>
+
         )}
         <View style={styles.actions}>
           <TouchableOpacity
             style={styles.actionButton}
-            onPress={() => onLike(id, likesIds ?? [])}
+            onPress={() => handleLike()}
           >
             <Heart size={20}
-              fill={isliked ? '#E0245E' : 'none'}
-              color={isliked ? '#E0245E' : Colors.gray[600]} />
-            <Text style={styles.actionText}>{likes}</Text>
+              fill={isLiked ? '#E0245E' : 'none'}
+              color={isLiked ? '#E0245E' : Colors.gray[600]} />
+            <Text style={styles.actionText}>{likesCount}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.actionButton}
-            onPress={() => onComment(id)}
+            onPress={(e) => {
+              e.stopPropagation();
+              setShowComments(!showComments);
+            }}
           >
             <MessageSquare size={20} color={Colors.gray[600]} />
-            <Text style={styles.actionText}>{comments}</Text>
+            <Text style={styles.actionText}>{comments?.length}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -164,23 +243,32 @@ export default function FeedCard({
             <Share size={20} color={Colors.gray[600]} />
             <Text style={styles.actionText}>Share</Text>
           </TouchableOpacity>
+
         </View>
+        {showComments && (
+          <CommentSection
+            postId={post.id}
+            comments={comments}
+            user={user}
+            onAddComment={handleAddComment}
+          />
+        )}
       </Card>
-    </TouchableOpacity>
+
+    </TouchableOpacity >
   );
 }
 
 const styles = StyleSheet.create({
   card: {
     marginBottom: Spacing.md,
-    width: width - Spacing.lg * 2,
+    width: width - Spacing.sm * 2,
     alignSelf: 'center',
+    // minHeight: 450, // Example: increase to your desired height
+    // paddingBottom: Spacing.md,
+
   },
-  video: {
-    width: '100%',
-    height: 200,
-    backgroundColor: Colors.gray[200], // fallback in case video doesn't load
-  },
+
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -261,8 +349,10 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   image: {
-    width: '100%',
-    height: 200,
+    width: "100%",
+    height: 400,
+    borderRadius: 12,
+    marginBottom: Spacing.md,
     // paddingTop: Spacing.lg,
   },
   actions: {
@@ -282,4 +372,13 @@ const styles = StyleSheet.create({
     fontSize: Typography.size.sm,
     color: Colors.gray[600],
   },
+  seeMoreText: {
+    color: Colors.primary[600],
+    fontWeight: '600',
+    marginTop: 4,
+  },
+
 });
+
+
+

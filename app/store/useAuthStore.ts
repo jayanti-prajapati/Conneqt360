@@ -92,6 +92,7 @@ const useAuthStore = create<AuthStore>((set) => ({
     try {
       const res = await axios.post(`${API_URL}/auth/verify-otp`, data);
       set({ response: res.data, loading: false });
+
       await saveAuthData(res.data);
       return res;
     } catch (err: any) {
