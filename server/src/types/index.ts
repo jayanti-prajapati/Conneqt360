@@ -114,6 +114,19 @@ export interface IUserServices extends Document {
 }
 
 
+
+export interface Message {
+  content: Text;
+  sender: IUser["_id"];
+  receiver: IUser["_id"];
+  type: 'text' | 'image' | 'file';
+  edited: boolean;
+  editedAt?: Date;
+  readBy: Array<{ user: Types.ObjectId; readAt: Date }>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface ICircle extends Document {
   name: string;
   description: string;
@@ -156,9 +169,14 @@ export interface IChat extends Document {
   createdAt: Date;
 }
 
+
 export interface AuthRequest extends Request {
- userId?: string;
-}
+    userId: string;
+
+  };
+
+
+
 
 export interface IAuthDocument extends IUser, Document {}
 export interface IUserDocument extends IUser, Document {}
