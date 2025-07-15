@@ -7,6 +7,10 @@ export class UserRepository extends BaseRepository<IUser> {
     super(User);
   }
 
+   aggregate(pipeline: any[]) {
+    return this.model.aggregate(pipeline);
+  }
+
   async findByPhone(phone: string, extraFilter: any = {}) {
     return User.findByPhone(phone, extraFilter);
   }
