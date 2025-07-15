@@ -14,7 +14,7 @@ import { useTheme } from '@react-navigation/native';
 import { router } from 'expo-router';
 import { clearAuthData } from '@/services/secureStore';
 import { Colors, Spacing } from '@/constants/theme';
-import Header from './Header';
+import { Header } from './Header';
 
 type LayoutProps = {
   children: ReactNode;
@@ -45,11 +45,6 @@ export default function Layout({
 }: LayoutProps) {
   const { colors } = useTheme();
 
-  const handleLogout = () => {
-    clearAuthData();
-    router.replace('/(auth)/login');
-  };
-
   const renderContent = () => {
     if (scrollable) {
       return (
@@ -74,7 +69,12 @@ export default function Layout({
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: Colors.gray[100] }}>
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: Colors.gray[100],
+      }}
+    >
       <StatusBar
         barStyle={statusBarStyle}
         backgroundColor={statusBarColor}
@@ -87,7 +87,6 @@ export default function Layout({
             showBackButton={showBackButton}
             rightComponent={headerRight}
             onBackPress={() => router.back()}
-            onLogoutPress={handleLogout}
           />
         )}
         <KeyboardAvoidingView

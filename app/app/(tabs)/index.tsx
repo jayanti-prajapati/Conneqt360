@@ -1,36 +1,23 @@
 import React, { useEffect, useState, useRef } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  View,
-  Text,
-  TouchableOpacity,
   StyleSheet,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
   BackHandler,
   Alert,
   Share,
   RefreshControl,
   FlatList,
-  SafeAreaView,
-  TextInput,
 } from 'react-native';
 import { Colors, Spacing } from '@/constants/theme';
-import { Bell, Filter } from 'lucide-react-native';
 import { getAuthData } from '@/services/authService';
 import { useIsFocused } from '@react-navigation/native';
-import { Form } from '@/components/form/Form';
 import { NotFound } from '@/components/NotFound';
 import { CustomLoader } from '@/components/CustomLoader';
 import { FeedCard } from '@/components/FeedCard';
 import { PostDetailModal } from '@/components/modal/PostDetailModal';
 import { PostOptionsModal } from '@/components/modal/PostOptionsModal';
-import { CommunityPost, User } from '@/types/feeds';
+import { CommunityPost } from '@/types/feeds';
 import { useRouter } from 'expo-router';
 import { useCommunityFeedsStore } from '@/store/communityFeedsStore';
-import Input from '@/components/ui-components/Input';
-import Header from '@/components/common/Header';
 import Layout from '@/components/common/Layout';
 import Search from '@/components/common/Search';
 

@@ -1,12 +1,21 @@
-import React, { ReactNode } from 'react';
-import { Platform, StyleSheet, View, Text, ViewStyle } from 'react-native';
-import { useTheme } from '@react-navigation/native';
-import { useRouter } from 'expo-router';
+import React from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  ViewStyle,
+  TouchableOpacity,
+} from 'react-native';
+import {
+  DrawerActions,
+  useTheme,
+  useNavigation,
+} from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { Power } from 'lucide-react-native';
-import Button from '../ui-components/Button';
-import { Spacing } from '@/constants/Spacing';
-import { Typography } from '@/constants/Typography';
+import { router, useLocalSearchParams } from 'expo-router';
+import Spacing from '@/constants/Spacing';
+import Typography from '@/constants/Typography';
+import Colors from '@/constants/Colors';
 
 const styles = StyleSheet.create({
   header: {
@@ -15,121 +24,105 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: Spacing.xs,
+    paddingVertical: Spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+    paddingHorizontal: Spacing.md,
   },
-  headerContent: {
-    flex: 1,
+  leftSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
   },
-  titleContainer: {
+  middleSection: {
     flex: 1,
     alignItems: 'center',
-    marginHorizontal: Spacing.sm,
+    justifyContent: 'center',
+  },
+  rightSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   title: {
-    fontSize: Typography.size.xl,
-    fontWeight: '700',
+    fontSize: Typography.size.md,
+    fontWeight: Typography.weight.medium as 'medium',
+    color: '#000',
     textAlign: 'center',
   },
-  leftContainer: {
-    width: 40, // Fixed width for alignment
+  menuButton: {
+    marginRight: Spacing.sm,
   },
-  rightContainer: {
-    width: 40, // Fixed width for alignment
-    alignItems: 'flex-end',
+  profileButton: {
+    marginLeft: Spacing.sm,
   },
-  backButton: {
-    paddingHorizontal: Spacing.xs,
-    paddingVertical: Spacing.xs,
+  alertButton: {
+    marginLeft: Spacing.sm,
   },
-  rightComponent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  alertBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.primary[600],
   },
 });
 
-type HeaderProps = {
+interface HeaderProps {
   title: string;
   showBackButton?: boolean;
-  rightComponent?: ReactNode;
+  rightComponent?: React.ReactNode;
   onBackPress?: () => void;
-  onLogoutPress?: () => void;
   style?: ViewStyle;
-};
+}
 
-export default function Header({
+export const Header: React.FC<HeaderProps> = ({
   title,
   showBackButton = false,
   rightComponent,
   onBackPress,
-  onLogoutPress,
   style,
-}: HeaderProps) {
-  const router = useRouter();
+}) => {
   const { colors } = useTheme();
-
-  const handleBackPress = () => {
-    if (onBackPress) {
-      onBackPress();
-    } else {
-      router.back();
-    }
+  const params = useLocalSearchParams();
+  const navigation = useNavigation<any>();
+  const onMenuPress = () => {
+    router.replace('/(drawer)');
   };
-
-  const handleLogout = () => {
-    if (onLogoutPress) {
-      onLogoutPress();
-    }
+  const onProfilePress = () => {
+    router.replace('/(tabs)/profile');
   };
-
   return (
-    <View style={[styles.header, { backgroundColor: colors.card }, style]}>
-      <View style={styles.headerContent}>
-        <View style={styles.leftContainer}>
-          {showBackButton && (
-            <Button
-              variant="ghost"
-              size="small"
-              onPress={handleBackPress}
-              isIconOnly
-              style={styles.backButton}
-              icon={
-                <Ionicons name="arrow-back" size={24} color={colors.primary} />
-              }
-            />
-          )}
-        </View>
+    <View style={styles.header}>
+      <View style={styles.leftSection}>
+        {showBackButton && (
+          <TouchableOpacity style={styles.menuButton} onPress={onBackPress}>
+            <Ionicons name="chevron-back" size={24} color={colors.text} />
+          </TouchableOpacity>
+        )}
+        {!showBackButton && (
+          <TouchableOpacity style={styles.menuButton} onPress={onMenuPress}>
+            <Ionicons name="menu" size={24} color={colors.text} />
+          </TouchableOpacity>
+        )}
+      </View>
 
-        <View style={styles.titleContainer}>
-          <Text
-            style={[styles.title, { color: colors.text }]}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {title}
-          </Text>
-        </View>
+      <View style={styles.middleSection}>
+        <Text style={styles.title}>{title}</Text>
+      </View>
 
-        <View style={styles.rightContainer}>
-          {rightComponent ? (
-            <View style={styles.rightComponent}>{rightComponent}</View>
-          ) : onLogoutPress ? (
-            <Button
-              variant="ghost"
-              //   size="small"
-              onPress={handleLogout}
-              isIconOnly
-              icon={<Power size={20} color={colors.primary} />}
+      <View style={styles.rightSection}>
+        {rightComponent || (
+          <TouchableOpacity style={styles.alertButton} onPress={onProfilePress}>
+            <Ionicons
+              name="notifications-outline"
+              size={24}
+              color={colors.text}
             />
-          ) : (
-            <View style={{ width: 40 }} />
-          )}
-        </View>
+            <View style={styles.alertBadge} />
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
-}
+};

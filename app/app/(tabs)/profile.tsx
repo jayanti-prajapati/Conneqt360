@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, Image, Share, ViewStyle } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Image,
+  Share,
+  ViewStyle,
+  TouchableOpacity,
+} from 'react-native';
 import Button from '@/components/ui-components/Button';
 
 import { useRouter } from 'expo-router';
@@ -127,6 +135,11 @@ export default function ProfileScreen() {
   useEffect(() => {
     fetchUserById();
   }, []);
+
+  const onLogoutPress = () => {
+    clearAuthData();
+    router.replace('/(auth)/login');
+  };
 
   // Profile completion calculation
   const calculateProfileCompletion = (userData: any = {}) => {
@@ -540,6 +553,12 @@ export default function ProfileScreen() {
             businessEmail={user.businessEmail}
           />
         )}
+        <Button
+          title="Logout"
+          style={styles.logoutButton}
+          variant="ghost"
+          onPress={handleLogout}
+        />
       </View>
     </Layout>
   );
@@ -582,7 +601,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.gray[100],
   },
-
+  logoutButton: {
+    marginHorizontal: Spacing.md,
+    marginBottom: Spacing.md,
+  },
   headerTitle: {
     fontSize: Typography.size.md,
     fontWeight: Typography.weight.bold as any,
@@ -601,8 +623,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: Spacing.xl,
+    paddingBottom: Spacing.lg,
     paddingTop: Spacing.md,
+    marginBottom: Spacing.xxl,
   },
   profileSection: {
     alignItems: 'center',

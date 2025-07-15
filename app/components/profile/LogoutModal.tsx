@@ -13,6 +13,7 @@ import AppModal from '../modal/AppModal';
 import useUsersStore from '@/store/useUsersStore';
 import { useRouter } from 'expo-router';
 import { clearAuthData } from '@/services/secureStore';
+import Button from '../ui-components/Button';
 
 type Props = {
   isLogout: boolean;
@@ -47,8 +48,17 @@ const LogoutModal = ({ isLogout, onClose }: Props) => {
         </Text>
 
         <View style={styles.buttonRow}>
-          <GradientButton title="Close" onPress={handleClose} />
-          <GradientButton title={'Logout'} onPress={handleSubmit} />
+          <Button
+            style={{ width: '48%' }}
+            title={'Logout'}
+            onPress={handleSubmit}
+          />
+          <Button
+            style={{ width: '48%' }}
+            title="Close"
+            variant="secondary"
+            onPress={handleClose}
+          />
         </View>
       </KeyboardAvoidingView>
     </AppModal>
@@ -56,26 +66,6 @@ const LogoutModal = ({ isLogout, onClose }: Props) => {
 };
 
 export default LogoutModal;
-
-// ------------------ Gradient Button Component ------------------
-type ButtonProps = {
-  title: string;
-  onPress: () => void;
-  disabled?: boolean;
-};
-
-const GradientButton = ({ title, onPress, disabled }: ButtonProps) => (
-  <TouchableOpacity onPress={onPress} style={styles.button} disabled={disabled}>
-    <LinearGradient
-      colors={['#1F73C6', '#F7941E']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 0 }}
-      style={styles.gradient}
-    >
-      <Text style={styles.buttonText}>{title}</Text>
-    </LinearGradient>
-  </TouchableOpacity>
-);
 
 // ------------------ Styles ------------------
 const styles = StyleSheet.create({
@@ -101,23 +91,10 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   buttonRow: {
+    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    marginTop: 20,
-  },
-  button: {
-    flex: 2,
-    marginHorizontal: 4,
-  },
-  gradient: {
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 13,
-    textAlign: 'center',
-    fontWeight: '500',
+    marginVertical: 20,
   },
 });

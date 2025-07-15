@@ -3,11 +3,27 @@ import Colors from '@/constants/Colors';
 import { Search as SearchIcon, Filter } from 'lucide-react-native';
 import { TextInput } from 'react-native';
 import Spacing from '@/constants/Spacing';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import Typography from '@/constants/Typography';
+import { useCommunityFeedsStore } from '@/store/communityFeedsStore';
 
 export default function Search() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [feedData, setFeedData] = useState<any>(null);
+  const { feeds } = useCommunityFeedsStore();
+  const [feedData, setFeedData] = useState<any>([]);
+
+  const handleSearch = (text: string) => {
+    setSearchQuery(text);
+    // Filter the list of businesses and products
+    const filteredData = feeds.filter((item: any) =>
+      item?.user?.businessName?.toLowerCase().includes(text.toLowerCase())
+    );
+    setFeedData(filteredData);
+  };
+  useEffect(() => {
+    handleSearch(searchQuery);
+  }, [searchQuery]);
+
   return (
     <View style={styles.searchContainer}>
       <View style={styles.searchBar}>
@@ -17,24 +33,17 @@ export default function Search() {
           placeholder="Search businesses, products..."
           value={searchQuery}
           onChangeText={(text) => {
-            setSearchQuery(text);
-            // Filter the list of businesses and products
-            const filteredData = feedData.filter((item: any) =>
-              item?.user?.businessName
-                ?.toLowerCase()
-                .includes(text.toLowerCase())
-            );
-            setFeedData(filteredData);
+            handleSearch(text);
           }}
         />
       </View>
-      <TouchableOpacity style={styles.notificationButton}>
+      <TouchableOpacity style={styles.filterButton}>
         {/* <Bell size={24} color={Colors.gray[700]} />
                  <View style={styles.notificationBadge}>
                    <Text style={styles.notificationBadgeText}>3</Text>
                  </View> */}
 
-        <Filter color={Colors.gray[700]} />
+        <Filter color={Colors.gray[500]} />
       </TouchableOpacity>
     </View>
   );
@@ -42,7 +51,6 @@ export default function Search() {
 
 const styles = StyleSheet.create({
   searchContainer: {
-    backgroundColor: Colors.white,
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
@@ -53,18 +61,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: Colors.gray[100],
     borderRadius: 24,
-    padding: Spacing.md,
-    minHeight: 48,
-    minWidth: 100,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderColor: Colors.gray[200],
+    borderWidth: 1,
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: Typography.size.md,
     color: Colors.gray[600],
     paddingLeft: Spacing.md,
   },
-  notificationButton: {
-    marginLeft: Spacing.md,
+  filterButton: {
+    marginLeft: 10,
+    backgroundColor: Colors.gray[100],
+    borderRadius: 24,
+    padding: 10,
+    borderColor: Colors.gray[200],
+    borderWidth: 1,
   },
   notificationBadge: {
     position: 'absolute',
@@ -79,7 +93,7 @@ const styles = StyleSheet.create({
   },
   notificationBadgeText: {
     color: Colors.white,
-    fontSize: 10,
-    fontWeight: 'bold',
+    fontSize: Typography.size.xs,
+    fontWeight: Typography.weight.bold as any,
   },
 });
