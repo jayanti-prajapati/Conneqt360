@@ -12,7 +12,7 @@ export default function IndexScreen() {
         const authData = await getAuthData();
         if (authData?.userData) {
           setIsLogin(true);
-          // router.replace('/(tabs)');
+
         }
       } catch (err) {
         console.error('Error checking auth:', err);

@@ -43,8 +43,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: Typography.size.md,
-    fontWeight: Typography.weight.medium as 'medium',
+    fontSize: Typography.size.lg,
+    fontWeight: Typography.weight.semiBold as 'medium',
     color: '#000',
     textAlign: 'center',
   },
@@ -87,7 +87,7 @@ export const Header: React.FC<HeaderProps> = ({
   const params = useLocalSearchParams();
   const navigation = useNavigation<any>();
   const onMenuPress = () => {
-    router.replace('/(drawer)');
+    navigation.dispatch(DrawerActions.openDrawer());
   };
   const onProfilePress = () => {
     router.replace('/(tabs)/profile');

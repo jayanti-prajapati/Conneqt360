@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import Button from '@/components/ui-components/Button';
 
-import { useRouter } from 'expo-router';
+import { navigate } from '@/utils/navigation';
 import Layout from '@/components/common/Layout';
 
 import {
@@ -45,6 +45,9 @@ import { HARDCODED_USER } from '@/components/mock/UserData';
 import { SocialMediaModal } from '@/components/profile/SocialMediaModal';
 import InfoItem from '@/components/common/InfoItem';
 import InfoCard from '@/components/common/InfoCard';
+// Remove any lingering useRouter variable declarations
+// (If you see '' anywhere below, delete it)
+
 const userMockData: User = {
   id: 'user123',
   email: 'demo@business.com',
@@ -88,7 +91,7 @@ const userMockData: User = {
 };
 
 export default function ProfileScreen() {
-  const router = useRouter();
+  
   const { theme, isDark, toggleTheme } = useThemeStore();
   const [isPresent, setIsPresent] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -112,7 +115,7 @@ export default function ProfileScreen() {
 
       if (!userId) {
         clearAuthData();
-        router.replace('/(auth)/login');
+        navigate('(auth)');
         return;
       }
 
@@ -122,7 +125,7 @@ export default function ProfileScreen() {
         setUser(response.data.data);
       } else {
         clearAuthData();
-        router.replace('/(auth)/login');
+        navigate('(auth)');
       }
       setUser(userMockData);
     } catch (error) {
@@ -229,30 +232,21 @@ export default function ProfileScreen() {
   };
 
   const openCatalog = () => {
-    router.push({
-      pathname: '/business-catalog',
-      params: {
-        catalog: JSON.stringify(HARDCODED_USER.catalog || []),
-        owner: 'true',
-      },
+    navigate('business-catalog', {
+      catalog: JSON.stringify(HARDCODED_USER.catalog || []),
+      owner: 'true',
     });
   };
   const openClients = () => {
-    router.push({
-      pathname: '/business-clients',
-      params: {
-        clients: JSON.stringify(HARDCODED_USER.clients || []),
-        owner: 'true',
-      },
+    navigate('business-clients', {
+      clients: JSON.stringify(HARDCODED_USER.clients || []),
+      owner: 'true',
     });
   };
   const openServices = () => {
-    router.push({
-      pathname: '/business-services',
-      params: {
-        services: JSON.stringify(HARDCODED_USER.services || []),
-        owner: 'true',
-      },
+    navigate('business-services', {
+      services: JSON.stringify(HARDCODED_USER.services || []),
+      owner: 'true',
     });
   };
   // if (loading) {

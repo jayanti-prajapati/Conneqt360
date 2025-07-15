@@ -24,17 +24,6 @@ import IconButton from '../ui-components/IconButton';
 import { Plus } from 'lucide-react-native';
 
 const BottomView: React.FC = () => {
-  const [isFeedOpen, setIsFeedOpen] = useState(false);
-  const insets = useSafeAreaInsets();
-
-  // useEffect(() => {
-  //     console.log('BottomView mounted', isFeedOpen);
-
-  //     if (isFeedOpen) {
-  //         router.push("/(tabs)/addfeed");
-  //         // setIsFeedOpen(false); // reset state to avoid loops
-  //     }
-  // }, [isFeedOpen]);
   const renderIcon = (routeName: string, selectedTab: string) => {
     let icon = '';
 

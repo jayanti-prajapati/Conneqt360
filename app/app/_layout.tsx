@@ -1,47 +1,84 @@
-import { useEffect } from 'react';
-import { router, Stack } from 'expo-router';
+import React from 'react';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
-import { getAuthData } from '@/services/secureStore';
+import { RootStackParamList } from '@/types/navigation';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { ThemeProvider } from '@/context/ThemeContext';
+import {
+  ErrorBoundary,
+  ErrorFallback,
+} from '@/components/common/ErrorBoundary';
 
+declare global {
+  namespace ReactNavigation {
+    interface RootParamList extends RootStackParamList {}
+  }
+}
+
+// Main app container with all providers
 export default function RootLayout() {
   useFrameworkReady();
 
-
-
   return (
-    <>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-        {/* <Stack screenOptions={{ headerShown: false }} /> */}
-        {/* Explicit registration of group stacks avoids production remount loops */}
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-
-      </Stack>
-      <StatusBar style="auto" />
-    </>
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <ThemeProvider>
+          <AppContent />
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </GestureHandlerRootView>
+    </ErrorBoundary>
   );
 }
 
-
-// // app/_layout.tsx
-// import { Stack } from 'expo-router';
-// import { GestureHandlerRootView } from 'react-native-gesture-handler';
-// import { StatusBar } from 'expo-status-bar';
-// import { useFrameworkReady } from '@/hooks/useFrameworkReady';
-
-// export default function RootLayout() {
-//   useFrameworkReady();
-
-//   return (
-//     <GestureHandlerRootView style={{ flex: 1 }}>
-//       <Stack screenOptions={{ headerShown: false }}>
-//         <Stack.Screen name="(drawer)" />
-//         <Stack.Screen name="(auth)" />
-//         <Stack.Screen name="(tabs)" />
-//       </Stack>
-//       <StatusBar style="auto" />
-//     </GestureHandlerRootView>
-//   );
-// }
+// Separate component for the actual navigation structure
+function AppContent() {
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        animation: 'fade',
+        contentStyle: { backgroundColor: '#fff' },
+      }}
+    >
+      <Stack.Screen
+        name="index"
+        options={{
+          animation: 'fade',
+          gestureEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name="(drawer)"
+        options={{
+          headerShown: false,
+          gestureEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name="(auth)"
+        options={{
+          headerShown: false,
+          animation: 'fade_from_bottom',
+          gestureEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name="(tabs)"
+        options={{
+          headerShown: false,
+          gestureEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name="communityfeed"
+        options={{
+          title: 'Community Feed',
+          headerShown: true,
+          headerBackTitle: 'Back',
+        }}
+      />
+    </Stack>
+  );
+}
