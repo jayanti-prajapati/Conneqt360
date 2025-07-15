@@ -157,11 +157,7 @@ export interface IChat extends Document {
 }
 
 export interface AuthRequest extends Request {
-  user?: {
-    userId: string;
-    username: string;
-    email: string;
-  };
+ userId?: string;
 }
 
 export interface IAuthDocument extends IUser, Document {}
