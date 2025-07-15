@@ -6,11 +6,11 @@ const API_URL = 'http://84.247.177.87/api';
 interface UserServiceData {
     user: string;
     services?: Array<{
-        key: string;
-        value: Array<{
-            title: string;
-            description: string;
-        }>;
+
+        title: string;
+        description: string;
+        features: string[];
+
     }>;
     catalog?: Array<{
         title: string;

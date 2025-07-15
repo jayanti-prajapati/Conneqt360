@@ -20,7 +20,6 @@ import { useThemeStore } from '@/store/themeStore';
 import { EditProfileModal } from '@/components/profile/EditProfileModal';
 import { User } from '@/types';
 import { ProfileImageModal } from '@/components/modal/ProfileImageModal';
-import { HARDCODED_USER } from '@/components/mock/UserData';
 import { SocialMediaModal } from '@/components/profile/SocialMediaModal';
 
 // Mock user data

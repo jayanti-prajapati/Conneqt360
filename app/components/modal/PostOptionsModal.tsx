@@ -40,12 +40,12 @@ export const PostOptionsModal: React.FC<PostOptionsModalProps> = ({
             onPress: onShare,
             color: theme.text,
         },
-        {
-            icon: Copy,
-            label: 'Copy Link',
-            onPress: onCopyLink,
-            color: theme.text,
-        },
+        // {
+        //     icon: Copy,
+        //     label: 'Copy Link',
+        //     onPress: onCopyLink,
+        //     color: theme.text,
+        // },
         {
             icon: Bookmark,
             label: 'Save Post',

@@ -32,7 +32,7 @@ export default function ClientsScreen() {
     const [user, setUser] = useState<any>(null);
     const { getUserById } = useUsersStore();
 
-    const fetchCatalogByUserId = async () => {
+    const fetchClientsByUserId = async () => {
         try {
             const data = await getUserById(userId as string)
             if (data?.data?.statusCode === 200) {
@@ -49,7 +49,7 @@ export default function ClientsScreen() {
 
     useEffect(() => {
         if (userId) {
-            fetchCatalogByUserId()
+            fetchClientsByUserId()
         }
     }, [])
 

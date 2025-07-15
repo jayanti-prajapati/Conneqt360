@@ -35,7 +35,22 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
             Alert.alert('Error', 'Client name is required.');
             return;
         }
-
+        if (!formData.logo.trim()) {
+            Alert.alert('Error', 'Logo  is required.');
+            return;
+        }
+        if (!formData.projectType.trim()) {
+            Alert.alert('Error', 'Project Type is required.');
+            return;
+        }
+        if (!formData.testimonial.trim()) {
+            Alert.alert('Error', 'Feedback is required.');
+            return;
+        }
+        if (!formData.completedDate.trim()) {
+            Alert.alert('Error', 'Completed Date is required.');
+            return;
+        }
         const clientData: Partial<Client> = {
             ...(isEdit && client ? { id: client._id } : {}),
             name: formData.name,

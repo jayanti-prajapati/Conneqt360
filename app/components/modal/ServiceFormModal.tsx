@@ -41,9 +41,18 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
             Alert.alert('Error', 'Service name is required.');
             return;
         }
+        if (!description) {
+            Alert.alert('Error', 'Description is required.');
+            return;
+        }
+        if (!tags.length) {
+            Alert.alert('Error', 'Atleast add one feature.');
+            return;
+        }
 
         onSave(
             {
+                ...(isEdit && service ? { _id: service._id } : {}),
                 title: serviceName.trim(),
                 description: description.trim(),
                 features: tags,

@@ -1,63 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { X, CircleCheck as CheckCircle, PlusCircle, Edit, Trash2, ArrowLeft } from 'lucide-react-native';
 import { useThemeStore } from '@/store/themeStore';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ServiceFormModal } from '@/components/modal/ServiceFormModal';
 import { Service } from '@/types';
+import useUsersStore from '@/store/useUsersStore';
+import useUserServiceStore from '@/store/useUserBusinessServices';
+import { clearAuthData } from '@/services/secureStore';
 
-const services = [
-    {
-        title: 'Web Development',
-        description: 'We build responsive and fast-loading websites tailored to your business needs.',
-        features: [
-            'Responsive Design',
-            'SEO Optimized',
-            'Performance Tuning',
-            'E-commerce Integration'
-        ]
-    },
-    {
-        title: 'Mobile App Development',
-        description: 'Cross-platform mobile apps with a native feel for iOS and Android.',
-        features: [
-            'Flutter & React Native',
-            'Push Notifications',
-            'App Store Deployment',
-            'Offline Support'
-        ]
-    },
-    {
-        title: 'UI/UX Design',
-        description: 'Design experiences that are user-centered and visually stunning.',
-        features: [
-            'Wireframing',
-            'Prototyping',
-            'User Testing',
-            'Design Systems'
-        ]
-    },
-    {
-        title: 'Cloud Solutions',
-        description: 'We offer scalable cloud architecture and cost-optimized deployments.',
-        features: [
-            'AWS & Azure Integration',
-            'Auto Scaling',
-            'CI/CD Pipelines',
-            'Monitoring & Alerts'
-        ]
-    },
-    {
-        title: 'Digital Marketing',
-        description: 'Grow your brand online through data-driven marketing strategies.',
-        features: [
-            'SEO & SEM',
-            'Social Media Campaigns',
-            'Analytics & Reporting',
-            'Email Marketing'
-        ]
-    }
-];
 
 export default function ServicesScreen() {
     const { theme } = useThemeStore();
@@ -68,6 +19,35 @@ export default function ServicesScreen() {
 
     const isOwner = (params.owner == 'true') || "false"
     const userId = params?.userId
+    const { response, getUserServicesByUserId, updateUserService, loading } = useUserServiceStore();
+    const services: Service[] = response?.data?.data?.services || [];
+    const [user, setUser] = useState<any>(null);
+    const { getUserById } = useUsersStore();
+
+
+    const fetchClientsByUserId = async () => {
+        try {
+            const data = await getUserById(userId as string)
+            if (data?.data?.statusCode === 200) {
+                setUser(data.data.data);
+            }
+            await getUserServicesByUserId(userId as string);
+
+        } catch (error) {
+            console.error('Error fetching user:', error);
+            clearAuthData();
+            router.replace('/(auth)/login');
+        }
+    };
+
+    useEffect(() => {
+        if (userId) {
+            fetchClientsByUserId()
+        }
+    }, [])
+
+
+
 
     const handleAddService = () => {
         setEditingService(null);
@@ -79,13 +59,60 @@ export default function ServicesScreen() {
         setShowServiceForm(true);
     };
 
-    const handleDeleteService = (index: number) => {
-        Alert.alert('Deleted', 'Service deleted successfully');
+    const handleDeleteService = (id: string) => {
+        Alert.alert('Confirm Delete', 'Are you sure?', [
+            { text: 'Cancel', style: 'cancel' },
+            {
+                text: 'Delete',
+                style: 'destructive',
+                onPress: async () => {
+                    try {
+                        const updatedSerivces = services?.filter((item: Service) => item._id !== id);
+                        await updateUserService(user?._id, {
+                            "services": updatedSerivces,
+                        });
+
+                        Alert.alert('Deleted', 'Service item deleted');
+                    } catch (err: any) {
+                        Alert.alert('Error', err.message);
+                    }
+                },
+            },
+        ]);
     };
 
-    const handleSaveService = (service: Service) => {
-        // In a real app, this would save to the backend
-        Alert.alert('Success', 'Service saved successfully!');
+    const handleSaveService = async (item: Service) => {
+        try {
+            const existingServices = Array.isArray(services) ? services : [];
+            let updatedCatalog: typeof existingServices;
+
+            if (item?._id) {
+                const index = existingServices?.findIndex((c) => c._id === item._id);
+
+                if (index !== -1) {
+                    // Replace existing client
+                    updatedCatalog = [...existingServices];
+                    updatedCatalog[index] = item;
+                } else {
+                    // Append if id is new
+                    updatedCatalog = [...existingServices, item];
+                }
+            } else {
+                // If no id present, treat as new
+                updatedCatalog = [...existingServices, item];
+            }
+
+            // let updatedCatalog = existingClients.length > 0 ? [...existingClients, client] : [client];
+            await updateUserService(user?._id, {
+                services: updatedCatalog,
+            });
+
+            Alert.alert('Success', `Service item ${editingService ? 'updated' : 'added'}!`);
+            setShowServiceForm(false);
+            setEditingService(null);
+        } catch (err: any) {
+            Alert.alert('Error', err.message);
+        }
     };
 
 
@@ -129,7 +156,7 @@ export default function ServicesScreen() {
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     style={[styles.actionButton, { backgroundColor: theme.error + '20' }]}
-                                    onPress={() => handleDeleteService(index)}
+                                    onPress={() => handleDeleteService(service?._id as string)}
                                 >
                                     <Trash2 size={16} color={theme.error} />
                                 </TouchableOpacity>
