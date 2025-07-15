@@ -221,7 +221,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     gap: 8,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.gray[500],
   },
   footer: {
     flexDirection: 'row',
