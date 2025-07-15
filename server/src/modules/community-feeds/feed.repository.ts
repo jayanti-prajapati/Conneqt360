@@ -39,17 +39,17 @@ export class CommunityRepository extends BaseRepository<IPost> {
 
 
   if (data.comments && Array.isArray(data.comments)) {
-    updateData.$push = {
-      comments: {
-        $each: data.comments.map((comment) => ({
-          user: comment.user,
-          content: comment.content,
-          createdAt: comment.createdAt || new Date(),
-        })),
-        $position: 0
-      },
-    };
-  }
+  updateData.$push = {
+    comments: {
+      $each: data.comments.map((comment) => ({
+        user: comment.user,
+        content: comment.content,
+        createdAt: comment.createdAt || new Date(),
+      }))
+    }
+  };
+}
+
 
 
   const updateOp = Object.keys(updateData).length > 0 ? updateData : { likes: [] };

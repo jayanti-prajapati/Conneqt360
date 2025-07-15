@@ -4,28 +4,20 @@ import { IUserServices } from "../../types";
 const serviceSchema = new Schema({
   title: {
     type: String,
-    required: true,
-    default: null,
+    required: true
   },
   description: {
     type: String,
     required: false,
     default: null,
   },
-});
-
-const serviceGroupSchema = new Schema({
-  key: {
-    type: String,
+  features: {
+    type: [String],
     required: true,
     default: null,
   },
-  value: {
-    type: [serviceSchema],
-    required: false,
-    default: null,
-  },
 });
+
 
 const catalogSchema = new Schema({
   title: {
@@ -99,7 +91,7 @@ const clientSchema = new Schema({
 const userServicesSchema = new Schema<IUserServices>(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    services: { type: [serviceGroupSchema], default: [] },
+    services: { type: [serviceSchema], default: [] },
     catalog: { type: [catalogSchema], default: [] },
     client: { type: [clientSchema], default: [] },
   },

@@ -35,8 +35,31 @@ export class CommunityService {
           },
         },
         { $unwind: "$user" },
-        { $match: matchStage },
+        {
+          $match: {
+            $and: [
+              { isDeleted: false },
+              {
+                $or: [
+                  { "user.username": { $regex: keyword, $options: "i" } },
+                  { "user.businessName": { $regex: keyword, $options: "i" } },
+                  { "user.businessType": { $regex: keyword, $options: "i" } },
+                ],
+              },
+            ],
+          },
+        },
         { $sort: { createdAt: -1 } },
+        {
+          $addFields: {
+            comments: {
+              $sortArray: {
+                input: "$comments",
+                sortBy: { createdAt: 1 }, // ✅ ASCENDING (oldest first)
+              },
+            },
+          },
+        },
         {
           $project: {
             content: 1,
@@ -45,20 +68,7 @@ export class CommunityService {
             videoUrl: 1,
             share: 1,
             likes: 1,
-            comments: {
-              user: {
-              _id: 1,
-              name: 1,
-              username: 1,
-              businessName: 1,
-              businessType: 1,
-              email: 1,
-              phone: 1,
-            },
-              content: 1,
-              _id: 1,
-              createdAt: 1,
-            },
+            comments: 1, // ✅ just project as-is (already sorted)
             createdAt: 1,
             user: {
               _id: 1,
@@ -78,16 +88,28 @@ export class CommunityService {
     // Otherwise return all using populate
     return this.communityRepo
       .findAll({ isDeleted: false })
-      .populate("user", "name username email phone businessName businessType profileUrl")
-      .populate("comments.user", "name username email phone businessName businessType profileUrl")
+      .populate(
+        "user",
+        "name username email phone businessName businessType profileUrl"
+      )
+      .populate(
+        "comments.user",
+        "name username email phone businessName businessType profileUrl"
+      )
       .sort({ createdAt: -1 });
   }
 
   async getById(id: string) {
     return this.communityRepo
       .findById(id, { isDeleted: false })
-      .populate("user", "name username email phone businessName businessType profileUrl")
-      .populate("comments.user", "name username email phone businessName businessType profileUrl")
+      .populate(
+        "user",
+        "name username email phone businessName businessType profileUrl"
+      )
+      .populate(
+        "comments.user",
+        "name username email phone businessName businessType profileUrl"
+      )
       .sort({ createdAt: -1 });
   }
 
