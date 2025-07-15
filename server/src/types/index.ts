@@ -41,7 +41,7 @@ export interface IUser extends Document {
     projectType: string;
     completedDate: Date;
   }[];
-  catalog: string;
+  //catalog: IUserServices["_id"];
   //confirmPassword: String,
   udyamNumber?: string;
   interests?: string[];
@@ -90,11 +90,9 @@ export interface ICustomFileDocument extends ICustomFile, Document {
 export interface IUserServices extends Document {
   user: IUser["_id"];
   services: {
-    key: string;
-    value: {
-      title: string;
-      description: string;
-    }[];
+    title?: Text;
+    description?: Text;
+    features?: Text[];
   }[];
   catalog: {
     title?: string;
@@ -114,6 +112,7 @@ export interface IUserServices extends Document {
     completedDate?: Date;
   }[];
 }
+
 
 export interface ICircle extends Document {
   name: string;
@@ -158,7 +157,11 @@ export interface IChat extends Document {
 }
 
 export interface AuthRequest extends Request {
-  userId?: string;
+  user?: {
+    userId: string;
+    username: string;
+    email: string;
+  };
 }
 
 export interface IAuthDocument extends IUser, Document {}
