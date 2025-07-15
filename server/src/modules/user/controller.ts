@@ -30,11 +30,14 @@ export class UserController {
 
   async getAll(req: Request, res: Response) {
     try {
-      const users = await this.userService.getAll();
+      const keyword = req.query.search as string | undefined;
+
+      const feeds = await this.userService.getAll(keyword);
+
       return res.status(200).json({
         statusCode: 200,
-        message: "success",
-        data: users,
+        message: "succes",
+        data: feeds,
       });
     } catch (error: any) {
       return res.status(400).json({
@@ -44,6 +47,7 @@ export class UserController {
       });
     }
   }
+
 
   async getById(req: Request, res: Response) {
     try {
