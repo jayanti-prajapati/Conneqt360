@@ -38,11 +38,6 @@ export default function Search() {
         />
       </View>
       <TouchableOpacity style={styles.filterButton}>
-        {/* <Bell size={24} color={Colors.gray[700]} />
-                 <View style={styles.notificationBadge}>
-                   <Text style={styles.notificationBadgeText}>3</Text>
-                 </View> */}
-
         <Filter color={Colors.gray[500]} />
       </TouchableOpacity>
     </View>

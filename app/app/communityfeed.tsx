@@ -1,21 +1,7 @@
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  Image,
-  SafeAreaView,
-  ScrollView,
-  Alert,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import * as ImagePicker from 'expo-image-picker';
+import { StyleSheet, TouchableOpacity, View, Image, Alert } from 'react-native';
 import { useState } from 'react';
 import { Video, ResizeMode } from 'expo-av';
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import Spacing from '@/constants/Spacing'; // or replace with a number like 32
 import { getAuthData } from '@/services/secureStore';
 import useCommunityFeedsStore from '@/store/useCommunityFeeds';
 import { pickImage, takePhoto } from '@/utils/imageUtils';
@@ -26,6 +12,7 @@ import { Camera, ImageIcon, VideoIcon, X } from 'lucide-react-native';
 import Button from '@/components/ui-components/Button';
 import Input from '@/components/ui-components/Input';
 import Layout from '@/components/common/Layout';
+import { Colors } from 'react-native/Libraries/NewAppScreen';
 
 export default function CommunityFeedScreen() {
   const router = useRouter();
@@ -103,60 +90,58 @@ export default function CommunityFeedScreen() {
 
   return (
     <Layout showBackButton title="Create Post">
-      <View style={styles.content}>
-        <Input
-          value={contentText}
-          onChangeText={setContentText}
-          multiline
-          numberOfLines={4}
-          placeholder="What's happening in your business?"
+      <Input
+        value={contentText}
+        onChangeText={setContentText}
+        multiline
+        numberOfLines={4}
+        placeholder="What's happening in your business?"
+      />
+
+      {imageUrl && (
+        <View style={styles.mediaContainer}>
+          <Image source={{ uri: imageUrl }} style={styles.mediaPreview} />
+          <TouchableOpacity style={styles.removeButton} onPress={removeMedia}>
+            <X size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {videoUrl ? (
+        <View style={styles.mediaContainer}>
+          <Video
+            source={{ uri: videoUrl }}
+            style={styles.mediaPreview}
+            useNativeControls
+            resizeMode={ResizeMode.CONTAIN}
+          />
+          <TouchableOpacity style={styles.removeButton} onPress={removeMedia}>
+            <X size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
+      ) : null}
+
+      <View style={styles.mediaButtons}>
+        <Button
+          variant="outline"
+          size="medium"
+          onPress={takePhotos}
+          icon={<Camera size={20} color={theme.primary} />}
         />
 
-        {imageUrl && (
-          <View style={styles.mediaContainer}>
-            <Image source={{ uri: imageUrl }} style={styles.mediaPreview} />
-            <TouchableOpacity style={styles.removeButton} onPress={removeMedia}>
-              <X size={20} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
-        )}
+        <Button
+          variant="outline"
+          size="medium"
+          onPress={() => pickImages()}
+          icon={<ImageIcon size={20} color={theme.primary} />}
+        />
 
-        {videoUrl ? (
-          <View style={styles.mediaContainer}>
-            <Video
-              source={{ uri: videoUrl }}
-              style={styles.mediaPreview}
-              useNativeControls
-              resizeMode={ResizeMode.CONTAIN}
-            />
-            <TouchableOpacity style={styles.removeButton} onPress={removeMedia}>
-              <X size={20} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
-        ) : null}
-
-        <View style={styles.mediaButtons}>
-          <Button
-            variant="outline"
-            size="medium"
-            onPress={takePhotos}
-            icon={<Camera size={20} color={theme.primary} />}
-          />
-
-          <Button
-            variant="outline"
-            size="medium"
-            onPress={() => pickImages()}
-            icon={<ImageIcon size={20} color={theme.primary} />}
-          />
-
-          <Button
-            variant="outline"
-            size="medium"
-            onPress={() => pickVideos()}
-            icon={<VideoIcon size={20} color={theme.primary} />}
-          />
-        </View>
+        <Button
+          variant="outline"
+          size="medium"
+          onPress={() => pickVideos()}
+          icon={<VideoIcon size={20} color={theme.primary} />}
+        />
       </View>
 
       <View style={styles.footer}>
@@ -235,15 +220,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 20,
     gap: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.gray[500],
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
   },
   button: {
     borderRadius: 24,

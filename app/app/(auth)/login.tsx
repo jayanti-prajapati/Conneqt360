@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   BackHandler,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AntDesign, Feather, FontAwesome } from '@expo/vector-icons';
@@ -15,6 +16,7 @@ import Input from '@/components/ui-components/Input';
 
 import Spacing from '@/constants/Spacing';
 import useAuthStore from '@/store/useAuthStore';
+import Colors from '@/constants/Colors';
 
 export default function LoginScreen() {
   const [isEmailLogin, setIsEmailLogin] = useState(false);
@@ -93,19 +95,15 @@ export default function LoginScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.card}>
-        <View style={styles.iconContainer}>
-          <LinearGradient
-            colors={['#1F73C6', '#F7941E']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.iconGradient}
-          >
-            <Feather name="user" size={32} color="white" />
-          </LinearGradient>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require('@/assets/images/logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
         </View>
-
-        <Text style={styles.title}>Welcome</Text>
-        <Text style={styles.subtitle}> Login to your business account</Text>
+        {/* <Text style={styles.title}>Welcome</Text>
+        <Text style={styles.subtitle}> Login to your business account</Text> */}
         {isEmailLogin ? (
           <>
             <Input
@@ -160,40 +158,6 @@ export default function LoginScreen() {
         {error && (
           <Text style={{ color: 'red', textAlign: 'center' }}>{error}</Text>
         )}
-
-        <Button
-          title={
-            isEmailLogin
-              ? 'Login with Phone Number'
-              : 'Login with Email & Password'
-          }
-          variant="outline"
-          onPress={toggleLoginMethod}
-          style={{ marginTop: Spacing.sm, width: '100%' }}
-        />
-
-        {/* <Text style={styles.orText}>Or continue with</Text>
-
-        <View style={styles.socialContainer}>
-          <TouchableOpacity style={styles.socialButton}>
-            <AntDesign name="google" size={20} color="black" />
-            <Text style={styles.socialText}>Google</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.socialButton}>
-            <AntDesign name="apple1" size={20} color="black" />
-            <Text style={styles.socialText}>Apple</Text>
-          </TouchableOpacity>
-        </View> */}
-
-        {/* <View style={styles.footer}>
-          <View style={{ flexDirection: 'row' }}>
-            <Text style={styles.footerText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={handleSignUp}>
-              <Text style={styles.linkText}>Sign Up</Text>
-            </TouchableOpacity>
-          </View>
-        </View> */}
       </View>
     </View>
   );
@@ -205,6 +169,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f7ff',
     justifyContent: 'center',
     // padding: 16,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 20,
+    paddingBottom: 16,
+  },
+  logo: {
+    height: 32,
   },
   card: {
     backgroundColor: 'white',

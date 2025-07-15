@@ -40,7 +40,6 @@ function AppContent() {
         headerShown: false,
       }}
     >
-
       <Stack.Screen
         name="index"
         options={{
@@ -68,14 +67,6 @@ function AppContent() {
         options={{
           headerShown: false,
           gestureEnabled: false,
-        }}
-      />
-      <Stack.Screen
-        name="communityfeed"
-        options={{
-          title: 'Community Feed',
-          headerShown: true,
-          headerBackTitle: 'Back',
         }}
       />
     </Stack>
