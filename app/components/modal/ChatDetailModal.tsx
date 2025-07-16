@@ -2,107 +2,59 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Platform, Modal } from 'react-native';
 import { ArrowLeft, Send, Phone, Video } from 'lucide-react-native';
 import { useThemeStore } from '../../store/themeStore';
-import { useAuthStore } from '../../services/demoStore';
 import { Message, User } from '../../types';
-import { chatService } from '../../services/charService';
+import useChatStore from '@/store/useChatStore';
+import { combineChatsByParticipants } from '@/app/(tabs)/chats';
 
-// Mock users for demo
-const mockUsers: User[] = [
-    {
-        _id: 'user456',
-        email: 'sarah@company.com',
-        name: 'Sarah Johnson',
-        profileUrl: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
-        aboutUs: 'Marketing Director',
-        followersCount: 890,
-        followingCount: 650,
-        postsCount: 32,
-        isOnline: true,
-        lastSeen: new Date(),
-        createdAt: new Date('2023-02-20'),
-    },
-    {
-        _id: 'user789',
-        email: 'mike@startup.com',
-        name: 'Mike Chen',
-        profileUrl: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
-        aboutUs: 'Tech Entrepreneur',
-        followersCount: 2100,
-        followingCount: 450,
-        postsCount: 67,
-        isOnline: false,
-        lastSeen: new Date(Date.now() - 3600000),
-        createdAt: new Date('2022-11-10'),
-    },
-];
+
 
 interface ChatDetailModalProps {
     visible: boolean;
-    userId: string | null;
+    chatData: any;
     onClose: () => void;
+    user: any;
 }
 
 export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
     visible,
-    userId,
+    chatData,
     onClose,
+    user,
 }) => {
     const { theme } = useThemeStore();
-    const { user } = useAuthStore();
+    // const { user } = useAuthStore();
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [otherUser, setOtherUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const { sendMessage, getConversation } = useChatStore();
+
+
+    // console.log("sadsadsadasd", messages);
 
     useEffect(() => {
-        if (userId && visible) {
+        if (chatData && visible) {
             fetchChatData();
         }
-    }, [userId, visible]);
+    }, [chatData, visible]);
+
+
+    const fetchConversation = async () => {
+        try {
+            //@ts-ignore
+            const conversation = await getConversation(user?._id, otherUser._id);
+            const newMessage = combineChatsByParticipants(conversation);
+
+            setMessages([...newMessage[0]?.messages]);
+        } catch (error) {
+            console.error('Error fetching conversation:', error);
+        }
+    };
 
     const fetchChatData = async () => {
         try {
-            // Find the other user based on chat ID
-            const foundUser = mockUsers.find(u => u._id === userId);
-            setOtherUser(foundUser || null);
-
-            // Mock messages for demo
-            const mockMessages: Message[] = [
-                {
-                    id: 'msg1',
-                    senderId: userId as string,
-                    receiverId: user?._id || '',
-                    content: 'Hey! How did the presentation go today?',
-                    isRead: true,
-                    createdAt: new Date(Date.now() - 3600000),
-                },
-                {
-                    id: 'msg2',
-                    senderId: user?._id || '',
-                    receiverId: userId as string,
-                    content: 'It went really well! Thanks for asking. The client loved our proposal.',
-                    isRead: true,
-                    createdAt: new Date(Date.now() - 3000000),
-                },
-                {
-                    id: 'msg3',
-                    senderId: userId as string,
-                    receiverId: user?._id || '',
-                    content: 'That\'s fantastic! I knew you\'d nail it. Want to celebrate over coffee?',
-                    isRead: true,
-                    createdAt: new Date(Date.now() - 1800000),
-                },
-                {
-                    id: 'msg4',
-                    senderId: user?._id || '',
-                    receiverId: userId as string,
-                    content: 'Absolutely! How about tomorrow at 3 PM at the usual place?',
-                    isRead: false,
-                    createdAt: new Date(Date.now() - 900000),
-                },
-            ];
-
-            setMessages(mockMessages);
+            setOtherUser(chatData?.participants?.receiver);
+            setMessages(chatData?.messages || []);
         } catch (error) {
             console.error('Error fetching chat data:', error);
         } finally {
@@ -113,20 +65,14 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
     const handleSendMessage = async () => {
         if (!newMessage.trim() || !user || !otherUser) return;
 
-        const message: Message = {
-            id: Date.now().toString(),
-            senderId: user._id,
-            receiverId: otherUser._id,
-            content: newMessage.trim(),
-            isRead: false,
-            createdAt: new Date(),
-        };
 
-        setMessages(prev => [...prev, message]);
         setNewMessage('');
 
         try {
-            await chatService.sendMessage(userId as string, user._id, otherUser._id, newMessage.trim());
+            await sendMessage({ sender: user?._id, receiver: otherUser._id, content: newMessage.trim(), type: 'text' });
+            fetchConversation();
+
+
         } catch (error) {
             console.error('Error sending message:', error);
         }
@@ -136,8 +82,8 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
-    const renderMessage = ({ item }: { item: Message }) => {
-        const isOwnMessage = item.senderId === user?._id;
+    const renderMessage = ({ item }: { item: any }) => {
+        const isOwnMessage = item.sender._id === user?._id;
 
         return (
             <View style={[styles.messageContainer, isOwnMessage ? styles.ownMessage : styles.otherMessage]}>
@@ -158,7 +104,7 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
                         styles.messageTime,
                         { color: isOwnMessage ? 'rgba(255,255,255,0.7)' : theme.textSecondary }
                     ]}>
-                        {formatTime(item.createdAt)}
+                        {formatTime(new Date(item.createdAt || Date.now()))}
                     </Text>
                 </View>
             </View>
@@ -173,6 +119,7 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
         <Modal
             visible={visible}
             animationType="slide"
+            transparent={false}
             presentationStyle="pageSheet"
             onRequestClose={onClose}
         >
@@ -220,7 +167,7 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
                     ) : (
                         <FlatList
                             data={messages}
-                            keyExtractor={(item) => item.id}
+                            keyExtractor={(item) => item?._id || ''}
                             renderItem={renderMessage}
                             style={styles.messagesList}
                             contentContainerStyle={styles.messagesContent}

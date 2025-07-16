@@ -93,22 +93,16 @@ export interface Product {
 }
 
 export interface Message {
-  id: string;
-  senderId: string;
-  receiverId: string;
+  _id?: string;
+  sender: string;
+  receiver: string;
   content: string;
-  mediaType?: 'image' | 'video';
-  mediaUrl?: string;
-  isRead: boolean;
-  createdAt: Date;
+  type?: 'text' | 'image' | 'video';
+  isRead?: boolean;
+  createdAt?: Date;
+
 }
 
-export interface Chat {
-  id: string;
-  participants?: string[];
-  lastMessage: Message;
-  updatedAt: Date;
-}
 
 export interface Comment {
   id?: string;

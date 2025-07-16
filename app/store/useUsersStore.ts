@@ -8,19 +8,22 @@ interface UsersStore {
   loading: boolean;
   error: string | null;
   response: any;
+  users: any[];
 
   fetchUserByPhoneNumber: (phone: string) => Promise<any>;
   createUser: (data: any) => Promise<any>;
   getUserById: (id: string) => Promise<any>;
   updateUser: (id: string, data: any) => Promise<any>;
   deleteUser: (id: string) => Promise<any>;
-  getAllUsers: () => Promise<any>;
+  getAllUsers: (searchQuery?: string) => Promise<any>;
+  clearUsers: () => void;
 }
 
 const useUsersStore = create<UsersStore>((set) => ({
   loading: false,
   error: null,
   response: null,
+  users: [],
 
   fetchUserByPhoneNumber: async (phone: string) => {
     set({ loading: true });
@@ -83,16 +86,19 @@ const useUsersStore = create<UsersStore>((set) => ({
     }
   },
 
-  getAllUsers: async () => {
+  getAllUsers: async (searchQuery?: string) => {
     set({ loading: true, error: null });
     try {
-      const res = await axios.get(`${API_URL}/users`);
+      const res = await axios.get(searchQuery ? `${API_URL}/user?search=${searchQuery}` : `${API_URL}/user`);
       set({ response: res.data, loading: false });
-      return res;
+      return res.data;
     } catch (err: any) {
       set({ error: err?.response?.data?.message || 'Failed to fetch users', loading: false });
       return err?.response;
     }
+  },
+  clearUsers: () => {
+    set({ response: null, loading: false });
   },
 }));
 

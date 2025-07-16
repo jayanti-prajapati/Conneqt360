@@ -3,81 +3,90 @@ import {
   View, Text, FlatList, StyleSheet,
   TouchableOpacity, Image, TextInput
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { MessageCircle, Plus, Search, Send } from 'lucide-react-native';
+import { MessageCircle, Plus, Search, Send, X } from 'lucide-react-native';
 
 import { useThemeStore } from '../../store/themeStore';
-import { useAuthStore } from '../../services/demoStore';
-import { chatService } from '../../services/charService';
+
 import { ChatDetailModal } from '../../components/modal/ChatDetailModal';
-import { Chat, User } from '../../types';
+import { User } from '../../types';
+import useUsersStore from '@/store/useUsersStore';
+import { getAuthData } from '@/services/secureStore';
+import useChatStore from '@/store/useChatStore';
 
 const placeholderImage = 'https://via.placeholder.com/50';
 
 // Mock users list
-const availableUsers: User[] = [
-  {
-    _id: 'user456',
-    email: 'sarah@company.com',
-    name: 'Sarah Johnson',
-    profileUrl: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg',
-    aboutUs: 'Marketing Director',
-    followersCount: 890,
-    followingCount: 650,
-    postsCount: 32,
-    isOnline: true,
-    lastSeen: new Date(),
-    createdAt: new Date('2023-02-20'),
-  },
-  {
-    _id: 'user789',
-    email: 'mike@startup.com',
-    name: 'Mike Chen',
-    profileUrl: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg',
-    aboutUs: 'Tech Entrepreneur',
-    followersCount: 2100,
-    followingCount: 450,
-    postsCount: 67,
-    isOnline: false,
-    lastSeen: new Date(Date.now() - 3600000),
-    createdAt: new Date('2022-11-10'),
-  },
-  {
-    _id: 'user101',
-    email: 'alex@agency.com',
-    name: 'Alex Rivera',
-    profileUrl: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg',
-    aboutUs: 'Creative Director',
-    followersCount: 1500,
-    followingCount: 780,
-    postsCount: 89,
-    isOnline: true,
-    lastSeen: new Date(),
-    createdAt: new Date('2023-03-10'),
-  },
-];
+
+
+export function combineChatsByParticipants(messages: any[]) {
+  const conversationMap = new Map<string, {
+    participants: { sender: any; receiver: any };
+    messages: any[];
+  }>();
+
+  messages.forEach((msg) => {
+    // Create a unique key for this conversation, ignoring direction
+    const key = [msg.sender._id, msg.receiver._id].sort().join('_');
+
+    if (!conversationMap.has(key)) {
+      conversationMap.set(key, {
+        participants: {
+          sender: msg.sender,
+          receiver: msg.receiver,
+        },
+        messages: [],
+      });
+    }
+
+    // Push this message to the array
+    conversationMap.get(key)!.messages.push(msg);
+  });
+
+  // Convert Map to array
+  const combinedConversations = Array.from(conversationMap.values());
+
+  // Sort messages in each conversation by createdAt (optional)
+  combinedConversations.forEach((conversation) => {
+    conversation.messages.sort((a, b) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  });
+
+  return combinedConversations;
+}
 
 export default function ChatScreen() {
   const { theme } = useThemeStore();
-  const { user } = useAuthStore();
-  const [chats, setChats] = useState<Chat[]>([]);
+  // const { user } = useAuthStore();
+  const [chats, setChats] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
   const [showNewChat, setShowNewChat] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [showChatModal, setShowChatModal] = useState(false);
   const [selectedChatUserId, setSelectedChatUserId] = useState<string | null>(null);
+  const { getAllUsers, clearUsers, response } = useUsersStore();
+  const { getChatsBySenderUserId, response: chatResponse, sendMessage } = useChatStore();
+  const allUsers = response?.data;
 
   useEffect(() => {
-    if (user) fetchChats();
-  }, [user]);
+    fetchUsers();
+  }, []);
 
+  useEffect(() => {
+    if (user?._id) {
+      fetchChats();
+    }
+  }, [user]);
   const fetchChats = async () => {
     try {
+      setLoading(true);
       if (user) {
-        const userChats = await chatService.getUserChats(user._id);
-        setChats(userChats || []);
+        const userChats = await getChatsBySenderUserId(user._id);
+        // console.log(combineChatsByParticipants(userChats || []), "userChats")
+        setChats(combineChatsByParticipants(userChats || []));
       }
     } catch (error) {
       console.error('Error fetching chats:', error);
@@ -85,12 +94,32 @@ export default function ChatScreen() {
       setLoading(false);
     }
   };
+  const fetchUsers = async () => {
+    try {
+
+      const userData = await getAuthData();
+      setUser(userData?.userData?.data)
+      fetchChats();
+    } catch (error) {
+      console.error('Error fetching chats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    if (searchQuery?.length > 0) {
+      getAllUsers(searchQuery);
+    } else {
+      clearUsers();
+    }
+  }, [searchQuery]);
+
 
   const startNewChat = async (targetUser: User) => {
     if (!user || !newMessage.trim()) return;
 
     try {
-      await chatService.createChat([user._id, targetUser._id], newMessage, user._id);
+      await sendMessage({ sender: user._id, receiver: targetUser._id, content: newMessage.trim(), type: 'text' });
       setNewMessage('');
       setSelectedUser(null);
       setShowNewChat(false);
@@ -103,11 +132,24 @@ export default function ChatScreen() {
     }
   };
 
-  const getOtherUser = (chat: Chat): User | undefined => {
-    const otherUserId = chat?.participants?.find(p => p !== user?._id);
-    return availableUsers.find(u => u._id === otherUserId);
+  // const getOtherUser = (chat: any): User | undefined => {
+  //   const otherUserId = chat?.participants?.receiver?._id != user?._id ? chat?.receiver : null;
+  //   // console.log(otherUserId, "otherUserId")
+  //   if (!otherUserId) {
+  //     return undefined;
+  //   }
+
+  //   return otherUserId;
+  // };
+  const getOtherUser = (chat: any): User | undefined => {
+    if (!chat?.participants) return undefined;
+
+    const { sender, receiver } = chat.participants;
+    // Return the participant who is not the current user
+    return sender?._id === user?._id ? receiver : sender;
   };
 
+  // console.log(chats, "chats")
   const formatTime = (date?: string | Date) => {
     if (!date) return '';
     const time = typeof date === 'string' ? new Date(date) : date;
@@ -122,9 +164,9 @@ export default function ChatScreen() {
     return 'Just now';
   };
 
-  const renderChatItem = ({ item }: { item: Chat }) => {
+  const renderChatItem = ({ item }: { item: any }) => {
     const otherUser = getOtherUser(item);
-    const lastMessage = item.lastMessage || {};
+    // const lastMessage = item.lastMessage || {};
 
     if (!otherUser) return null;
 
@@ -132,7 +174,7 @@ export default function ChatScreen() {
       <TouchableOpacity
         style={[styles.chatItem, { backgroundColor: theme.background, borderColor: theme.border }]}
         onPress={() => {
-          setSelectedChatUserId(otherUser._id);
+          setSelectedChatUserId(item);
           setShowChatModal(true);
         }}
       >
@@ -141,45 +183,53 @@ export default function ChatScreen() {
             source={{ uri: otherUser.profileUrl || placeholderImage }}
             style={styles.chatAvatar}
           />
-          {otherUser.isOnline && <View style={[styles.onlineIndicator, { backgroundColor: theme.success }]} />}
+          {otherUser?.isOnline && <View style={[styles.onlineIndicator, { backgroundColor: theme.success }]} />}
         </View>
 
         <View style={styles.chatContent}>
           <View style={styles.chatHeader}>
             <Text style={[styles.chatName, { color: theme.text }]}>{otherUser.name}</Text>
             <Text style={[styles.timestamp, { color: theme.textSecondary }]}>
-              {lastMessage.createdAt ? formatTime(new Date(lastMessage.createdAt)) : '-'}
+              {item.messages[item.messages.length - 1].createdAt ? formatTime(new Date(item.messages[item.messages.length - 1].createdAt)) : '-'}
             </Text>
           </View>
 
           <Text style={[styles.lastMessage, { color: theme.textSecondary }]} numberOfLines={1}>
-            {lastMessage.senderId === user?._id ? 'You: ' : ''}
-            {lastMessage.content || ''}
+            {item.participants.sender._id === user?._id ? 'You: ' : ''}
+            {item.messages[item.messages.length - 1].content || ''}
           </Text>
         </View>
 
-        {!lastMessage.isRead && lastMessage.senderId !== user?._id && (
+        {/* {!lastMessage.isRead && lastMessage.senderId !== user?._id && (
           <View style={[styles.unreadDot, { backgroundColor: theme.primary }]} />
-        )}
+        )} */}
       </TouchableOpacity>
     );
   };
 
-  const filteredUsers = availableUsers.filter(u =>
-    u._id !== user?._id &&
-    u.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // const filteredUsers = availableUsers.filter(u =>
+  //   u._id !== user?._id &&
+  //   u.name.toLowerCase().includes(searchQuery.toLowerCase())
+  // );
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.text }]}>Messages</Text>
-        <TouchableOpacity
+        {!showNewChat ? <TouchableOpacity
           style={[styles.newChatButton, { backgroundColor: theme.primary }]}
           onPress={() => setShowNewChat(true)}
         >
           <Plus size={24} color="#FFFFFF" />
-        </TouchableOpacity>
+        </TouchableOpacity> :
+          <TouchableOpacity
+            style={[styles.newChatButton, { backgroundColor: theme.primary }]}
+            onPress={() => setShowNewChat(false)}
+          >
+            <X size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+
+        }
       </View>
 
       {loading ? (
@@ -229,7 +279,7 @@ export default function ChatScreen() {
             </View>
           ) : (
             <FlatList
-              data={filteredUsers}
+              data={allUsers}
               keyExtractor={(item) => item._id}
               renderItem={({ item }) => (
                 <TouchableOpacity
@@ -243,7 +293,7 @@ export default function ChatScreen() {
                   <View style={styles.userInfo}>
                     <Text style={[styles.userName, { color: theme.text }]}>{item.name}</Text>
                     <Text style={[styles.useraboutUs, { color: theme.textSecondary }]} numberOfLines={1}>
-                      {item.aboutUs}
+                      @{item.username}
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -270,7 +320,7 @@ export default function ChatScreen() {
       ) : (
         <FlatList
           data={chats}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.participants.sender._id + item.participants.receiver._id}
           renderItem={renderChatItem}
           contentContainerStyle={styles.chatsList}
           showsVerticalScrollIndicator={false}
@@ -279,7 +329,8 @@ export default function ChatScreen() {
 
       {showChatModal && <ChatDetailModal
         visible={showChatModal}
-        userId={selectedChatUserId}
+        chatData={selectedChatUserId}
+        user={user}
         onClose={() => {
           setShowChatModal(false);
           setSelectedChatUserId(null);
@@ -322,7 +373,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 12,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    // paddingVertical: 12,
     borderRadius: 25,
     borderWidth: 1,
   },
@@ -401,6 +452,7 @@ const styles = StyleSheet.create({
   },
   userInfo: {
     flex: 1,
+    marginLeft: 12,
   },
   userName: {
     fontSize: 16,

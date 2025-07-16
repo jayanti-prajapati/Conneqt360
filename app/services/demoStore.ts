@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { User } from '../types';
 
 const HARDCODED_USER: User = {
-    id: 'user123',
+    _id: 'user123',
     email: 'demo@business.com',
     name: 'Demo User',
     profileUrl: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
@@ -26,83 +26,7 @@ const HARDCODED_USER: User = {
         facebook: 'https://facebook.com/demouser',
         youtube: 'https://youtube.com/@demouser',
     },
-    services: [
-        'Web Development',
-        'Mobile App Development',
-        'Cloud Solutions',
-        'Digital Marketing',
-        'Business Consulting',
-        'UI/UX Design'
-    ],
-    clients: [
-        {
-            id: 'client1',
-            name: 'TechCorp Inc.',
-            logo: 'https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
-            testimonial: 'Excellent service and professional delivery. Highly recommended!',
-            rating: 5,
-            projectType: 'E-commerce Platform',
-            completedDate: new Date('2024-01-15'),
-        },
-        {
-            id: 'client2',
-            name: 'StartupXYZ',
-            logo: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
-            testimonial: 'Amazing work on our mobile app. Great communication throughout.',
-            rating: 5,
-            projectType: 'Mobile Application',
-            completedDate: new Date('2024-02-20'),
-        },
-        {
-            id: 'client3',
-            name: 'Global Enterprises',
-            logo: 'https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
-            testimonial: 'Professional team with excellent technical expertise.',
-            rating: 4,
-            projectType: 'Cloud Migration',
-            completedDate: new Date('2024-03-10'),
-        },
-    ],
-    catalog: [
-        {
-            id: 'catalog1',
-            title: 'E-commerce Website Development',
-            description: 'Complete e-commerce solution with payment integration, inventory management, and responsive design.',
-            images: [
-                'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=2',
-                'https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=2'
-            ],
-            price: 'Starting from $2,500',
-            category: 'Web Development',
-            tags: ['E-commerce', 'React', 'Node.js', 'Payment Gateway'],
-            createdAt: new Date('2024-01-01'),
-        },
-        {
-            id: 'catalog2',
-            title: 'Mobile App Development',
-            description: 'Cross-platform mobile applications for iOS and Android with modern UI/UX design.',
-            images: [
-                'https://images.pexels.com/photos/607812/pexels-photo-607812.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=2',
-                'https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=2'
-            ],
-            price: 'Starting from $5,000',
-            category: 'Mobile Development',
-            tags: ['React Native', 'iOS', 'Android', 'UI/UX'],
-            createdAt: new Date('2024-01-15'),
-        },
-        {
-            id: 'catalog3',
-            title: 'Cloud Infrastructure Setup',
-            description: 'Complete cloud migration and infrastructure setup with monitoring and security.',
-            images: [
-                'https://images.pexels.com/photos/1181396/pexels-photo-1181396.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=2'
-            ],
-            price: 'Starting from $3,000',
-            category: 'Cloud Services',
-            tags: ['AWS', 'Azure', 'DevOps', 'Security'],
-            createdAt: new Date('2024-02-01'),
-        },
-    ],
+
     followersCount: 1250,
     followingCount: 890,
     postsCount: 45,
