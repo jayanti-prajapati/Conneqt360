@@ -38,7 +38,7 @@ export const getConversation = async (req: Request, res: Response) => {
         { sender: receiver, receiver: sender },
       ],
     }).sort({ createdAt: 1 })
-     .populate('sender', 'name username email profileUrl') 
+      .populate('sender', 'name username email profileUrl')
       .populate('receiver', 'name username email profileUrl');
 
     res.status(200).json(messages);
@@ -56,10 +56,11 @@ export const getConversationBySender = async (req: Request, res: Response) => {
 
     const messages = await MessageModel.find({
       $or: [
-        { sender: sender, }
+        { sender: sender, },
+        { receiver: sender, }
       ],
     }).sort({ createdAt: 1 })
-     .populate('sender', 'name username email profileUrl') 
+      .populate('sender', 'name username email profileUrl')
       .populate('receiver', 'name username email profileUrl');
 
     res.status(200).json(messages);
@@ -90,7 +91,7 @@ export const markRead = async (req: Request, res: Response) => {
       messageData.readBy.push({ user: userId, readAt: new Date() });
       await messageData.save();
     }
-    res.status(200).json({ message: "Message marked as read "});
+    res.status(200).json({ message: "Message marked as read " });
   } catch (error) {
     res.status(500).json({ message: "Failed to mark as read", error: error });
   }
