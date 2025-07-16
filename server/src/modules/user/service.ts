@@ -25,10 +25,7 @@ export class UserService {
             {
               $or: [
                 { name: { $regex: keyword, $options: "i" } },
-                { username: { $regex: keyword, $options: "i" } },
-                { email: { $regex: keyword, $options: "i" } },
-                { businessName: { $regex: keyword, $options: "i" } },
-                { businessType: { $regex: keyword, $options: "i" } },
+                { username: { $regex: keyword, $options: "i" } }
               ],
             },
           ],
