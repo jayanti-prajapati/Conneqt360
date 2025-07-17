@@ -234,7 +234,7 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
                             contentContainerStyle={[styles.messagesList, { justifyContent: 'flex-end' }]}
 
                             inverted={true}
-                            style={{ flexGrow: 0 }}
+                            style={{ flexGrow: 1 }}
                             onEndReachedThreshold={0.5}
                             showsVerticalScrollIndicator={false}
                         />

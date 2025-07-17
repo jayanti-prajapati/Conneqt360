@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, FlatList, StyleSheet,
   TouchableOpacity, Image, TextInput
@@ -6,7 +6,6 @@ import {
 import { MessageCircle, Plus, Search, Send, X } from 'lucide-react-native';
 
 import { useThemeStore } from '../../store/themeStore';
-
 import { ChatDetailModal } from '../../components/modal/ChatDetailModal';
 import { User } from '../../types';
 import useUsersStore from '@/store/useUsersStore';
@@ -17,9 +16,7 @@ import Typography from '@/constants/Typography';
 
 const placeholderImage = 'https://via.placeholder.com/50';
 
-// Mock users list
-
-
+// ✅ Utility to combine chats
 export function combineChatsByParticipants(messages: any[]) {
   const conversationMap = new Map<string, {
     participants: { sender: any; receiver: any };
@@ -27,174 +24,139 @@ export function combineChatsByParticipants(messages: any[]) {
   }>();
 
   messages.forEach((msg) => {
-    // Create a unique key for this conversation, ignoring direction
     const key = [msg.sender._id, msg.receiver._id].sort().join('_');
-
     if (!conversationMap.has(key)) {
-      conversationMap.set(key, {
-        participants: {
-          sender: msg.sender,
-          receiver: msg.receiver,
-        },
-        messages: [],
-      });
+      conversationMap.set(key, { participants: { sender: msg.sender, receiver: msg.receiver }, messages: [] });
     }
-
-    // Push this message to the array
     conversationMap.get(key)!.messages.push(msg);
   });
 
-  // Convert Map to array
-  const combinedConversations = Array.from(conversationMap.values());
-
-  // Sort messages in each conversation by createdAt (optional)
-  combinedConversations.forEach((conversation) => {
-    conversation.messages.sort((a, b) => {
-      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-    });
+  return Array.from(conversationMap.values()).map(convo => {
+    convo.messages.sort((a, b) =>
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+    return convo;
   });
-
-  return combinedConversations;
 }
 
 export default function ChatScreen() {
   const { theme } = useThemeStore();
-  // const { user } = useAuthStore();
   const [chats, setChats] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [showNewChat, setShowNewChat] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [showChatModal, setShowChatModal] = useState(false);
-  const [selectedChatUserId, setSelectedChatUserId] = useState<string | null>(null);
-  const { getAllUsers, clearUsers, response } = useUsersStore();
-  const { getChatsBySenderUserId, response: chatResponse, sendMessage } = useChatStore();
-  const allUsers = response?.data;
+  const [selectedChatUserId, setSelectedChatUserId] = useState<any>(null);
 
+  const { getAllUsers, clearUsers, response: usersResponse } = useUsersStore();
+  const { getChatsBySenderUserId, sendMessage, getConversation } = useChatStore();
+  const allUsers = usersResponse?.data || [];
+
+  // 🔹 Fetch chats
+  const fetchChats = useCallback(async (showLoader: boolean = false) => {
+    try {
+      if (showLoader) setInitialLoading(true);
+      if (!user?._id) return;
+
+      const userChats = await getChatsBySenderUserId(user._id);
+      const sortedChats = [...(userChats || [])].sort((a, b) => {
+        const aLast = a.messages[a.messages.length - 1]?.createdAt || a.updatedAt || 0;
+        const bLast = b.messages[b.messages.length - 1]?.createdAt || b.updatedAt || 0;
+        return new Date(bLast).getTime() - new Date(aLast).getTime();
+      });
+      setChats(sortedChats);
+    } catch (error) {
+      console.error('Error fetching chats:', error);
+    } finally {
+      if (showLoader) setInitialLoading(false);
+    }
+  }, [user, getChatsBySenderUserId]);
+
+  // 🔹 Fetch user then chats initially
+  const fetchUsers = async () => {
+    try {
+      const userData = await getAuthData();
+      setUser(userData?.userData?.data || null);
+    } catch (error) {
+      console.error('Error fetching user:', error);
+    }
+  };
+
+  // Initial fetch
   useEffect(() => {
     fetchUsers();
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (user?._id) {
-        fetchChats();
-      }
-    }, 2000);
+    if (user?._id) {
+      // First time loader
+      fetchChats(true);
 
-    // Cleanup function to clear the interval when component unmounts
+      // Interval updates without loader
+      const interval = setInterval(() => {
+        fetchChats(false);
+      }, 2000);
 
-
-    return () => clearInterval(interval);
-  }, [user]);
-  const fetchChats = async () => {
-    try {
-      // setLoading(true);
-      if (user) {
-        const userChats = await getChatsBySenderUserId(user._id);
-        // console.log(combineChatsByParticipants(userChats || []), "userChats")
-        const sortedChats = [...(userChats || [])].sort((a, b) => {
-          // Get the latest message time for chat a
-          const aMessages = a.messages || [];
-          const aLatestMessage = aMessages.length > 0
-            ? new Date(aMessages[aMessages.length - 1].createdAt).getTime()
-            : new Date(a.updatedAt || 0).getTime();
-
-          // Get the latest message time for chat b
-          const bMessages = b.messages || [];
-          const bLatestMessage = bMessages.length > 0
-            ? new Date(bMessages[bMessages.length - 1].createdAt).getTime()
-            : new Date(b.updatedAt || 0).getTime();
-
-          return bLatestMessage - aLatestMessage; // Sort in descending order
-        });
-
-        setChats(sortedChats);
-      }
-    } catch (error) {
-      console.error('Error fetching chats:', error);
-    } finally {
-      setLoading(false);
+      return () => clearInterval(interval);
     }
-  };
-  const fetchUsers = async () => {
-    try {
+  }, [user, fetchChats]);
 
-      const userData = await getAuthData();
-      setUser(userData?.userData?.data)
-      fetchChats();
-    } catch (error) {
-      console.error('Error fetching chats:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // 🔹 Handle search
   useEffect(() => {
-    if (searchQuery?.length > 0) {
+    if (searchQuery.length > 0) {
       getAllUsers(searchQuery);
     } else {
       clearUsers();
     }
   }, [searchQuery]);
 
-
   const startNewChat = async (targetUser: User) => {
     if (!user || !newMessage.trim()) return;
-
     try {
-      await sendMessage({ sender: user._id, receiver: targetUser._id, content: newMessage.trim(), type: 'text' });
+      await sendMessage({
+        sender: user._id,
+        receiver: targetUser._id,
+        content: newMessage.trim(),
+        type: 'text'
+      });
       setNewMessage('');
       setSelectedUser(null);
       setShowNewChat(false);
-      fetchChats();
 
-      setSelectedChatUserId(targetUser._id);
-      setShowChatModal(true);
+      const conversation = await getConversation(user?._id, targetUser._id);
+      fetchChats(false); // refresh without loader
+      setSelectedChatUserId(conversation[0]);
+      setShowChatModal(true); ``
     } catch (error) {
       console.error('Error starting chat:', error);
     }
   };
 
-  // const getOtherUser = (chat: any): User | undefined => {
-  //   const otherUserId = chat?.participants?.receiver?._id != user?._id ? chat?.receiver : null;
-  //   // console.log(otherUserId, "otherUserId")
-  //   if (!otherUserId) {
-  //     return undefined;
-  //   }
-
-  //   return otherUserId;
-  // };
-
   const getOtherUser = (chat: any): User | undefined => {
-    if (!chat?.participants) return undefined;
-
     const { sender, receiver } = chat.participants;
-    // Return the participant who is not the current user
     return sender?._id === user?._id ? receiver : sender;
   };
 
-  // console.log(chats, "chats")
   const formatTime = (date?: string | Date) => {
     if (!date) return '';
     const time = typeof date === 'string' ? new Date(date) : date;
-    const now = new Date();
-    const diff = now.getTime() - time.getTime();
-    const hours = diff ? Math.floor(diff / (1000 * 60 * 60)) : 0;
-    const minutes = diff ? Math.floor(diff / (1000 * 60)) : 0;
+    const diff = Date.now() - time.getTime();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor(diff / (1000 * 60));
 
     if (hours > 24) return time.toLocaleDateString();
-    else if (hours > 0) return `${hours}h ago`;
-    else if (minutes > 0) return `${minutes}m ago`;
+    if (hours > 0) return `${hours}h ago`;
+    if (minutes > 0) return `${minutes}m ago`;
     return 'Just now';
   };
 
   const renderChatItem = ({ item }: { item: any }) => {
     const otherUser = getOtherUser(item);
-    // const lastMessage = item.lastMessage || {};
-
     if (!otherUser) return null;
+    const lastMessage = item.messages[item.messages.length - 1];
 
     return (
       <TouchableOpacity
@@ -205,66 +167,52 @@ export default function ChatScreen() {
         }}
       >
         <View style={styles.avatarContainer}>
-          {otherUser?.profileUrl ? <Image
-            source={{ uri: otherUser.profileUrl || placeholderImage }}
-            style={styles.chatAvatar}
-          /> :
-            <Text style={styles.avatarText}>{otherUser?.name?.charAt(0)?.toUpperCase() || "U"}</Text>}
-          {otherUser?.isOnline && <View style={[styles.onlineIndicator, { backgroundColor: theme.success }]} />}
+          {otherUser.profileUrl ? (
+            <Image source={{ uri: otherUser.profileUrl }} style={styles.chatAvatar} />
+          ) : (
+            <Text style={styles.avatarText}>
+              {otherUser.name?.charAt(0)?.toUpperCase() || 'U'}
+            </Text>
+          )}
         </View>
 
         <View style={styles.chatContent}>
           <View style={styles.chatHeader}>
             <Text style={[styles.chatName, { color: theme.text }]}>{otherUser.name}</Text>
             <Text style={[styles.timestamp, { color: theme.textSecondary }]}>
-              {item.messages[item.messages.length - 1].createdAt ? formatTime(new Date(item.messages[item.messages.length - 1].createdAt)) : '-'}
+              {lastMessage?.createdAt ? formatTime(lastMessage.createdAt) : '-'}
             </Text>
           </View>
-
           <Text style={[styles.lastMessage, { color: theme.textSecondary }]} numberOfLines={1}>
-            {item.participants.sender._id === user?._id ? 'You: ' : ''}
-            {item.messages[item.messages.length - 1].content || ''}
+            {lastMessage?.sender?._id === user?._id ? 'You: ' : ''}
+            {lastMessage?.content || ''}
           </Text>
         </View>
-
-        {/* {!lastMessage.isRead && lastMessage.senderId !== user?._id && (
-          <View style={[styles.unreadDot, { backgroundColor: theme.primary }]} />
-        )} */}
       </TouchableOpacity>
     );
   };
 
-  // const filteredUsers = availableUsers.filter(u =>
-  //   u._id !== user?._id &&
-  //   u.name.toLowerCase().includes(searchQuery.toLowerCase())
-  // );
-
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
+      {/* Header */}
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.text }]}>Messages</Text>
-        {!showNewChat ? <TouchableOpacity
+        <TouchableOpacity
           style={[styles.newChatButton, { backgroundColor: theme.primary }]}
-          onPress={() => setShowNewChat(true)}
+          onPress={() => setShowNewChat(prev => !prev)}
         >
-          <Plus size={24} color="#FFFFFF" />
-        </TouchableOpacity> :
-          <TouchableOpacity
-            style={[styles.newChatButton, { backgroundColor: theme.primary }]}
-            onPress={() => setShowNewChat(false)}
-          >
-            <X size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-
-        }
+          {showNewChat ? <X size={24} color="#fff" /> : <Plus size={24} color="#fff" />}
+        </TouchableOpacity>
       </View>
 
-      {loading ? (
+      {/* Loader only on initial fetch */}
+      {initialLoading ? (
         <View style={styles.loadingContainer}>
           <Text style={[styles.loadingText, { color: theme.text }]}>Loading chats...</Text>
         </View>
       ) : showNewChat ? (
         <>
+          {/* Search bar */}
           <View style={[styles.searchContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <Search size={20} color={theme.textSecondary} />
             <TextInput
@@ -275,16 +223,13 @@ export default function ChatScreen() {
               onChangeText={setSearchQuery}
             />
           </View>
+
+          {/* Selected user for new chat */}
           {selectedUser ? (
             <View style={styles.newChatContainer}>
               <View style={[styles.selectedUser, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                <Image
-                  source={{ uri: selectedUser.profileUrl || placeholderImage }}
-                  style={styles.chatAvatar}
-                />
-                <Text style={[styles.selectedUserName, { color: theme.text }]}>
-                  {selectedUser.name}
-                </Text>
+                <Image source={{ uri: selectedUser.profileUrl || placeholderImage }} style={styles.chatAvatar} />
+                <Text style={[styles.selectedUserName, { color: theme.text }]}>{selectedUser.name}</Text>
               </View>
               <View style={[styles.messageInputContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
                 <TextInput
@@ -307,16 +252,13 @@ export default function ChatScreen() {
           ) : (
             <FlatList
               data={allUsers}
-              keyExtractor={(item) => item._id}
+              keyExtractor={item => item._id}
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={[styles.userItem, { backgroundColor: theme.surface, borderColor: theme.border }]}
                   onPress={() => setSelectedUser(item)}
                 >
-                  <Image
-                    source={{ uri: item.profileUrl || placeholderImage }}
-                    style={styles.chatAvatar}
-                  />
+                  <Image source={{ uri: item.profileUrl || placeholderImage }} style={styles.chatAvatar} />
                   <View style={styles.userInfo}>
                     <Text style={[styles.userName, { color: theme.text }]}>{item.name}</Text>
                     <Text style={[styles.useraboutUs, { color: theme.textSecondary }]} numberOfLines={1}>
@@ -347,25 +289,29 @@ export default function ChatScreen() {
       ) : (
         <FlatList
           data={chats}
-          keyExtractor={(item) => item.participants.sender._id + item.participants.receiver._id}
+          keyExtractor={item => item.participants.sender._id + item.participants.receiver._id}
           renderItem={renderChatItem}
           contentContainerStyle={styles.chatsList}
           showsVerticalScrollIndicator={false}
         />
       )}
 
-      {showChatModal && <ChatDetailModal
-        visible={showChatModal}
-        receiverData={selectedChatUserId}
-        user={user}
-        onClose={() => {
-          setShowChatModal(false);
-          setSelectedChatUserId(null);
-        }}
-      />}
+      {showChatModal && (
+        <ChatDetailModal
+          visible={showChatModal}
+          receiverData={selectedChatUserId}
+          user={user}
+          onClose={() => {
+            setShowChatModal(false);
+            setSelectedChatUserId(null);
+          }}
+        />
+      )}
     </View>
   );
 }
+
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
