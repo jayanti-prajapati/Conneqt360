@@ -13,6 +13,8 @@ import useUsersStore from '@/store/useUsersStore';
 import { getAuthData } from '@/services/secureStore';
 import useChatStore from '@/store/useChatStore';
 import Layout from '@/components/common/Layout';
+import Colors from '@/constants/Colors';
+import Typography from '@/constants/Typography';
 
 const placeholderImage = 'https://via.placeholder.com/50';
 
@@ -130,11 +132,13 @@ export default function ChatScreen() {
           setShowChatModal(true);
         }}
       >
-        <View style={styles.avatarContainer}>
-          <Image
+        <View style={styles.avatar}>
+          {/* <View style={styles.avatarContainer}> */}
+          {otherUser.profileUrl ? <Image
             source={{ uri: otherUser.profileUrl || placeholderImage }}
             style={styles.chatAvatar}
-          />
+          /> : <Text style={[styles.avatarText, { color: theme.text }]}>{otherUser.name[0].toUpperCase()}</Text>}
+          {/* </View> */}
         </View>
         <View style={styles.chatContent}>
           <View style={styles.chatHeader}>
@@ -346,6 +350,20 @@ const styles = StyleSheet.create({
   sendButton: {
     width: 40, height: 40, borderRadius: 20,
     justifyContent: 'center', alignItems: 'center',
+  },
+  avatarText: {
+    color: Colors.primary[700],
+    fontSize: Typography.size.lg,
+    fontWeight: Typography.weight.bold as any,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.primary[100],
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
   },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 },
   emptyTitle: { fontSize: 24, fontWeight: 'bold', marginTop: 16, marginBottom: 8 },

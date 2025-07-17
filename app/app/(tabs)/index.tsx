@@ -248,6 +248,7 @@ export default function HomeScreen() {
                   onLike={handleLike}
                   onComment={handleComments}
                   onShare={handleShare}
+
                   onMoreOptions={handleMoreOptions}
                   onPress={handlePostPress}
                   likesIds={item?.likes}
