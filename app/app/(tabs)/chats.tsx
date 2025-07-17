@@ -12,6 +12,8 @@ import { User } from '../../types';
 import useUsersStore from '@/store/useUsersStore';
 import { getAuthData } from '@/services/secureStore';
 import useChatStore from '@/store/useChatStore';
+import Colors from '@/constants/Colors';
+import Typography from '@/constants/Typography';
 
 const placeholderImage = 'https://via.placeholder.com/50';
 
@@ -48,7 +50,7 @@ export function combineChatsByParticipants(messages: any[]) {
   // Sort messages in each conversation by createdAt (optional)
   combinedConversations.forEach((conversation) => {
     conversation.messages.sort((a, b) => {
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
     });
   });
 
@@ -76,17 +78,40 @@ export default function ChatScreen() {
   }, []);
 
   useEffect(() => {
-    if (user?._id) {
-      fetchChats();
-    }
+    const interval = setInterval(() => {
+      if (user?._id) {
+        fetchChats();
+      }
+    }, 2000);
+
+    // Cleanup function to clear the interval when component unmounts
+
+
+    return () => clearInterval(interval);
   }, [user]);
   const fetchChats = async () => {
     try {
-      setLoading(true);
+      // setLoading(true);
       if (user) {
         const userChats = await getChatsBySenderUserId(user._id);
         // console.log(combineChatsByParticipants(userChats || []), "userChats")
-        setChats(combineChatsByParticipants(userChats || []));
+        const sortedChats = [...(userChats || [])].sort((a, b) => {
+          // Get the latest message time for chat a
+          const aMessages = a.messages || [];
+          const aLatestMessage = aMessages.length > 0
+            ? new Date(aMessages[aMessages.length - 1].createdAt).getTime()
+            : new Date(a.updatedAt || 0).getTime();
+
+          // Get the latest message time for chat b
+          const bMessages = b.messages || [];
+          const bLatestMessage = bMessages.length > 0
+            ? new Date(bMessages[bMessages.length - 1].createdAt).getTime()
+            : new Date(b.updatedAt || 0).getTime();
+
+          return bLatestMessage - aLatestMessage; // Sort in descending order
+        });
+
+        setChats(sortedChats);
       }
     } catch (error) {
       console.error('Error fetching chats:', error);
@@ -141,6 +166,7 @@ export default function ChatScreen() {
 
   //   return otherUserId;
   // };
+
   const getOtherUser = (chat: any): User | undefined => {
     if (!chat?.participants) return undefined;
 
@@ -179,10 +205,11 @@ export default function ChatScreen() {
         }}
       >
         <View style={styles.avatarContainer}>
-          <Image
+          {otherUser?.profileUrl ? <Image
             source={{ uri: otherUser.profileUrl || placeholderImage }}
             style={styles.chatAvatar}
-          />
+          /> :
+            <Text style={styles.avatarText}>{otherUser?.name?.charAt(0)?.toUpperCase() || "U"}</Text>}
           {otherUser?.isOnline && <View style={[styles.onlineIndicator, { backgroundColor: theme.success }]} />}
         </View>
 
@@ -329,7 +356,7 @@ export default function ChatScreen() {
 
       {showChatModal && <ChatDetailModal
         visible={showChatModal}
-        chatData={selectedChatUserId}
+        receiverData={selectedChatUserId}
         user={user}
         onClose={() => {
           setShowChatModal(false);
@@ -385,6 +412,11 @@ const styles = StyleSheet.create({
   chatsList: {
     paddingVertical: 8,
   },
+  avatarText: {
+    color: Colors.primary[700],
+    fontSize: Typography.size.lg,
+    fontWeight: Typography.weight.bold as any,
+  },
   usersList: {
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -407,7 +439,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   avatarContainer: {
-    position: 'relative',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.primary[100],
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 12,
   },
   chatAvatar: {
