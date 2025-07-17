@@ -103,7 +103,7 @@ export default function OTPScreen() {
         />
         {error && (
           <Text
-            style={{ marginTop: Spacing.x, color: 'red', textAlign: 'center' }}
+            style={{ marginTop: Spacing.md, color: 'red', textAlign: 'center' }}
           >
             {error}
           </Text>

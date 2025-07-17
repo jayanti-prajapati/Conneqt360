@@ -113,7 +113,7 @@ export default function CustomVideoPlayer({ videoUrl, isVisible }: { videoUrl: s
 const styles = StyleSheet.create({
     container: {
         width: '100%',
-        height: 400,
+        height: 200,
         borderRadius: 12,
         marginBottom: Spacing.md,
         backgroundColor: '#000',

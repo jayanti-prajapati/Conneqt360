@@ -52,5 +52,7 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     alignItems: 'center',
     width: '90%',
+    marginTop: 20,
+    marginBottom: 20,
   },
 });

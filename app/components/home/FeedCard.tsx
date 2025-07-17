@@ -10,7 +10,7 @@ import { formatTimestamp } from '../utils/dateconverter';
 import CustomVideoPlayer from '../utils/CustomVideoPlayer';
 
 import { CommunityPost } from '@/types/feeds';
-import { PostOptionsModal } from '../modal/PostOptionsModal';
+
 import { CommentSection } from '../comments/CommentSection';
 import { Comment } from '@/types';
 
@@ -262,11 +262,7 @@ export default function FeedCard({
 const styles = StyleSheet.create({
   card: {
     marginBottom: Spacing.md,
-    width: width - Spacing.sm * 2,
-    alignSelf: 'center',
-    // minHeight: 450, // Example: increase to your desired height
-    // paddingBottom: Spacing.md,
-
+    width: "100%",
   },
 
   header: {
@@ -344,13 +340,13 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
   },
   contentText: {
-    fontSize: Typography.size.md,
+    fontSize: Typography.size.sm,
     color: Colors.gray[800],
     lineHeight: 22,
   },
   image: {
     width: "100%",
-    height: 400,
+    height: 200,
     borderRadius: 12,
     marginBottom: Spacing.md,
     // paddingTop: Spacing.lg,
@@ -379,6 +375,3 @@ const styles = StyleSheet.create({
   },
 
 });
-
-
-

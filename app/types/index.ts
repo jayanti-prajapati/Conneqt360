@@ -1,11 +1,12 @@
 export interface User {
-  id: string;
+  _id: string;
   username?: string;
   jobTitle?: string;
 
   email: string;
   name: string;
   profileUrl?: string;
+  verified?: boolean
 
   aboutUs?: string;
   businessName?: string;
@@ -39,13 +40,21 @@ export interface User {
 }
 
 export interface Client {
-  id: string;
+  _id: string;
   name: string;
-  logo?: string;
-  testimonial?: string;
-  rating?: number;
-  projectType?: string;
-  completedDate?: Date;
+  logo: string;
+  testimonial: string;
+  rating: string;
+  projectType: string;
+  completedDate: string;
+}
+
+
+export interface Service {
+  _id?: string;
+  title: string;
+  description: string;
+  features: string[];
 }
 export interface Post {
   id: string;
@@ -59,6 +68,17 @@ export interface Post {
   likes: string[];
   comments: Comment[];
   verified: boolean;
+}
+
+export interface Message {
+  _id?: string;
+  sender: string;
+  receiver: string;
+  content: string;
+  type?: 'text' | 'image' | 'video';
+  isRead?: boolean;
+  createdAt?: Date;
+
 }
 
 export interface Circle {
@@ -83,23 +103,7 @@ export interface Product {
   verified: boolean;
 }
 
-export interface Message {
-  id: string;
-  senderId: string;
-  receiverId: string;
-  content: string;
-  mediaType?: 'image' | 'video';
-  mediaUrl?: string;
-  isRead: boolean;
-  createdAt: Date;
-}
 
-export interface Chat {
-  id: string;
-  participants?: string[];
-  lastMessage: Message;
-  updatedAt: Date;
-}
 
 export interface Comment {
   id?: string;
@@ -110,7 +114,7 @@ export interface Comment {
 }
 
 export interface CatalogItem {
-  id: string;
+  _id: string;
   title: string;
   description: string;
   images: string[];

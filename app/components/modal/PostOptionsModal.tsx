@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, Dimensions } from 'react-native';
-import { Share, Flag, Bookmark, Copy, UserX, TriangleAlert as AlertTriangle } from 'lucide-react-native';
+import { Share, Flag, Bookmark, Copy, UserX, TriangleAlert as AlertTriangle, User, X } from 'lucide-react-native';
 import { useThemeStore } from '@/store/themeStore';
 
 
@@ -16,6 +16,7 @@ interface PostOptionsModalProps {
     onCopyLink: () => void;
     onBlock?: () => void;
     onDelete?: () => void;
+    onViewProfile?: () => void
 }
 
 export const PostOptionsModal: React.FC<PostOptionsModalProps> = ({
@@ -28,6 +29,7 @@ export const PostOptionsModal: React.FC<PostOptionsModalProps> = ({
     onCopyLink,
     onBlock,
     onDelete,
+    onViewProfile
 }) => {
     const { theme } = useThemeStore();
 
@@ -38,18 +40,19 @@ export const PostOptionsModal: React.FC<PostOptionsModalProps> = ({
             onPress: onShare,
             color: theme.text,
         },
-        {
-            icon: Copy,
-            label: 'Copy Link',
-            onPress: onCopyLink,
-            color: theme.text,
-        },
+        // {
+        //     icon: Copy,
+        //     label: 'Copy Link',
+        //     onPress: onCopyLink,
+        //     color: theme.text,
+        // },
         {
             icon: Bookmark,
             label: 'Save Post',
             onPress: onSave,
             color: theme.text,
         },
+
         ...(isOwnPost ? [
             {
                 icon: AlertTriangle,
@@ -58,6 +61,12 @@ export const PostOptionsModal: React.FC<PostOptionsModalProps> = ({
                 color: theme.error,
             }
         ] : [
+            {
+                icon: User,
+                label: 'View Profile',
+                onPress: onViewProfile,
+                color: theme.text,
+            },
             {
                 icon: Flag,
                 label: 'Report Post',
@@ -70,7 +79,14 @@ export const PostOptionsModal: React.FC<PostOptionsModalProps> = ({
                 onPress: onBlock || (() => { }),
                 color: theme.error,
             }
-        ])
+        ]),
+
+        {
+            icon: X,
+            label: 'Close',
+            onPress: onClose || (() => { }),
+            color: theme.error,
+        }
     ];
 
     return (
@@ -91,11 +107,12 @@ export const PostOptionsModal: React.FC<PostOptionsModalProps> = ({
                     <Text style={[styles.title, { color: theme.text }]}>Post Options</Text>
 
                     <View style={styles.optionsContainer}>
-                        {options.map((option, index) => (
+                        {options?.map((option, index) => (
                             <TouchableOpacity
                                 key={index}
                                 style={[styles.option, { borderBottomColor: theme.border }]}
                                 onPress={() => {
+                                    //@ts-ignore
                                     option.onPress();
                                     onClose();
                                 }}
@@ -108,12 +125,12 @@ export const PostOptionsModal: React.FC<PostOptionsModalProps> = ({
                         ))}
                     </View>
 
-                    <TouchableOpacity
+                    {/* <TouchableOpacity
                         style={[styles.cancelButton, { backgroundColor: theme.background }]}
                         onPress={onClose}
                     >
                         <Text style={[styles.cancelText, { color: theme.text }]}>Cancel</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                 </View>
             </TouchableOpacity>
         </Modal>
@@ -130,7 +147,8 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         paddingBottom: 34,
-        maxHeight: height * 0.6,
+        // marginBottom: 40,
+        maxHeight: height * 0.7,
     },
     handle: {
         width: 40,
@@ -160,13 +178,13 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '500',
     },
-    cancelButton: {
-        marginHorizontal: 20,
-        marginTop: 20,
-        paddingVertical: 16,
-        borderRadius: 12,
-        alignItems: 'center',
-    },
+    // cancelButton: {
+    //     marginHorizontal: 20,
+    //     // marginTop: 20,
+    //     paddingVertical: 16,
+    //     borderRadius: 12,
+    //     alignItems: 'center',
+    // },
     cancelText: {
         fontSize: 16,
         fontWeight: '600',

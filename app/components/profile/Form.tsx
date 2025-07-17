@@ -6,6 +6,8 @@ import { useEffect, useState, useCallback } from "react";
 import useUsersStore from "@/store/useUsersStore";
 import { clearAuthData, getAuthData } from "@/services/secureStore";
 import { useRouter } from "expo-router";
+import Input from "../ui-components/Input";
+import Button from "../ui-components/Button";
 
 // Reusable gradient button component
 const GradientButton = ({ title, onPress }: { title: string; onPress: () => void }) => (
@@ -37,9 +39,9 @@ export default function Form({ isPresent, onClose, closeText = "Skip", users }: 
         username: '',
         businessName: '',
         businessType: '',
-        udyamNumber: '',
+        // udyamNumber: '',
         gstNumber: '',
-        address: '',
+        // address: '',
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -52,9 +54,9 @@ export default function Form({ isPresent, onClose, closeText = "Skip", users }: 
             username: users?.username ?? '',
             businessName: users?.businessName ?? '',
             businessType: users?.businessType ?? '',
-            udyamNumber: users?.udyamNumber ?? '',
+            // udyamNumber: users?.udyamNumber ?? '',
             gstNumber: users?.gstNumber ?? '',
-            address: users?.location ?? '',
+            // address: users?.location ?? '',
         });
     }, [users]);
 
@@ -89,7 +91,7 @@ export default function Form({ isPresent, onClose, closeText = "Skip", users }: 
         if (!formData.businessType) newErrors.businessType = "Business type is required";
         // if (!formData.udyamNumber) newErrors.udyamNumber = "Udyam number is required";
         if (!formData.gstNumber) newErrors.gstNumber = "GST number is required";
-        if (!formData.address) newErrors.address = "Address is required";
+        // if (!formData.address) newErrors.address = "Address is required";
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -122,7 +124,7 @@ export default function Form({ isPresent, onClose, closeText = "Skip", users }: 
         if (!validateForm()) return;
 
         try {
-            const resp = await updateUser(userData?._id, { ...formData, isSkip: true, location: formData.address });
+            const resp = await updateUser(userData?._id, { ...formData, isSkip: true });
             if (resp?.data?.statusCode === 201 || resp?.data?.statusCode === 200) {
                 setUserData(resp.data.data);
                 setIsVisible(false);
@@ -138,21 +140,22 @@ export default function Form({ isPresent, onClose, closeText = "Skip", users }: 
 
     const renderField = (placeholder: string, field: keyof typeof formData) => (
         <View style={styles.inputContainer}>
-            <TextInput
+            <Input
                 placeholder={placeholder}
                 value={formData[field]}
+                error={errors[field]}
                 onChangeText={(text) => handleChange(field, text)}
-                style={[styles.input, errors[field] && { borderColor: 'red' }]}
+                // style={[styles.input, errors[field] && { borderColor: 'red' }]}
                 autoCapitalize="none"
             />
-            {errors[field] && <Text style={{ color: 'red' }}>{errors[field]}</Text>}
+            {/* {errors[field] && <Text style={{ color: 'red' }}>{errors[field]}</Text>} */}
         </View>
     );
 
     return (
         <AppModal visible={!!(isPresent ?? isVisible)} onClose={modal.close}>
             <View style={styles.container}>
-                <Text style={{ fontSize: 18, marginBottom: 10 }}>Update Profile</Text>
+                <Text style={{ fontSize: 18, marginBottom: 10 }}>Complete Profile</Text>
 
                 {renderField("Name", "name")}
                 {renderField("Job Title", "jobTitle")}
@@ -160,15 +163,15 @@ export default function Form({ isPresent, onClose, closeText = "Skip", users }: 
                 {renderField("Username", "username")}
                 {renderField("Business Name", "businessName")}
                 {renderField("Business Type", "businessType")}
-                {renderField("Udyam Number", "udyamNumber")}
+                {/* {renderField("Udyam Number", "udyamNumber")} */}
                 {renderField("GST Number", "gstNumber")}
-                {renderField("Address/Location", "address")}
+                {/* {renderField("Address/Location", "address")} */}
 
-                {errors.apiError && <Text style={{ color: 'red' }}>{errors.apiError}</Text>}
+                {/* {errors.apiError && <Text style={{ color: 'red' }}>{errors.apiError}</Text>} */}
 
                 <View style={{ flexDirection: 'row', justifyContent: "space-between", width: '95%' }}>
                     {/* <GradientButton title={closeText} onPress={handleSkip} /> */}
-                    <GradientButton title="Submit" onPress={handleSubmit} />
+                    <Button title="Submit" style={styles.button} onPress={handleSubmit} />
                 </View>
             </View>
         </AppModal>
@@ -176,9 +179,9 @@ export default function Form({ isPresent, onClose, closeText = "Skip", users }: 
 }
 
 const styles = StyleSheet.create({
-    button: { padding: 10, borderRadius: 5 },
+    button: { padding: 10, borderRadius: 5, width: "100%" },
     container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    buttonText: { color: '#fff', fontSize: 12, textAlign: 'center' },
+    buttonText: { color: '#fff', fontSize: 12, textAlign: "center" },
     inputContainer: { width: '90%', marginVertical: 5 },
     input: { height: 44, borderWidth: 1, borderColor: '#ddd', borderRadius: 12, paddingHorizontal: 12 },
 });

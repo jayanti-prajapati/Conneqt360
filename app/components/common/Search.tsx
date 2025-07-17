@@ -7,22 +7,27 @@ import { useEffect, useState } from 'react';
 import Typography from '@/constants/Typography';
 import { useCommunityFeedsStore } from '@/store/communityFeedsStore';
 
-export default function Search() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const { feeds } = useCommunityFeedsStore();
-  const [feedData, setFeedData] = useState<any>([]);
+type SearchProps = {
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+}
 
-  const handleSearch = (text: string) => {
-    setSearchQuery(text);
-    // Filter the list of businesses and products
-    const filteredData = feeds.filter((item: any) =>
-      item?.user?.businessName?.toLowerCase().includes(text.toLowerCase())
-    );
-    setFeedData(filteredData);
-  };
-  useEffect(() => {
-    handleSearch(searchQuery);
-  }, [searchQuery]);
+export default function Search({ searchQuery, setSearchQuery }: SearchProps) {
+  // const [searchQuery, setSearchQuery] = useState('');
+  // const { feeds } = useCommunityFeedsStore();
+  // const [feedData, setFeedData] = useState<any>([]);
+
+  // const handleSearch = (text: string) => {
+  // setSearchQuery(text);
+  // Filter the list of businesses and products
+  //   const filteredData = feeds.filter((item: any) =>
+  //     item?.user?.businessName?.toLowerCase().includes(text.toLowerCase())
+  //   );
+  //   setFeedData(filteredData);
+  // };
+  // useEffect(() => {
+  //   handleSearch(searchQuery);
+  // }, [searchQuery]);
 
   return (
     <View style={styles.searchContainer}>
@@ -33,7 +38,7 @@ export default function Search() {
           placeholder="Search businesses, products..."
           value={searchQuery}
           onChangeText={(text) => {
-            handleSearch(text);
+            setSearchQuery(text);
           }}
         />
       </View>

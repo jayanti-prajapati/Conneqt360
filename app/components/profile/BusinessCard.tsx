@@ -1,18 +1,19 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Share, Dimensions } from 'react-native';
-import { Building, Mail, Phone, MapPin, Share as ShareIcon, QrCode } from 'lucide-react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Share, Dimensions, ScrollView } from 'react-native';
+import { Building, Mail, Phone, MapPin, Share as ShareIcon, QrCode, X } from 'lucide-react-native';
 import { useThemeStore } from '@/store/themeStore';
 import { User } from '@/types';
+import { router } from 'expo-router';
 
 
 const { width } = Dimensions.get('window');
 
 interface BusinessCardProps {
     user: User;
-    onShare?: () => void;
+    setShowBusinessCard: (isopen: boolean) => void;
 }
 
-export const BusinessCard: React.FC<BusinessCardProps> = ({ user, onShare }) => {
+export const BusinessCard: React.FC<BusinessCardProps> = ({ user, setShowBusinessCard }) => {
     const { theme } = useThemeStore();
 
     const handleShare = async () => {
@@ -27,7 +28,15 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ user, onShare }) => 
     };
 
     return (
+
+
         <View style={[styles.container, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            <TouchableOpacity
+                style={styles.closeIcon}
+                onPress={() => setShowBusinessCard(false)} // replace with your close function if needed
+            >
+                <X size={24} color={theme.text} />
+            </TouchableOpacity>
             {/* Header with gradient background */}
             <View style={[styles.header, { backgroundColor: theme.primary }]}>
                 <View style={styles.headerContent}>
@@ -36,19 +45,19 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ user, onShare }) => 
                         style={styles.profileImage}
                     />
                     <View style={styles.headerText}>
-                        <Text style={styles.name} numberOfLines={2}>{user.name}</Text>
+                        <Text style={styles.name} numberOfLines={2}>{user.businessName || 'Not Available'} </Text>
                         <Text style={styles.title} numberOfLines={2}>
-                            {user.businessName || 'Business Professional'}
+                            {user.businessType || 'Not Available'}
                         </Text>
                         {user.businessType && (
-                            <Text style={styles.businessType} numberOfLines={1}>{user.businessType}</Text>
+                            <Text style={styles.businessType} numberOfLines={1}>{user.name}</Text>
                         )}
                     </View>
                 </View>
             </View>
 
             {/* Contact Information */}
-            <View style={styles.content}>
+            <View style={[styles.content]}>
                 <View style={styles.contactSection}>
                     <View style={styles.contactItem}>
                         <Mail size={16} color={theme.primary} />
@@ -65,18 +74,11 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ user, onShare }) => 
                     {(user.address || user.city) && (
                         <View style={styles.contactItem}>
                             <MapPin size={16} color={theme.primary} />
-                            <Text style={[styles.contactText, { color: theme.text }]} numberOfLines={2}>
+                            <Text style={[styles.contactText, { color: theme.text }]} >
                                 {[user.address, user.city, user.state, user.country]
                                     .filter(Boolean)
                                     .join(', ')}
                             </Text>
-                        </View>
-                    )}
-
-                    {user.businessName && (
-                        <View style={styles.contactItem}>
-                            <Building size={16} color={theme.primary} />
-                            <Text style={[styles.contactText, { color: theme.text }]} numberOfLines={2}>{user.businessName}</Text>
                         </View>
                     )}
                 </View>
@@ -145,11 +147,23 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ user, onShare }) => 
                     </TouchableOpacity> */}
                 </View>
             </View>
+
         </View>
+
+
+
+
+
     );
 };
 
 const styles = StyleSheet.create({
+    closeIcon: {
+        position: 'absolute',
+        top: 16,
+        right: 16,
+        zIndex: 10,
+    },
     container: {
         width: Math.min(width - 40, 400),
         maxWidth: 400,
@@ -200,6 +214,8 @@ const styles = StyleSheet.create({
     },
     content: {
         padding: 16,
+
+
     },
     contactSection: {
         marginBottom: 16,
@@ -213,6 +229,7 @@ const styles = StyleSheet.create({
     contactText: {
         fontSize: 14,
         flex: 1,
+        flexWrap: "wrap"
     },
     businessSection: {
         borderTopWidth: 1,
@@ -238,6 +255,7 @@ const styles = StyleSheet.create({
     actionButtons: {
         flexDirection: 'row',
         gap: 10,
+        height: 40
     },
     actionButton: {
         flex: 1,

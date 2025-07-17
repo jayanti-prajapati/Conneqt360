@@ -1,238 +1,274 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Platform, Modal } from 'react-native';
-import { ArrowLeft, Send, Phone, Video } from 'lucide-react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+    View,
+    Text,
+    StyleSheet,
+    FlatList,
+    TextInput,
+    TouchableOpacity,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    Modal,
+    ActivityIndicator,
+} from 'react-native';
+import { ArrowLeft, Send } from 'lucide-react-native';
 import { useThemeStore } from '../../store/themeStore';
-import { useAuthStore } from '../../services/demoStore';
-import { Message, User } from '../../types';
-import { chatService } from '../../services/charService';
-
-// Mock users for demo
-const mockUsers: User[] = [
-    {
-        id: 'user456',
-        email: 'sarah@company.com',
-        name: 'Sarah Johnson',
-        profileUrl: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
-        aboutUs: 'Marketing Director',
-        followersCount: 890,
-        followingCount: 650,
-        postsCount: 32,
-        isOnline: true,
-        lastSeen: new Date(),
-        createdAt: new Date('2023-02-20'),
-    },
-    {
-        id: 'user789',
-        email: 'mike@startup.com',
-        name: 'Mike Chen',
-        profileUrl: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
-        aboutUs: 'Tech Entrepreneur',
-        followersCount: 2100,
-        followingCount: 450,
-        postsCount: 67,
-        isOnline: false,
-        lastSeen: new Date(Date.now() - 3600000),
-        createdAt: new Date('2022-11-10'),
-    },
-];
+import { User } from '../../types';
+import useChatStore from '@/store/useChatStore';
+import Colors from '@/constants/Colors';
+import Typography from '@/constants/Typography';
 
 interface ChatDetailModalProps {
     visible: boolean;
-    userId: string | null;
+    receiverData: any;
     onClose: () => void;
+    user: any;
 }
 
 export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
     visible,
-    userId,
+    receiverData,
+    user,
     onClose,
 }) => {
     const { theme } = useThemeStore();
-    const { user } = useAuthStore();
-    const [messages, setMessages] = useState<Message[]>([]);
+    const [messages, setMessages] = useState<any[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [otherUser, setOtherUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const [chatData, setChatData] = useState<any>(null);
 
-    useEffect(() => {
-        if (userId && visible) {
-            fetchChatData();
-        }
-    }, [userId, visible]);
+    const { sendMessage, getConversation } = useChatStore();
 
-    const fetchChatData = async () => {
+    const isCurrentUserSender = useCallback(
+        (message: any) => message.sender._id === user?._id,
+        [user?._id]
+    );
+
+    const getOtherUser = useCallback(() => {
+        if (!receiverData?.participants) return null;
+        const { sender, receiver } = receiverData.participants;
+        return sender._id === user?._id ? receiver : sender;
+    }, [receiverData?.participants, user?._id]);
+
+    const fetchChatData = useCallback(async () => {
         try {
-            // Find the other user based on chat ID
-            const foundUser = mockUsers.find(u => u.id === userId);
-            setOtherUser(foundUser || null);
-
-            // Mock messages for demo
-            const mockMessages: Message[] = [
-                {
-                    id: 'msg1',
-                    senderId: userId as string,
-                    receiverId: user?.id || '',
-                    content: 'Hey! How did the presentation go today?',
-                    isRead: true,
-                    createdAt: new Date(Date.now() - 3600000),
-                },
-                {
-                    id: 'msg2',
-                    senderId: user?.id || '',
-                    receiverId: userId as string,
-                    content: 'It went really well! Thanks for asking. The client loved our proposal.',
-                    isRead: true,
-                    createdAt: new Date(Date.now() - 3000000),
-                },
-                {
-                    id: 'msg3',
-                    senderId: userId as string,
-                    receiverId: user?.id || '',
-                    content: 'That\'s fantastic! I knew you\'d nail it. Want to celebrate over coffee?',
-                    isRead: true,
-                    createdAt: new Date(Date.now() - 1800000),
-                },
-                {
-                    id: 'msg4',
-                    senderId: user?.id || '',
-                    receiverId: userId as string,
-                    content: 'Absolutely! How about tomorrow at 3 PM at the usual place?',
-                    isRead: false,
-                    createdAt: new Date(Date.now() - 900000),
-                },
-            ];
-
-            setMessages(mockMessages);
+            const other = getOtherUser();
+            setOtherUser(other);
+            if (receiverData?.messages) {
+                const sortedMessages = [...receiverData.messages];
+                setMessages(sortedMessages);
+            }
         } catch (error) {
             console.error('Error fetching chat data:', error);
         } finally {
             setLoading(false);
         }
+    }, [getOtherUser, receiverData?.messages]);
+
+    const fetchConversation = async () => {
+        if (!user?._id || !otherUser?._id) return;
+        try {
+            //@ts-ignore
+            const conversation = await getConversation(user._id, otherUser._id);
+            if (conversation && conversation.length > 0) {
+                setChatData(conversation[0]);
+                setMessages([...conversation[0]?.messages]);
+            }
+        } catch (error) {
+            console.error('Error fetching conversation:', error);
+        }
     };
 
-    const handleSendMessage = async () => {
-        if (!newMessage.trim() || !user || !otherUser) return;
+    useEffect(() => {
+        if (!user) return;
+        let intervalId: NodeJS.Timeout;
 
-        const message: Message = {
-            id: Date.now().toString(),
-            senderId: user.id,
-            receiverId: otherUser.id,
-            content: newMessage.trim(),
-            isRead: false,
-            createdAt: new Date(),
+        const initializeChat = async () => {
+            setLoading(true);
+            await fetchChatData();
+
+            intervalId = setInterval(() => {
+                if (otherUser) fetchConversation();
+            }, 2000);
         };
+        initializeChat();
 
-        setMessages(prev => [...prev, message]);
+        return () => {
+            if (intervalId) clearInterval(intervalId);
+        };
+    }, [user, otherUser, fetchChatData]);
+
+    const handleSendMessage = async () => {
+        if (!newMessage.trim() || !user?._id || !otherUser?._id) return;
+        const temp = newMessage.trim();
         setNewMessage('');
-
         try {
-            await chatService.sendMessage(userId as string, user.id, otherUser.id, newMessage.trim());
+            await sendMessage({
+                sender: user._id,
+                receiver: otherUser._id,
+                content: temp,
+                type: 'text',
+            });
+            fetchConversation();
         } catch (error) {
             console.error('Error sending message:', error);
         }
     };
 
-    const formatTime = (date: Date) => {
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    };
-
-    const renderMessage = ({ item }: { item: Message }) => {
-        const isOwnMessage = item.senderId === user?.id;
+    const renderMessage = ({ item }: { item: any }) => {
+        const isOwnMessage = isCurrentUserSender(item);
+        const messageDate = new Date(item.createdAt);
+        const formattedTime = messageDate.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+        });
 
         return (
-            <View style={[styles.messageContainer, isOwnMessage ? styles.ownMessage : styles.otherMessage]}>
-                <View style={[
-                    styles.messageBubble,
-                    {
-                        backgroundColor: isOwnMessage ? theme.primary : theme.surface,
-                        borderColor: theme.border,
-                    }
-                ]}>
-                    <Text style={[
-                        styles.messageText,
-                        { color: isOwnMessage ? '#FFFFFF' : theme.text }
-                    ]}>
+            <View
+                style={[
+                    styles.messageContainer,
+                    isOwnMessage ? styles.ownMessage : styles.otherMessage,
+                ]}
+            >
+                {!isOwnMessage && otherUser?.profileUrl && (
+                    <Image source={{ uri: otherUser.profileUrl }} style={styles.messageAvatar} />
+                )}
+                <View
+                    style={[
+                        styles.messageBubble,
+                        {
+                            backgroundColor: isOwnMessage ? theme.primary : theme.surface,
+                            borderColor: theme.border,
+                        },
+                    ]}
+                >
+                    <Text
+                        style={[
+                            styles.messageText,
+                            { color: isOwnMessage ? '#fff' : theme.text },
+                        ]}
+                    >
                         {item.content}
                     </Text>
-                    <Text style={[
-                        styles.messageTime,
-                        { color: isOwnMessage ? 'rgba(255,255,255,0.7)' : theme.textSecondary }
-                    ]}>
-                        {formatTime(item.createdAt)}
+                    <Text
+                        style={[
+                            styles.messageTime,
+                            {
+                                color: isOwnMessage
+                                    ? 'rgba(255,255,255,0.7)'
+                                    : theme.textSecondary,
+                                textAlign: isOwnMessage ? 'right' : 'left',
+                            },
+                        ]}
+                    >
+                        {formattedTime}
                     </Text>
                 </View>
             </View>
         );
     };
 
-    if (!otherUser && !loading) {
-        return null;
+    if (loading) {
+        return (
+            <Modal
+                visible={visible}
+                transparent={false}
+                animationType="slide"
+                onRequestClose={onClose}
+            >
+                <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+                    <ActivityIndicator size="large" color={theme.primary} />
+                </View>
+            </Modal>
+        );
     }
 
     return (
         <Modal
             visible={visible}
             animationType="slide"
-            presentationStyle="pageSheet"
+            transparent={false}
             onRequestClose={onClose}
         >
             <View style={[styles.container, { backgroundColor: theme.background }]}>
                 <KeyboardAvoidingView
-                    style={styles.container}
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                    style={styles.keyboardAvoidingView}
+                    keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
                 >
                     {/* Header */}
-                    <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
-                        <TouchableOpacity onPress={onClose}>
+                    <View
+                        style={[
+                            styles.header,
+                            { backgroundColor: theme.surface, borderBottomColor: theme.border },
+                        ]}
+                    >
+                        <TouchableOpacity onPress={onClose} style={styles.backButton}>
                             <ArrowLeft size={24} color={theme.text} />
                         </TouchableOpacity>
 
                         {otherUser && (
                             <View style={styles.headerUser}>
-                                <Image
-                                    source={{ uri: otherUser.profileUrl || 'https://via.placeholder.com/40' }}
-                                    style={styles.headerAvatar}
-                                />
+                                <View style={styles.headerAvatar}>
+                                    {otherUser.profileUrl ? (
+                                        <Image
+                                            source={{ uri: otherUser.profileUrl }}
+                                            style={styles.avatarImage}
+                                        />
+                                    ) : (
+                                        <Text style={styles.avatarText}>
+                                            {otherUser.name?.charAt(0)?.toUpperCase() || 'U'}
+                                        </Text>
+                                    )}
+                                </View>
                                 <View style={styles.headerUserInfo}>
-                                    <Text style={[styles.headerName, { color: theme.text }]}>{otherUser.name}</Text>
+                                    <Text style={[styles.headerName, { color: theme.text }]}>
+                                        {otherUser.name || 'Unknown User'}
+                                    </Text>
                                     <Text style={[styles.headerStatus, { color: theme.textSecondary }]}>
-                                        {otherUser.isOnline ? 'Online' : 'Last seen recently'}
+                                        {otherUser.isOnline ? 'Online' : 'Offline'}
                                     </Text>
                                 </View>
                             </View>
                         )}
-
-                        <View style={styles.headerActions}>
-                            <TouchableOpacity style={styles.headerAction}>
-                                <Phone size={20} color={theme.primary} />
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.headerAction}>
-                                <Video size={20} color={theme.primary} />
-                            </TouchableOpacity>
-                        </View>
                     </View>
 
                     {/* Messages */}
-                    {loading ? (
-                        <View style={styles.loadingContainer}>
-                            <Text style={[styles.loadingText, { color: theme.text }]}>Loading chat...</Text>
-                        </View>
-                    ) : (
+                    {messages?.length > 0 ? (
                         <FlatList
-                            data={messages}
-                            keyExtractor={(item) => item.id}
+                            data={[...messages].reverse()}
+                            keyExtractor={(item) => item._id}
                             renderItem={renderMessage}
-                            style={styles.messagesList}
-                            contentContainerStyle={styles.messagesContent}
-                            showsVerticalScrollIndicator={false}
+                            contentContainerStyle={[styles.messagesList, { justifyContent: 'flex-end' }]}
                             inverted
+                            showsVerticalScrollIndicator={false}
                         />
+                    ) : (
+                        <View style={styles.noMessagesContainer}>
+                            <Text style={[styles.noMessagesText, { color: theme.textSecondary }]}>
+                                No messages yet
+                            </Text>
+                        </View>
                     )}
 
                     {/* Input */}
-                    <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderTopColor: theme.border }]}>
+                    <View
+                        style={[
+                            styles.inputContainer,
+                            { backgroundColor: theme.surface, borderTopColor: theme.border },
+                        ]}
+                    >
                         <TextInput
-                            style={[styles.input, { backgroundColor: theme.background, color: theme.text, borderColor: theme.border }]}
+                            style={[
+                                styles.input,
+                                {
+                                    backgroundColor: theme.background,
+                                    color: theme.text,
+                                    borderColor: theme.border,
+                                },
+                            ]}
                             placeholder="Type a message..."
                             placeholderTextColor={theme.textSecondary}
                             value={newMessage}
@@ -241,11 +277,14 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
                             maxLength={1000}
                         />
                         <TouchableOpacity
-                            style={[styles.sendButton, { backgroundColor: theme.primary }]}
+                            style={[
+                                styles.sendButton,
+                                { backgroundColor: theme.primary, opacity: newMessage.trim() ? 1 : 0.5 },
+                            ]}
                             onPress={handleSendMessage}
                             disabled={!newMessage.trim()}
                         >
-                            <Send size={20} color="#FFFFFF" />
+                            <Send size={20} color="#fff" />
                         </TouchableOpacity>
                     </View>
                 </KeyboardAvoidingView>
@@ -255,108 +294,66 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
+    container: { flex: 1 },
+    loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    keyboardAvoidingView: { flex: 1 },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
+        padding: 16,
         borderBottomWidth: 1,
-        gap: 12,
     },
-    headerUser: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-    },
+    backButton: { padding: 8, marginRight: 8 },
+    headerUser: { flex: 1, flexDirection: 'row', alignItems: 'center' },
     headerAvatar: {
         width: 40,
         height: 40,
         borderRadius: 20,
+        backgroundColor: Colors.primary[100],
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
+        overflow: 'hidden',
     },
-    headerUserInfo: {
-        flex: 1,
+    avatarImage: { width: '100%', height: '100%' },
+    avatarText: {
+        color: Colors.primary[700],
+        fontSize: Typography.size.lg,
+        fontWeight: Typography.weight.bold as any,
     },
-    headerName: {
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    headerStatus: {
-        fontSize: 12,
-        marginTop: 2,
-    },
-    headerActions: {
-        flexDirection: 'row',
-        gap: 8,
-    },
-    headerAction: {
-        padding: 8,
-    },
-    messagesList: {
-        flex: 1,
-    },
-    messagesContent: {
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-    },
-    messageContainer: {
-        marginVertical: 4,
-        maxWidth: '80%',
-    },
-    ownMessage: {
-        alignSelf: 'flex-end',
-    },
-    otherMessage: {
-        alignSelf: 'flex-start',
-    },
-    messageBubble: {
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        borderRadius: 18,
-        borderWidth: 1,
-    },
-    messageText: {
-        fontSize: 16,
-        lineHeight: 20,
-        marginBottom: 4,
-    },
-    messageTime: {
-        fontSize: 12,
-        textAlign: 'right',
-    },
+    headerUserInfo: { flex: 1 },
+    headerName: { fontSize: 16, fontWeight: '600' },
+    headerStatus: { fontSize: 12, marginTop: 2 },
+    messagesList: { flexGrow: 1, padding: 16 },
+    messageContainer: { marginVertical: 4, flexDirection: 'row', alignItems: 'flex-end' },
+    ownMessage: { justifyContent: 'flex-end', alignSelf: 'flex-end' },
+    otherMessage: { justifyContent: 'flex-start', alignSelf: 'flex-start' },
+    messageAvatar: { width: 32, height: 32, borderRadius: 16, marginRight: 8 },
+    messageBubble: { maxWidth: '80%', padding: 12, borderRadius: 16, borderWidth: 1 },
+    messageText: { fontSize: 16, lineHeight: 20 },
+    messageTime: { fontSize: 12, marginTop: 4 },
     inputContainer: {
         flexDirection: 'row',
-        alignItems: 'flex-end',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
+        alignItems: 'center',
+        padding: 16,
         borderTopWidth: 1,
-        gap: 12,
     },
     input: {
         flex: 1,
-        borderWidth: 1,
         borderRadius: 20,
         paddingHorizontal: 16,
-        paddingVertical: 12,
+        paddingVertical: 8,
         fontSize: 16,
-        maxHeight: 100,
+        maxHeight: 120,
     },
+    noMessagesContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    noMessagesText: { fontSize: 16, color: Colors.gray[500] },
     sendButton: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
         justifyContent: 'center',
         alignItems: 'center',
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    loadingText: {
-        fontSize: 16,
+        marginLeft: 8,
     },
 });
