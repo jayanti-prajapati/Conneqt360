@@ -1,22 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  BackHandler,
-  Image,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { AntDesign, Feather, FontAwesome } from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
+import { Text, StyleSheet, BackHandler } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import Button from '@/components/ui-components/Button';
 import Input from '@/components/ui-components/Input';
 
 import Spacing from '@/constants/Spacing';
 import useAuthStore from '@/store/useAuthStore';
-import Colors from '@/constants/Colors';
+import Onboarding from '@/components/common/Onboarding';
 
 export default function LoginScreen() {
   const [isEmailLogin, setIsEmailLogin] = useState(false);
@@ -91,75 +82,64 @@ export default function LoginScreen() {
     setEmail('');
     setPassword('');
   };
+  const imagePath = require('@/assets/images/networking-2.jpg');
 
   return (
-    <View style={styles.container}>
-      <View style={styles.card}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require('@/assets/images/logo.png')}
-            style={styles.logo}
-            resizeMode="contain"
+    <Onboarding imagePath={imagePath}>
+      {isEmailLogin ? (
+        <>
+          <Input
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Email address"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            leftIcon={<Feather name="mail" size={20} color="#aaa" />}
+            style={styles.input}
           />
-        </View>
-        {/* <Text style={styles.title}>Welcome</Text>
-        <Text style={styles.subtitle}> Login to your business account</Text> */}
-        {isEmailLogin ? (
-          <>
-            <Input
-              value={email}
-              onChangeText={setEmail}
-              placeholder="Email address"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              leftIcon={<Feather name="mail" size={20} color="#aaa" />}
-              style={styles.input}
-            />
 
-            <Input
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Password"
-              secureTextEntry={!showPassword}
-              leftIcon={<Feather name="lock" size={20} color="#aaa" />}
-              rightIcon={
-                <Feather
-                  name={showPassword ? 'eye' : 'eye-off'}
-                  size={20}
-                  color="#aaa"
-                />
-              }
-              onRightIconPress={() => setShowPassword(!showPassword)}
-              style={styles.input}
-            />
-          </>
-        ) : (
-          <>
-            <Input
-              value={phone}
-              onChangeText={setPhone}
-              placeholder="Phone Number"
-              keyboardType="phone-pad"
-              autoCapitalize="none"
-              leftIcon={<Feather name="phone" size={20} color="#aaa" />}
-              style={styles.input}
-            />
-          </>
-        )}
+          <Input
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Password"
+            secureTextEntry={!showPassword}
+            leftIcon={<Feather name="lock" size={20} color="#aaa" />}
+            rightIcon={
+              <Feather
+                name={showPassword ? 'eye' : 'eye-off'}
+                size={20}
+                color="#aaa"
+              />
+            }
+            onRightIconPress={() => setShowPassword(!showPassword)}
+            style={styles.input}
+          />
+        </>
+      ) : (
+        <>
+          <Input
+            value={phone}
+            onChangeText={setPhone}
+            placeholder="Phone Number"
+            keyboardType="phone-pad"
+            autoCapitalize="none"
+            leftIcon={<Feather name="phone" size={20} color="#aaa" />}
+            style={styles.input}
+          />
+        </>
+      )}
 
-        <Button
-          title={isEmailLogin ? 'Login' : 'Send OTP'}
-          variant="primary"
-          onPress={handleLogin}
-          style={{ width: '100%' }}
-          //  loading={loading}
-        />
+      <Button
+        title={isEmailLogin ? 'Login' : 'Send OTP'}
+        variant="primary"
+        onPress={handleLogin}
+        style={{ width: '100%' }}
+      />
 
-        {error && (
-          <Text style={{ color: 'red', textAlign: 'center' }}>{error}</Text>
-        )}
-      </View>
-    </View>
+      {error && (
+        <Text style={{ color: 'red', textAlign: 'center' }}>{error}</Text>
+      )}
+    </Onboarding>
   );
 }
 
@@ -169,6 +149,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f7ff',
     justifyContent: 'center',
     // padding: 16,
+  },
+  headerImageContainer: {
+    alignItems: 'center',
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 10,
+  },
+  headerImage: {
+    height: 220,
   },
   logoContainer: {
     alignItems: 'center',

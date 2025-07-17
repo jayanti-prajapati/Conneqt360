@@ -71,36 +71,34 @@ export default function Layout({
     <View
       style={{
         flex: 1,
-        width: '100%',
-        height: '100%',
       }}
     >
       <StatusBar />
 
-      <ImageBackground
+      {/* <ImageBackground
         source={{
-          uri: 'https://w0.peakpx.com/wallpaper/361/111/HD-wallpaper-simple-two-color-abstract-blue-colorfull-gradient-kor4-rts-orange-pattern-purple-soft-texture-wave-yellow.jpg',
+          uri: 'https://www.canva.com/design/DAGtZyiGzk0/QCdqf0HSIIdYHc-xbABiWw/watch?utm_content=DAGtZyiGzk0&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h1a41331a5f',
         }}
         style={styles.imageBackground}
-      >
-        <SafeAreaView style={styles.safeArea} edges={safeAreaEdges}>
-          {showHeader && (
-            <Header
-              title={title}
-              showBackButton={showBackButton}
-              rightComponent={headerRight}
-              onBackPress={() => router.back()}
-            />
-          )}
-          <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 25}
-          >
-            {renderContent()}
-          </KeyboardAvoidingView>
-        </SafeAreaView>
-      </ImageBackground>
+      > */}
+      <SafeAreaView style={styles.safeArea} edges={safeAreaEdges}>
+        {showHeader && (
+          <Header
+            title={title}
+            showBackButton={showBackButton}
+            rightComponent={headerRight}
+            onBackPress={() => router.back()}
+          />
+        )}
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 25}
+        >
+          {renderContent()}
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+      {/* </ImageBackground> */}
     </View>
   );
 }
@@ -117,11 +115,11 @@ const styles = StyleSheet.create({
   },
   scrollContentContainer: {
     flexGrow: 1,
-    padding: Spacing.md,
+    padding: Spacing.xs,
   },
   contentContainer: {
     flex: 1,
-    padding: Spacing.md,
+    padding: Spacing.xs,
   },
   imageBackground: {
     flex: 1,

@@ -1,16 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  TextInput,
-  TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import AppModal from '../modal/AppModal';
-import useUsersStore from '@/store/useUsersStore';
 import { useRouter } from 'expo-router';
 import { clearAuthData } from '@/services/secureStore';
 import Button from '../ui-components/Button';
@@ -25,15 +21,11 @@ const LogoutModal = ({ isLogout, onClose }: Props) => {
   const handleClose = () => {
     onClose?.();
   };
-
-  // Handle save/update
   const handleSubmit = async () => {
     clearAuthData();
     router.replace('/(auth)/login');
     onClose?.();
   };
-
-  // Reset form when modal opens
 
   return (
     <AppModal visible={isLogout} onClose={handleClose}>
@@ -42,11 +34,9 @@ const LogoutModal = ({ isLogout, onClose }: Props) => {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <Text style={styles.title}>Confirm</Text>
-
         <Text style={styles.message}>
           Are you sure you want to log out of your account?
         </Text>
-
         <View style={styles.buttonRow}>
           <Button
             style={{ width: '48%' }}
@@ -67,7 +57,6 @@ const LogoutModal = ({ isLogout, onClose }: Props) => {
 
 export default LogoutModal;
 
-// ------------------ Styles ------------------
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -81,7 +70,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
     textAlign: 'left',
-    alignSelf: 'flex-start', // ✅ this ensures the title aligns left in its parent
+    alignSelf: 'flex-start',
   },
 
   message: {
