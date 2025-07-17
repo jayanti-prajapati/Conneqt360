@@ -13,6 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import useAuthStore from '@/store/useAuthStore';
 import ResendOtp from '@/components/ResendOtp';
+import Onboarding from '@/components/common/Onboarding';
 
 export default function OTPScreen() {
   const inputRefs = useRef<Array<TextInput | null>>([]);
@@ -55,74 +56,60 @@ export default function OTPScreen() {
       setError('Invalid OTP. Please Enter the correct OTP.');
     }
   };
+  const imagePath = require('@/assets/images/business-3.png');
 
   return (
-    <View style={styles.container}>
-      <View style={styles.card}>
-        <Ionicons name="shield-checkmark-outline" size={48} color="#1F73C6" />
-        <Text style={styles.title}>Enter Verification Code</Text>
-        <Text style={styles.subtitle}>
-          We've sent a 6-digit code to your registered number.
-        </Text>
+    <Onboarding imagePath={imagePath}>
+      <Text style={styles.subtitle}>
+        We've sent a 6-digit code to your registered number.
+      </Text>
 
-        <View style={styles.otpContainer}>
-          {otp.map((digit, idx) => (
-            <TextInput
-              key={idx}
-              ref={(ref) => {
-                inputRefs.current[idx] = ref;
-              }}
-              style={styles.otpInput}
-              maxLength={1}
-              keyboardType="numeric"
-              value={digit}
-              onChangeText={(text) => handleChange(text, idx)}
-              returnKeyType="done"
-              onKeyPress={({ nativeEvent }) => {
-                if (nativeEvent.key === 'Backspace') {
-                  if (otp[idx] === '') {
-                    if (idx > 0) {
-                      inputRefs.current[idx - 1]?.focus();
-                    }
-                  } else {
-                    const updatedOtp = [...otp];
-                    updatedOtp[idx] = '';
-                    setOtp(updatedOtp);
+      <View style={styles.otpContainer}>
+        {otp.map((digit, idx) => (
+          <TextInput
+            key={idx}
+            ref={(ref) => {
+              inputRefs.current[idx] = ref;
+            }}
+            style={styles.otpInput}
+            maxLength={1}
+            keyboardType="numeric"
+            value={digit}
+            onChangeText={(text) => handleChange(text, idx)}
+            returnKeyType="done"
+            onKeyPress={({ nativeEvent }) => {
+              if (nativeEvent.key === 'Backspace') {
+                if (otp[idx] === '') {
+                  if (idx > 0) {
+                    inputRefs.current[idx - 1]?.focus();
                   }
+                } else {
+                  const updatedOtp = [...otp];
+                  updatedOtp[idx] = '';
+                  setOtp(updatedOtp);
                 }
-              }}
-            />
-          ))}
-        </View>
-
-        <Button
-          title="Verify OTP"
-          onPress={handleVerify}
-          variant="primary"
-          style={{ width: '100%' }}
-        />
-        {error && (
-          <Text
-            style={{ marginTop: Spacing.x, color: 'red', textAlign: 'center' }}
-          >
-            {error}
-          </Text>
-        )}
-        {/* <TouchableOpacity onPress={Keyboard.dismiss}>
-                    <Text style={styles.resendText}>Resend OTP</Text>
-                </TouchableOpacity> */}
-        <ResendOtp setOtp={setOtp} inputRefs={inputRefs} />
-        {/* <TouchableOpacity onPress={handleResend} disabled={isActive}>
-                    <Text style={[styles.resendText, isActive && styles.disabledText]}>
-                        {isActive ? `Resend OTP in ${timer}s` : 'Resend OTP'}
-                    </Text>
-                </TouchableOpacity>
-
-                <Text style={styles.testText}>
-                    Your OTP - <Text style={{ fontWeight: 'bold' }}>{otpNumber}</Text>
-                </Text> */}
+              }
+            }}
+          />
+        ))}
       </View>
-    </View>
+
+      <Button
+        title="Verify OTP"
+        onPress={handleVerify}
+        variant="primary"
+        style={{ width: '100%' }}
+      />
+      {error && (
+        <Text
+          style={{ marginTop: Spacing.x, color: 'red', textAlign: 'center' }}
+        >
+          {error}
+        </Text>
+      )}
+
+      <ResendOtp setOtp={setOtp} inputRefs={inputRefs} />
+    </Onboarding>
   );
 }
 

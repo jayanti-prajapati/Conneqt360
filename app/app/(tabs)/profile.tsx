@@ -263,6 +263,32 @@ export default function ProfileScreen() {
       <LogoutModal isLogout={isLogout} onClose={close} />
 
       <View style={styles.scrollContent}>
+        {/* Profile Completion */}
+        <View style={[styles.card]}>
+          <View style={styles.progressHeader}>
+            <Text style={styles.progressTitle}>Profile Completion</Text>
+            <Text
+              style={
+                profileCompletion === 100
+                  ? styles.progressPercentSuccess
+                  : styles.progressPercent
+              }
+            >
+              {profileCompletion}%
+            </Text>
+          </View>
+          <View style={styles.progressBar}>
+            <View
+              style={[
+                profileCompletion === 100
+                  ? styles.progressSuccess
+                  : styles.progressFill,
+                { width: `${profileCompletion}%` },
+              ]}
+            />
+          </View>
+        </View>
+
         {/* Profile Section */}
         <View style={styles.profileSection}>
           <View style={styles.profileImageContainer}>
@@ -331,37 +357,11 @@ export default function ProfileScreen() {
           </View>
           <Button
             title="View Business"
-            variant="ghost"
+            variant="primary"
             size="medium"
             onPress={() => setShowBusinessCard(true)}
             style={{ ...styles.actionButton, width: '100%' }}
           />
-        </View>
-
-        {/* Profile Completion */}
-        <View style={[styles.card]}>
-          <View style={styles.progressHeader}>
-            <Text style={styles.progressTitle}>Profile Completion</Text>
-            <Text
-              style={
-                profileCompletion === 100
-                  ? styles.progressPercentSuccess
-                  : styles.progressPercent
-              }
-            >
-              {profileCompletion}%
-            </Text>
-          </View>
-          <View style={styles.progressBar}>
-            <View
-              style={[
-                profileCompletion === 100
-                  ? styles.progressSuccess
-                  : styles.progressFill,
-                { width: `${profileCompletion}%` },
-              ]}
-            />
-          </View>
         </View>
 
         {/* catalogue */}
@@ -616,8 +616,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: Spacing.lg,
-    paddingTop: Spacing.md,
+    paddingBottom: Spacing.sm,
+    paddingTop: Spacing.sm,
     marginBottom: Spacing.xxl,
   },
   profileSection: {
