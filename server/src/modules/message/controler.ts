@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { MessageModel } from './model';
 
-
 export const sendMessage = async (req: Request, res: Response) => {
   try {
     const { content, sender, receiver, type = 'text' } = req.body;
@@ -38,8 +37,8 @@ export const getConversation = async (req: Request, res: Response) => {
         { sender: receiver, receiver: sender },
       ],
     }).sort({ createdAt: 1 })
-      .populate('sender', 'name username email profileUrl')
-      .populate('receiver', 'name username email profileUrl');
+      .populate('sender', 'name username email profileUrl isOnline')
+      .populate('receiver', 'name username email profileUrl isOnline');
 
       const resp = combineChatsByParticipants(messages)
 
@@ -62,8 +61,8 @@ export const getConversationBySender = async (req: Request, res: Response) => {
         { receiver: sender, }
       ],
     }).sort({ createdAt: 1 })
-      .populate('sender', 'name username email profileUrl')
-      .populate('receiver', 'name username email profileUrl');
+      .populate('sender', 'name username email profileUrl isOnline')
+      .populate('receiver', 'name username email profileUrl isOnline');
 
       const resp = combineChatsByParticipants(messages)
 
