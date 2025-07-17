@@ -123,21 +123,21 @@ export default function CommunityFeedScreen() {
 
       <View style={styles.mediaButtons}>
         <Button
-          variant="outline"
+          variant="ghost"
           size="medium"
           onPress={takePhotos}
           icon={<Camera size={20} color={theme.primary} />}
         />
 
         <Button
-          variant="outline"
+          variant="ghost"
           size="medium"
           onPress={() => pickImages()}
           icon={<ImageIcon size={20} color={theme.primary} />}
         />
 
         <Button
-          variant="outline"
+          variant="ghost"
           size="medium"
           onPress={() => pickVideos()}
           icon={<VideoIcon size={20} color={theme.primary} />}
@@ -220,7 +220,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 20,
     gap: 8,
-    borderBottomWidth: 1,
   },
   footer: {
     flexDirection: 'row',

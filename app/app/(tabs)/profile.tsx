@@ -91,7 +91,6 @@ const userMockData: User = {
 };
 
 export default function ProfileScreen() {
-  
   const { theme, isDark, toggleTheme } = useThemeStore();
   const [isPresent, setIsPresent] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -316,7 +315,7 @@ export default function ProfileScreen() {
           <View style={[styles.buttonRow, { width: '100%' }]}>
             <Button
               title="Edit Profile"
-              variant="outline"
+              variant="ghost"
               size="medium"
               onPress={() => setShowEditModal(true)}
               style={styles.actionButton}
@@ -324,7 +323,7 @@ export default function ProfileScreen() {
 
             <Button
               title="Share Card"
-              variant="outline"
+              variant="ghost"
               size="medium"
               onPress={handleShare}
               style={styles.actionButton}
@@ -332,7 +331,7 @@ export default function ProfileScreen() {
           </View>
           <Button
             title="View Business"
-            variant="primary"
+            variant="ghost"
             size="medium"
             onPress={() => setShowBusinessCard(true)}
             style={{ ...styles.actionButton, width: '100%' }}
@@ -761,7 +760,7 @@ const styles = StyleSheet.create({
   //   color: Colors.gray[800],
   // },
   card: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.primary[600],
     borderRadius: 12,
     padding: Spacing.md,
     marginHorizontal: Spacing.md,
@@ -781,34 +780,35 @@ const styles = StyleSheet.create({
   progressTitle: {
     fontSize: 16,
     fontWeight: '500',
-    color: Colors.gray[800],
+    color: Colors.white,
   },
   progressPercent: {
     fontSize: 16,
     fontWeight: '600',
-    color: Colors.primary[600],
+    color: Colors.white,
   },
   progressPercentSuccess: {
     fontSize: 16,
     fontWeight: '600',
-    color: 'green',
+    color: Colors.white,
   },
+
   progressBar: {
-    height: 8,
-    backgroundColor: Colors.gray[200],
-    borderRadius: 4,
+    height: 16,
+    backgroundColor: Colors.primary[200],
+    borderRadius: 8,
     overflow: 'hidden',
     marginTop: Spacing.sm,
   },
   progressFill: {
     height: '100%',
-    backgroundColor: Colors.primary[500],
-    borderRadius: 4,
+    backgroundColor: Colors.white,
+    borderRadius: 8,
   },
   progressSuccess: {
     height: '100%',
     backgroundColor: 'green',
-    borderRadius: 4,
+    borderRadius: 8,
   },
   aboutText: {
     fontSize: 14,

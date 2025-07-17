@@ -8,6 +8,7 @@ import {
   StatusBar,
   StyleProp,
   ViewStyle,
+  ImageBackground,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@react-navigation/native';
@@ -40,8 +41,6 @@ export default function Layout({
   style,
   contentContainerStyle,
   safeAreaEdges = ['top', 'left', 'right'],
-  statusBarStyle = 'dark-content',
-  statusBarColor = Colors.white,
 }: LayoutProps) {
   const { colors } = useTheme();
 
@@ -72,31 +71,36 @@ export default function Layout({
     <View
       style={{
         flex: 1,
-        backgroundColor: Colors.gray[100],
+        width: '100%',
+        height: '100%',
       }}
     >
-      <StatusBar
-        barStyle={statusBarStyle}
-        backgroundColor={statusBarColor}
-        translucent={true}
-      />
-      <SafeAreaView style={styles.safeArea} edges={safeAreaEdges}>
-        {showHeader && (
-          <Header
-            title={title}
-            showBackButton={showBackButton}
-            rightComponent={headerRight}
-            onBackPress={() => router.back()}
-          />
-        )}
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 25}
-        >
-          {renderContent()}
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+      <StatusBar />
+
+      <ImageBackground
+        source={{
+          uri: 'https://w0.peakpx.com/wallpaper/361/111/HD-wallpaper-simple-two-color-abstract-blue-colorfull-gradient-kor4-rts-orange-pattern-purple-soft-texture-wave-yellow.jpg',
+        }}
+        style={styles.imageBackground}
+      >
+        <SafeAreaView style={styles.safeArea} edges={safeAreaEdges}>
+          {showHeader && (
+            <Header
+              title={title}
+              showBackButton={showBackButton}
+              rightComponent={headerRight}
+              onBackPress={() => router.back()}
+            />
+          )}
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 25}
+          >
+            {renderContent()}
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </ImageBackground>
     </View>
   );
 }
@@ -118,6 +122,13 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     padding: Spacing.md,
-    backgroundColor: Colors.gray[200],
+  },
+  imageBackground: {
+    flex: 1,
+    resizeMode: 'cover',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
   },
 });

@@ -42,7 +42,7 @@ export const Colors = {
   black: '#000000',
   transparent: 'transparent',
   blue: '1F73C6',
-  orange: '#F7941E'
+  orange: '#f6af3b'//'#F7941E'
 };
 
 export default Colors;

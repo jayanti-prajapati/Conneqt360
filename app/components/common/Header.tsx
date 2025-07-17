@@ -26,8 +26,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+    borderBottomColor: Colors.gray[100],
     paddingHorizontal: Spacing.md,
+    width: '100%',
   },
   leftSection: {
     flexDirection: 'row',
