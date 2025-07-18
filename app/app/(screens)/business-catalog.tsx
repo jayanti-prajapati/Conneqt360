@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { X, Tag, Calendar, ExternalLink, PlusCircle, Edit, Trash2, ArrowLeft } from 'lucide-react-native';
 import { useThemeStore } from '@/store/themeStore';
 import { CatalogItem } from '@/types';
 import { CatalogFormModal } from '@/components/modal/CatalogFormModal';
+// import useUserServiceStore from '@/store/useUserBusinessServices';
+// import { CatalogDetailModal } from '@/components/modal/CatalogDetailModal';
+import { clearAuthData, getAuthData } from '@/services/secureStore';
+import useUsersStore from '@/store/useUsersStore';
+import useUserBusinessServices from '@/store/useUserBusinessServices';
+import { CatalogDetailModal } from '@/components/modal/CatalogDetailModal';
 
 const { width } = Dimensions.get('window');
 
@@ -12,90 +18,88 @@ export default function BusinessCatalogScreen() {
     const { theme } = useThemeStore();
     const router = useRouter();
     const params = useLocalSearchParams();
-    const catalog = JSON.parse(params?.catalog as string) as CatalogItem[];
+    // const catalog = JSON.parse(params?.catalog as string) as CatalogItem[];
     const isOwner = (params?.owner == 'true') || "false"
-    const [showCatalogModal, setShowCatalogModal] = useState(false);
-    const [editingCatalogItem, setEditingCatalogItem] = useState<any>(null);
-    const [selectedItem, setSelectedItem] = useState<CatalogItem | null>(null);
+    const userId = params?.userId
+    const [user, setUser] = useState<any>(null);
 
+    const [showCatalogForm, setShowCatalogForm] = useState(false);
+    const [editingCatalogItem, setEditingCatalogItem] = useState<any>(null);
+    const [catalogDetailModal, setCatalogDetailModal] = useState(false)
+    const [selectedItem, setSelectedItem] = useState<CatalogItem | null>(null);
+    const { response, getUserServicesByUserId, updateUserService } = useUserBusinessServices();
+    const catalog = response?.data?.data?.catalog || [];
+    const { getUserById } = useUsersStore();
+
+
+
+    const handleAddCatalogItem = () => {
+        setEditingCatalogItem(null);
+        setShowCatalogForm(true);
+    };
+    const fetchCatalogByUserId = async () => {
+        try {
+            // const data = await getAuthData();
+            // const userId = data?.userData?.data?._id;
+
+            const data = await getUserById(userId as string)
+            if (data?.data?.statusCode === 200) {
+                setUser(data.data.data);
+            }
+
+            await getUserServicesByUserId(userId as string);
+
+        } catch (error) {
+            console.error('Error fetching user:', error);
+            clearAuthData();
+            router.replace('/(auth)/login');
+        }
+    };
+
+    useEffect(() => {
+        fetchCatalogByUserId()
+    }, [])
 
 
     const handleEditCatalogItem = (item: any) => {
         setEditingCatalogItem(item);
-        setShowCatalogModal(true);
+        setShowCatalogForm(true);
     };
-    const handleAddCatalogItem = () => {
-        setEditingCatalogItem(null);
-        setShowCatalogModal(true);
+    const handleDeleteCatalogItem = async (id: string) => {
+        Alert.alert('Confirm Delete', 'Are you sure?', [
+            { text: 'Cancel', style: 'cancel' },
+            {
+                text: 'Delete',
+                style: 'destructive',
+                onPress: async () => {
+                    try {
+                        const updatedCatalog = catalog?.filter((item: CatalogItem) => item._id !== id);
+                        await updateUserService(user?._id, {
+                            catalog: updatedCatalog,
+                        });
+                        setSelectedItem(null);
+                        Alert.alert('Deleted', 'Catalog item deleted');
+                    } catch (err: any) {
+                        Alert.alert('Error', err.message);
+                    }
+                },
+            },
+        ]);
     };
 
-    const handleDeleteCatalogItem = (itemId: string) => {
-        Alert.alert('Deleted', 'Catalog item deleted successfully');
-    };
 
-    const renderDetailView = () => {
-        if (!selectedItem) return null;
 
-        return (
-            <View style={[styles.detailContainer, { backgroundColor: theme.background }]}>
-                <View style={[styles.detailHeader, { borderBottomColor: theme.border }]}>
-                    <TouchableOpacity onPress={() => setSelectedItem(null)}>
-                        <X size={24} color={theme.text} />
-                    </TouchableOpacity>
-                    <Text style={[styles.detailTitle, { color: theme.text }]}>Service Details</Text>
-                    <TouchableOpacity>
-                        <ExternalLink size={24} color={theme.primary} />
-                    </TouchableOpacity>
-                </View>
 
-                <ScrollView style={styles.detailContent} showsVerticalScrollIndicator={false}>
-                    <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={styles.imageGallery}>
-                        {selectedItem.images.map((image, index) => (
-                            <Image key={index} source={{ uri: image }} style={styles.detailImage} resizeMode="cover" />
-                        ))}
-                    </ScrollView>
-
-                    <View style={styles.detailInfo}>
-                        <Text style={[styles.detailItemTitle, { color: theme.text }]}>{selectedItem.title}</Text>
-                        <View style={styles.detailPriceRow}>
-                            <Text style={[styles.detailPrice, { color: theme.primary }]}>{selectedItem.price}</Text>
-                            <View style={[styles.categoryBadge, { backgroundColor: theme.primary + '20' }]}>
-                                <Text style={[styles.categoryBadgeText, { color: theme.primary }]}>{selectedItem.category}</Text>
-                            </View>
-                        </View>
-
-                        <Text style={[styles.detailDescription, { color: theme.text }]}>{selectedItem.description}</Text>
-
-                        <View style={styles.detailTagsContainer}>
-                            <Text style={[styles.detailTagsTitle, { color: theme.textSecondary }]}>Technologies & Skills</Text>
-                            <View style={styles.detailTags}>
-                                {selectedItem.tags?.map((tag, index) => (
-                                    <View key={index} style={[styles.detailTag, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                                        <Tag size={14} color={theme.primary} />
-                                        <Text style={[styles.detailTagText, { color: theme.text }]}>{tag}</Text>
-                                    </View>
-                                ))}
-                            </View>
-                        </View>
-
-                        <View style={styles.detailMeta}>
-                            <View style={styles.detailMetaItem}>
-                                <Calendar size={16} color={theme.textSecondary} />
-                                <Text style={[styles.detailMetaText, { color: theme.textSecondary }]}>Added {new Date(selectedItem.createdAt).toLocaleDateString()}</Text>
-                            </View>
-                        </View>
-                    </View>
-                </ScrollView>
-            </View>
-        );
-    };
     const renderCatalogItem = (item: CatalogItem) => (
         <TouchableOpacity
-            key={item.id}
+            key={item._id}
             style={[styles.catalogItem, { backgroundColor: theme.surface, borderColor: theme.border }]}
-            onPress={() => setSelectedItem(item)}
+            onPress={() => {
+                setSelectedItem(item)
+                setCatalogDetailModal(true)
+            }}
         >
-            {isOwner && (
+            {(isOwner != 'false') && (
                 <View style={styles.itemActions}>
                     <TouchableOpacity
                         style={[styles.actionButton, { backgroundColor: theme.primary + '20' }]}
@@ -110,7 +114,7 @@ export default function BusinessCatalogScreen() {
                         style={[styles.actionButton, { backgroundColor: theme.error + '20' }]}
                         onPress={(e) => {
                             e.stopPropagation();
-                            handleDeleteCatalogItem(item?.id);
+                            handleDeleteCatalogItem(item?._id);
                         }}
                     >
                         <Trash2 size={16} color={theme.error} />
@@ -144,10 +148,39 @@ export default function BusinessCatalogScreen() {
         </TouchableOpacity>
     );
 
-    const handleSaveCatalogItem = (item: any) => {
-        // In a real app, this would save to the backend
-        Alert.alert('Success', 'Catalog item saved successfully!');
+    const handleSaveCatalogItem = async (item: any) => {
+        try {
+            const existingCatalog = Array.isArray(catalog) ? catalog : [];
+
+            let updatedCatalog: typeof existingCatalog;
+
+            if (item?.id) {
+                const index = existingCatalog.findIndex((c) => c._id === item.id);
+
+                if (index !== -1) {
+                    // Replace existing catalog item
+                    updatedCatalog = [...existingCatalog];
+                    updatedCatalog[index] = item;
+                } else {
+                    // Append if item.id is new
+                    updatedCatalog = [...existingCatalog, item];
+                }
+            } else {
+                // No ID: treat as new item
+                updatedCatalog = [...existingCatalog, item];
+            }
+            await updateUserService(user?._id, {
+                catalog: updatedCatalog,
+            });
+
+            Alert.alert('Success', `Catalog item ${editingCatalogItem ? 'updated' : 'added'}!`);
+            setShowCatalogForm(false);
+            setEditingCatalogItem(null);
+        } catch (err: any) {
+            Alert.alert('Error', err.message);
+        }
     };
+
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -159,7 +192,7 @@ export default function BusinessCatalogScreen() {
 
                 <Text style={[styles.title, { color: theme.text }]}>Business Catalog</Text>
 
-                {isOwner ? (
+                {(isOwner != 'false') ? (
                     <TouchableOpacity onPress={() => handleAddCatalogItem()}>
                         <PlusCircle size={24} color={theme.primary} />
                     </TouchableOpacity>
@@ -175,13 +208,17 @@ export default function BusinessCatalogScreen() {
                     <View style={styles.catalogGrid}>{catalog.map(renderCatalogItem)}</View>
                 </ScrollView>
             ) : (
-                renderDetailView()
+                <CatalogDetailModal visible={catalogDetailModal} onClose={() => {
+                    setSelectedItem(null)
+                    setCatalogDetailModal(false)
+                }
+                } selectedItem={selectedItem} />
             )}
 
-            {showCatalogModal &&
+            {showCatalogForm &&
                 <CatalogFormModal
-                    visible={showCatalogModal}
-                    onClose={() => setShowCatalogModal(false)}
+                    visible={showCatalogForm}
+                    onClose={() => setShowCatalogForm(false)}
                     onSave={handleSaveCatalogItem}
                     item={editingCatalogItem}
                     isEdit={!!editingCatalogItem}

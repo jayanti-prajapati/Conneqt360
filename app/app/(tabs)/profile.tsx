@@ -45,68 +45,25 @@ import { HARDCODED_USER } from '@/components/mock/UserData';
 import { SocialMediaModal } from '@/components/profile/SocialMediaModal';
 import InfoItem from '@/components/common/InfoItem';
 import InfoCard from '@/components/common/InfoCard';
+import { useRouter } from 'expo-router';
 // Remove any lingering useRouter variable declarations
 // (If you see '' anywhere below, delete it)
 
-const userMockData: User = {
-  id: 'user123',
-  email: 'demo@business.com',
-  name: 'Demo User',
-  profileUrl:
-    'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
-  aboutUs: 'Business professional passionate about networking and growth',
-  businessName: 'TechSolutions Pro',
-  businessType: 'Technology Consulting',
-  businessEmail: 'contact@techsolutionspro.com',
-  website: 'https://techsolutionspro.com',
-  phone: '+1 (555) 123-4567',
-  address: '123 Business Street',
-  city: 'San Francisco',
-  state: 'California',
-  postalCode: '94105',
-  country: 'United States',
-  gstNumber: '29ABCDE1234F1Z5',
-  udyamNumber: 'UDYAM-CA-12-1234567',
-  socialMedia: {
-    linkedin: 'https://linkedin.com/in/demouser',
-    twitter: 'https://twitter.com/demouser',
-    instagram: 'https://instagram.com/demouser',
-    facebook: 'https://facebook.com/demouser',
-    youtube: 'https://youtube.com/@demouser',
-  },
-  services: [
-    'Web Development',
-    'Mobile App Development',
-    'Cloud Solutions',
-    'Digital Marketing',
-    'Business Consulting',
-    'UI/UX Design',
-  ],
-  followersCount: 1250,
-  followingCount: 890,
-  postsCount: 45,
-  isOnline: true,
-  lastSeen: new Date(),
-  createdAt: new Date('2023-01-15'),
-};
 
 export default function ProfileScreen() {
   const { theme, isDark, toggleTheme } = useThemeStore();
   const [isPresent, setIsPresent] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const router = useRouter();
   const [isAbout, setIsAbout] = useState(false);
   const [isLogout, setIsLogout] = useState(false);
   const [showBusinessCard, setShowBusinessCard] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showProfileImage, setShowProfileImage] = useState(false);
-  const [showCatalogModal, setShowCatalogModal] = useState(false);
-  const [showServicesModal, setShowServicesModal] = useState(false);
-  const [showClientsModal, setShowClientsModal] = useState(false);
   const [showSocialModal, setShowSocialModal] = useState(false);
-
+  const [isAboutExpanded, setIsAboutExpanded] = useState(false);
   const { loading, getUserById, updateUser } = useUsersStore();
 
-  // Fetch user data
   const fetchUserById = async () => {
     try {
       const data = await getAuthData();
@@ -114,19 +71,17 @@ export default function ProfileScreen() {
 
       if (!userId) {
         clearAuthData();
-        navigate('(auth)');
+        router.replace('/(auth)/login');
         return;
       }
 
       const response = await getUserById(userId);
-      console.log('response', response.data.data);
       if (response?.data?.statusCode === 200) {
         setUser(response.data.data);
       } else {
         clearAuthData();
-        navigate('(auth)');
+        router.replace('/(auth)/login');
       }
-      setUser(userMockData);
     } catch (error) {
       console.error('Error fetching user:', error);
       clearAuthData();
@@ -137,6 +92,7 @@ export default function ProfileScreen() {
   useEffect(() => {
     fetchUserById();
   }, []);
+
 
   const onLogoutPress = () => {
     clearAuthData();
@@ -166,36 +122,32 @@ export default function ProfileScreen() {
     if (completed === 0) return 0; // Avoid division by zero
     return Math.round((completed / fields?.length) * 100);
   };
-
   const handleSubmit = async (updatedData: Partial<User>) => {
+
+
     try {
       if (user) {
         const updatedUser = { ...user, ...updatedData };
-        console.log('updatedUser', updatedUser);
-        const resp = await updateUser(user?._id, {
-          ...updatedUser,
-          isSkip: true,
-        });
+
+        const resp = await updateUser(user?._id, { ...updatedUser, isSkip: true });
         if (resp?.data?.statusCode === 201 || resp?.data?.statusCode === 200) {
           setUser(resp.data.data);
+
+
         } else {
-          throw new Error(resp.data?.message || 'Failed to update user');
+          throw new Error(resp.data?.message || "Failed to update user");
         }
       }
     } catch (error: any) {
-      console.error('Error updating user:', error);
+      console.error("Error updating user:", error);
     }
   };
   const handleShare = async () => {
-    console.log('Share');
+    console.log("Share");
 
     try {
       await Share.share({
-        message: `Connect with ${user.name} - ${
-          user.businessName || 'Business Professional'
-        }\n\nEmail: ${user.email}\nPhone: ${
-          user.phone || 'Not provided'
-        }\n\nShared via Business Network App`,
+        message: `Connect with ${user.name} - ${user.businessName || 'Business Professional'}\n\nEmail: ${user.email}\nPhone: ${user.phone || 'Not provided'}\n\nShared via Business Network App`,
         title: `${user.name}'s Business Card`,
       });
     } catch (error) {
@@ -204,6 +156,12 @@ export default function ProfileScreen() {
   };
 
   const profileCompletion = user ? calculateProfileCompletion(user) : 0;
+
+
+  console.log("user", user);
+  const handleLogout = () => {
+    setIsLogout(true);
+  };
 
   const handleProfileImageUpload = async () => {
     try {
@@ -219,9 +177,7 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleLogout = () => {
-    setIsLogout(true);
-  };
+
 
   const close = () => {
     setIsPresent(false);
@@ -231,21 +187,24 @@ export default function ProfileScreen() {
   };
 
   const openCatalog = () => {
-    navigate('business-catalog', {
-      catalog: JSON.stringify(HARDCODED_USER.catalog || []),
-      owner: 'true',
+    router.push({
+      pathname: '/business-catalog',
+      params: {
+        owner: 'true',
+        userId: user?._id
+      },
     });
   };
   const openClients = () => {
-    navigate('business-clients', {
-      clients: JSON.stringify(HARDCODED_USER.clients || []),
-      owner: 'true',
+    router.push({
+      pathname: '/business-clients',
+      params: { owner: 'true', userId: user?._id },
     });
   };
   const openServices = () => {
-    navigate('business-services', {
-      services: JSON.stringify(HARDCODED_USER.services || []),
-      owner: 'true',
+    router.push({
+      pathname: '/business-services',
+      params: { owner: 'true', userId: user?._id },
     });
   };
   // if (loading) {
@@ -253,16 +212,18 @@ export default function ProfileScreen() {
   // }
   return (
     <Layout showBackButton title={'Profile'} scrollable>
-      <Form
+      <View style={styles.scrollContent}>
+        {/* <Form
         isPresent={isPresent}
         onClose={close}
         closeText="Close"
+
         users={user}
       />
-      <About isAbout={isAbout} onClose={close} userId={user?._id} />
-      <LogoutModal isLogout={isLogout} onClose={close} />
+      <About isAbout={isAbout} onClose={close} userId={user?._id} /> */}
+        <LogoutModal isLogout={isLogout} onClose={close} />
 
-      <View style={styles.scrollContent}>
+
         {/* Profile Completion */}
         <View style={[styles.card]}>
           <View style={styles.progressHeader}>
@@ -292,51 +253,37 @@ export default function ProfileScreen() {
         {/* Profile Section */}
         <View style={styles.profileSection}>
           <View style={styles.profileImageContainer}>
-            {user?.profileUrl ? (
-              <Button
-                onPress={() => setShowProfileImage(true)}
-                variant="ghost"
-                style={{ padding: 0 }}
-              >
+            {user?.profileUrl ?
+              <TouchableOpacity onPress={() => setShowProfileImage(true)}>
                 <Image
                   source={{
                     uri: user?.profileUrl,
                   }}
                   style={styles.profileImage}
                 />
-              </Button>
-            ) : (
+              </TouchableOpacity> :
               <View style={styles.avatar}>
-                <Text style={styles.avatarText}>
-                  {user?.username?.charAt(0)
-                    ? user?.username?.charAt(0)?.toUpperCase()
-                    : 'U'}
-                </Text>
+                <Text style={styles.avatarText}>{user?.name?.charAt(0) ? user?.name?.charAt(0)?.toUpperCase() : "U"}</Text>
               </View>
-            )}
+            }
 
             <View style={styles.imageUploadOverlay}>
-              <Button
-                variant="ghost"
-                size="small"
-                onPress={handleProfileImageUpload}
-                style={styles.uploadButton}
-                isIconOnly
-                icon={<Ionicons name="camera" size={15} color="black" />}
-              />
+              <TouchableOpacity style={styles.uploadButton} onPress={handleProfileImageUpload}>
+                <Ionicons name="camera" size={15} color="black" />
+              </TouchableOpacity>
             </View>
           </View>
 
           <View style={styles.nameContainer}>
-            <Text style={styles.name}>{user?.name || 'Unknown User'}</Text>
+            <Text style={styles.name}>{user?.businessName || 'Unknown User'}</Text>
             {user?.verified && (
               <View style={styles.verifiedBadge}>
                 <Check size={16} color={Colors.white} />
               </View>
             )}
           </View>
-          <Text style={styles.username}>{user?.username || '-'}</Text>
-          <Text style={styles.title}>{user?.jobTitle || '-'}</Text>
+          <Text style={styles.title}>{user?.name || '-'}</Text>
+          <Text style={styles.username}>{user?.jobTitle || '-'}</Text>
 
           <View style={[styles.buttonRow, { width: '100%' }]}>
             <Button
@@ -363,6 +310,7 @@ export default function ProfileScreen() {
             style={{ ...styles.actionButton, width: '100%' }}
           />
         </View>
+
 
         {/* catalogue */}
         <View style={styles.businessFeaturesSection}>
@@ -432,43 +380,45 @@ export default function ProfileScreen() {
         </View>
 
         {/* Business Information */}
-        {(user?.businessName || user?.businessType) && (
-          <InfoCard
-            title="Business Information"
-            items={[
-              {
-                label: 'Business Name',
-                value: user?.businessName,
-                icon: <Building size={30} color={theme.textSecondary} />,
-              },
-              {
-                label: 'Business Type',
-                value: user?.businessType,
-                icon: <Hash size={32} color={Colors.gray[400]} />,
-              },
-              {
-                label: 'Business Email',
-                value: user?.businessEmail,
-                icon: <AtSign size={32} color={Colors.gray[400]} />,
-              },
-              {
-                label: 'Website',
-                value: user?.website,
-                icon: <Globe size={32} color={Colors.gray[400]} />,
-              },
-              {
-                label: 'GST Number',
-                value: user?.gstNumber,
-                icon: <Hash size={32} color={Colors.gray[400]} />,
-              },
-              {
-                label: 'Udyam Number',
-                value: user?.udyamNumber,
-                icon: <Hash size={32} color={Colors.gray[400]} />,
-              },
-            ]}
-          />
-        )}
+        {
+          (user?.businessName || user?.businessType) && (
+            <InfoCard
+              title="Business Information"
+              items={[
+                {
+                  label: 'Business Name',
+                  value: user?.businessName,
+                  icon: <Building size={30} color={theme.textSecondary} />,
+                },
+                {
+                  label: 'Business Type',
+                  value: user?.businessType,
+                  icon: <Hash size={32} color={Colors.gray[400]} />,
+                },
+                {
+                  label: 'Business Email',
+                  value: user?.businessEmail,
+                  icon: <AtSign size={32} color={Colors.gray[400]} />,
+                },
+                {
+                  label: 'Website',
+                  value: user?.website,
+                  icon: <Globe size={32} color={Colors.gray[400]} />,
+                },
+                {
+                  label: 'GST Number',
+                  value: user?.gstNumber,
+                  icon: <Hash size={32} color={Colors.gray[400]} />,
+                },
+                {
+                  label: 'Udyam Number',
+                  value: user?.udyamNumber,
+                  icon: <Hash size={32} color={Colors.gray[400]} />,
+                },
+              ]}
+            />
+          )
+        }
 
         <InfoCard
           title="Contact Information"
@@ -499,53 +449,61 @@ export default function ProfileScreen() {
           ]}
         />
 
-        {showBusinessCard && user && (
-          <View style={styles.businessCardModal}>
-            <Button
-              variant="ghost"
-              style={styles.businessCardOverlay as ViewStyle}
-              onPress={() => setShowBusinessCard(false)}
-            />
-            <View style={styles.businessCardContainer}>
-              <BusinessCard user={user} />
+        {
+          showBusinessCard && user && (
+            <View style={styles.businessCardModal}>
               <Button
-                variant="outline"
-                size="small"
+                variant="ghost"
+                style={styles.businessCardOverlay as ViewStyle}
                 onPress={() => setShowBusinessCard(false)}
-                style={styles.closeBusinessCardButton}
-              >
-                Close
-              </Button>
+              />
+              <View style={styles.businessCardContainer}>
+                <BusinessCard user={user} setShowBusinessCard={setShowBusinessCard} />
+                <Button
+                  variant="outline"
+                  size="small"
+                  onPress={() => setShowBusinessCard(false)}
+                  style={styles.closeBusinessCardButton}
+                >
+                  Close
+                </Button>
+              </View>
             </View>
-          </View>
-        )}
+          )
+        }
 
-        {showEditModal && user && (
-          <EditProfileModal
-            visible={showEditModal}
-            onClose={() => setShowEditModal(false)}
-            user={user}
-            onSave={handleSubmit}
-          />
-        )}
+        {
+          showEditModal && user && (
+            <EditProfileModal
+              visible={showEditModal}
+              onClose={() => setShowEditModal(false)}
+              user={user}
+              onSave={handleSubmit}
+            />
+          )
+        }
 
-        {showProfileImage && user?.profileUrl && (
-          <ProfileImageModal
-            visible={showProfileImage}
-            imageUri={user.profileUrl}
-            onClose={() => setShowProfileImage(false)}
-          />
-        )}
+        {
+          showProfileImage && user?.profileUrl && (
+            <ProfileImageModal
+              visible={showProfileImage}
+              imageUri={user.profileUrl}
+              onClose={() => setShowProfileImage(false)}
+            />
+          )
+        }
 
-        {showSocialModal && user && (
-          <SocialMediaModal
-            visible={showSocialModal}
-            onClose={() => setShowSocialModal(false)}
-            socialMedia={user.socialMedia || {}}
-            website={user.website}
-            businessEmail={user.businessEmail}
-          />
-        )}
+        {
+          showSocialModal && user && (
+            <SocialMediaModal
+              visible={showSocialModal}
+              onClose={() => setShowSocialModal(false)}
+              socialMedia={user.socialMedia || {}}
+              website={user.website}
+              businessEmail={user.businessEmail}
+            />
+          )
+        }
         <Button
           title="Logout"
           style={styles.logoutButton}
@@ -553,7 +511,8 @@ export default function ProfileScreen() {
           onPress={handleLogout}
         />
       </View>
-    </Layout>
+    </Layout >
+
   );
 }
 
@@ -622,7 +581,7 @@ const styles = StyleSheet.create({
   },
   profileSection: {
     alignItems: 'center',
-    padding: Spacing.md,
+    padding: Spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: Colors.gray[100],
   },
@@ -633,17 +592,17 @@ const styles = StyleSheet.create({
   },
   profileImageContainer: {
     position: 'relative',
-    width: 110,
-    height: 110,
-    borderRadius: '100%',
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     alignSelf: 'center',
-    marginTop: Spacing.xs,
-    marginBottom: Spacing.md,
+    // marginTop: 10,
+    // marginBottom: 20,
   },
   profileImage: {
     width: '100%',
     height: '100%',
-    borderRadius: '100%',
+    borderRadius: 60,
     borderWidth: 1,
     borderColor: '#e0e0e0',
   },
@@ -652,17 +611,17 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: Colors.gray[200],
-    borderRadius: '100%',
+    borderRadius: 20,
     padding: 8,
     zIndex: 1,
   },
   uploadButton: {
-    width: 100,
-    height: 100,
+    width: 20,
+    height: 20,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: Colors.gray[200],
-    borderRadius: '100%',
+    borderRadius: 20,
     borderWidth: 2,
     borderColor: 'white',
   },
@@ -678,6 +637,7 @@ const styles = StyleSheet.create({
     fontWeight: Typography.weight.bold as any,
     marginBottom: Spacing.md,
   },
+
   featuresGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -729,11 +689,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     color: Colors.gray[600],
-    marginBottom: Spacing.lg,
+
   },
   username: {
     fontSize: 16,
     color: Colors.gray[600],
+    marginBottom: Spacing.lg,
   },
   buttonRow: {
     flexDirection: 'row',
