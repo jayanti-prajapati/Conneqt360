@@ -96,6 +96,10 @@ export class CommunityService {
         "comments.user",
         "name username email phone businessName businessType profileUrl"
       )
+      .populate(
+        "comments.replyTo",
+        "name username email phone businessName businessType profileUrl"
+      )
       .sort({ createdAt: -1 });
   }
 
@@ -108,6 +112,10 @@ export class CommunityService {
       )
       .populate(
         "comments.user",
+        "name username email phone businessName businessType profileUrl"
+      )
+      .populate(
+        "comments.replyTo",
         "name username email phone businessName businessType profileUrl"
       )
       .sort({ createdAt: -1 });

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { MessageModel } from './model';
 
+
 export const sendMessage = async (req: Request, res: Response) => {
   try {
     const { content, sender, receiver, type = 'text' } = req.body;
@@ -17,6 +18,8 @@ export const sendMessage = async (req: Request, res: Response) => {
       edited: false,
       readBy: [],
     });
+
+
 
     res.status(201).json(message);
   } catch (err) {
@@ -133,6 +136,24 @@ function combineChatsByParticipants(messages: any[]) {
       return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
     });
   });
+
+   const sortedChats = [...(combinedConversations || [])].sort((a: any, b: any) => {
+          // Get the latest message time for chat a
+          const aMessages = a.messages || [];
+          const aLatestMessage = aMessages.length > 0
+            ? new Date(aMessages[aMessages.length - 1].createdAt).getTime()
+            : new Date(a.updatedAt || 0).getTime();
  
-  return combinedConversations;
+          // Get the latest message time for chat b
+          const bMessages = b.messages || [];
+          const bLatestMessage = bMessages.length > 0
+            ? new Date(bMessages[bMessages.length - 1].createdAt).getTime()
+            : new Date(b.updatedAt || 0).getTime();
+ 
+          return bLatestMessage - aLatestMessage; // Sort in descending order
+        });
+ 
+  return sortedChats;
 }
+
+ 
