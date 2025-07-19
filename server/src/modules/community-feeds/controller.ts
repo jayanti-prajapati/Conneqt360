@@ -73,64 +73,137 @@ export class CommunityController {
   }
 
 
-
-
-async update(req: Request, res: Response) {
+  async update(req: Request, res: Response) {
   try {
-    const postId = req.params.id;
-    const { content, imageUrl, videoUrl, description, share, comments } = req.body;
-
-    const existingPost = await this.communityService.getById(postId);
-    if (!existingPost) {
-      return res.status(404).json({ message: "Post not found" });
-    }
-
-    const dataToUpdate: Partial<IPost> = {
-      content: content ?? existingPost.content,
-      imageUrl: imageUrl ?? existingPost.imageUrl,
-      videoUrl: videoUrl ?? existingPost.videoUrl,
-      description: description ?? existingPost.description,
-      share: share ?? existingPost.share,
-    };
-
-    // If there are comments to add, filter duplicates before adding
-    if (comments && Array.isArray(comments) && comments.length > 0) {
-      const validComments = comments
-        .filter(comment => comment.user && comment.content)
-        .map(comment => ({
-          user: comment.user,
-          content: comment.content.trim(),
-          replyTo: comment.replyTo ?? null,
-          parentCommentId: comment.parentCommentId ?? null,
-          createdAt: new Date(),
-          edited: false,
-          updatedAt: null,
-        }));
-
-      const newCommentKeys = new Set(
-        validComments.map(c => `${c.user.toString()}-${c.content}`)
-      );
-
-      const filteredExisting = existingPost.comments.filter(c => {
-        const key = `${c.user.toString()}-${c.content}`;
-        return !newCommentKeys.has(key);
+    const id = req.params.id;
+    if (!id) {
+      return res.status(400).json({
+        statusCode: 400,
+        message: "ID is required",
       });
-
-      dataToUpdate.comments = [...filteredExisting, ...validComments];
     }
 
-const updatedPost = await this.communityService.update(postId, dataToUpdate);
+    let dataToUpdate = { ...req.body };
+
+    
+    if (req.body.comments) {
+      const comments = Array.isArray(req.body.comments)
+        ? req.body.comments
+        : [req.body.comments]; 
+
+      
+      const validComments = comments.filter(
+        (c) => c.user && c.content
+      ).map((c) => ({
+        ...c,
+        createdAt: c.createdAt || new Date(), 
+      }));
+
+      if (validComments.length > 0) {
+        dataToUpdate = {
+          ...dataToUpdate,
+          comments: validComments,
+        };
+      } else {
+        
+        delete dataToUpdate.comments;
+      }
+    }
+
+      if (req.body.likes) {
+      const likes = Array.isArray(req.body.likes)
+        ? req.body.likes
+        : [req.body.likes];
+
+      const validLikes = likes.filter((like) => typeof like === "string");
+
+      if (validLikes.length > 0) {
+        dataToUpdate.likes = validLikes;
+      } else {
+        delete dataToUpdate.likes;
+      }
+    }
+
+
+    const updateCommunity = await this.communityService.update(id, dataToUpdate);
+
+    if (!updateCommunity) {
+      return res.status(404).json({
+        statusCode: 404,
+        message: "Community feed is not found",
+      });
+    }
 
     return res.status(200).json({
-      message: "Post updated successfully",
-      data: updatedPost,
+      statusCode: 200,
+      message: "success",
+      data: updateCommunity,
     });
-
-  } catch (error) {
-    console.error("Error updating post:", error);
-    return res.status(500).json({ message: "Internal server error" });
+  } catch (error: any) {
+    return res.status(400).json({
+      statusCode: 400,
+      message: "failed",
+      error: error.message,
+    });
   }
 }
+
+// async update(req: Request, res: Response) {
+//   try {
+//     const postId = req.params.id;
+//     const { content, imageUrl, videoUrl, description, share, comments } = req.body;
+
+//     const existingPost = await this.communityService.getById(postId);
+//     if (!existingPost) {
+//       return res.status(404).json({ message: "Post not found" });
+//     }
+
+//     const dataToUpdate: Partial<IPost> = {
+//       content: content ?? existingPost.content,
+//       imageUrl: imageUrl ?? existingPost.imageUrl,
+//       videoUrl: videoUrl ?? existingPost.videoUrl,
+//       description: description ?? existingPost.description,
+//       share: share ?? existingPost.share,
+//     };
+
+//     // If there are comments to add, filter duplicates before adding
+//     if (comments && Array.isArray(comments) && comments.length > 0) {
+//       const validComments = comments
+//         .filter(comment => comment.user && comment.content)
+//         .map(comment => ({
+//           user: comment.user,
+//           content: comment.content.trim(),
+//           replyTo: comment.replyTo ?? null,
+//           parentCommentId: comment.parentCommentId ?? null,
+//           createdAt: new Date(),
+//           edited: false,
+//           updatedAt: null,
+//         }));
+
+//       const newCommentKeys = new Set(
+//         validComments.map(c => `${c.user.toString()}-${c.content}`)
+//       );
+
+//       const filteredExisting = existingPost.comments.filter(c => {
+//         const key = `${c.user.toString()}-${c.content}`;
+//         return !newCommentKeys.has(key);
+//       });
+
+//       dataToUpdate.comments = [...filteredExisting, ...validComments];
+//     }
+
+// const updatedPost = await this.communityService.update(postId, dataToUpdate);
+
+//     return res.status(200).json({
+//       message: "Post updated successfully",
+//       data: updatedPost,
+//     });
+
+//   } catch (error) {
+//     console.error("Error updating post:", error);
+//     return res.status(500).json({ message: "Internal server error" });
+//   }
+// }
 
 
   async delete(req: Request, res: Response) {
