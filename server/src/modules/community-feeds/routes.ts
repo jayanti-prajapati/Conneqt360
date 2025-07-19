@@ -10,7 +10,7 @@ router.get("/:id", (req, res) => communityController.getById(req, res));
 router.get("/user/:userId", (req, res) =>
   communityController.getFeedByUserId(req, res)
 );
-router.put("/:id", (req, res) => communityController.update(req, res));
+router.patch("/:id", (req, res) => communityController.update(req, res));
 router.delete("/:id", (req, res) => communityController.delete(req, res));
 
 export default router;

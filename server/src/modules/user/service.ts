@@ -67,6 +67,7 @@ export class UserService {
           aboutUs: 1,
           createdAt: 1,
           status: 1,
+          bookmark: 1
         },
       },
     ]);
@@ -75,12 +76,20 @@ export class UserService {
   // Return all active users when no keyword is provided
   return this.userRepo
     .findAll({ status: "active" })
+     .populate(
+        "bookmark",
+        "content user comments imageUrl videoUrl location tags likes description share"
+      )
     .sort({ createdAt: -1 });
 }
 
 
   async getById(id: string) {
-    return this.userRepo.findById(id, { status: "active" });
+    return this.userRepo.findById(id, { status: "active" })
+    .populate(
+        "bookmark",
+        "content user comments imageUrl videoUrl location tags likes description share"
+      );
   }
 
   async delete(id: string) {
