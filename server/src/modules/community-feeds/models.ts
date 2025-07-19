@@ -20,7 +20,7 @@ const feedSchema = new Schema<IPost>({
   user: {
     type: Schema.Types.ObjectId,
     ref: "User",
-    required: true,
+    required: false,
     default: null,
   },
    location: {
@@ -30,7 +30,7 @@ const feedSchema = new Schema<IPost>({
   },
    tags: {
     type: [String],
-    required: true,
+    required: false,
     default: null,
   },
   likes: [
@@ -46,11 +46,11 @@ const feedSchema = new Schema<IPost>({
       user: {
         type: Schema.Types.ObjectId,
         ref: "User",
-        required: true,
+        required: false,
       },
       content: {
         type: String,
-        required: true,
+        required: false,
       },
       replyTo: {
         type: Schema.Types.ObjectId,
