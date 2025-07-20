@@ -5,7 +5,7 @@ import { useThemeStore } from '@/store/themeStore';
 import { Comment } from '@/types';
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
-// import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 
 interface CommentSectionProps {
     postId: string;
@@ -22,7 +22,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 }) => {
     const { theme } = useThemeStore();
     const [newComment, setNewComment] = useState('');
-    const [replyingTo, setReplyingTo] = useState<{ commentId: string; username: string } | null>(null);
+    const [replyingTo, setReplyingTo] = useState<{ commentId: string; username: string, user: string } | null>(null);
     const [expandedReplies, setExpandedReplies] = useState<Record<string, boolean>>({});
 
     const handleSubmitComment = () => {
@@ -50,7 +50,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 
         // Safely get the replyTo username
         const replyToUsername = typeof comment.replyTo === 'string'
-            ? comment.replyTo
+            ? replyingTo?.user
             : comment.replyTo?.username || comment.replyTo?.name || 'user';
 
         return (
@@ -82,6 +82,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                             </Text>
                             <Text style={[styles.commentTime, { color: theme.textSecondary }]}>
                                 {/* Format your time here */}
+                                {formatDistanceToNow(new Date(comment.createdAt))}
                             </Text>
                         </View>
                         {comment.replyTo && (
@@ -97,7 +98,8 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                             onPress={() => {
                                 setReplyingTo({
                                     commentId: comment._id,
-                                    username: comment.user?._id
+                                    username: comment.user?._id,
+                                    user: comment?.user?.username
                                 });
                             }}
                         >
@@ -153,7 +155,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                 {replyingTo && (
                     <View style={styles.replyingToContainer}>
                         <Text style={[styles.replyingToText, { color: theme.primary }]}>
-                            Replying to @{replyingTo.username}
+                            Replying to @{replyingTo.user}
                         </Text>
                         <TouchableOpacity onPress={() => setReplyingTo(null)}>
                             <Text style={[styles.cancelReplyText, { color: theme.textSecondary }]}>
@@ -171,7 +173,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                         color: theme.text,
                         backgroundColor: theme.background
                     }]}
-                    placeholder={replyingTo ? `Reply to @${replyingTo.username}...` : 'Add a comment...'}
+                    placeholder={replyingTo ? `Reply to @${replyingTo.user}...` : 'Add a comment...'}
                     placeholderTextColor={theme.textSecondary}
                     value={newComment}
                     onChangeText={setNewComment}
