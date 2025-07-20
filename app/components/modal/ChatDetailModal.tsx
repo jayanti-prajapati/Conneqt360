@@ -17,9 +17,6 @@ interface ChatDetailModalProps {
     user: any;
 }
 
-// In ChatDetailModal.tsx
-
-// ... (imports remain the same)
 
 export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
     visible,
@@ -33,7 +30,7 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
     const [otherUser, setOtherUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [chatData, setChatData] = useState<any>(null);
-
+    const [initialLoading, setInitialLoading] = useState(true);
     const { sendMessage, getConversation } = useChatStore();
 
     // Determine if current user is the sender or receiver
@@ -89,17 +86,59 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
             console.error('Error fetching chat data:', error);
         } finally {
             setLoading(false);
+
+
         }
     }, [chatData, getOtherUser, user]);
 
+    const groupMessagesByDate = (messages: any[]) => {
+        const grouped: { [key: string]: any[] } = {};
+
+        messages.forEach(message => {
+            const messageDate = new Date(message.createdAt);
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            let dateKey;
+            if (messageDate.toDateString() === today.toDateString()) {
+                dateKey = 'Today';
+            } else if (messageDate.toDateString() === yesterday.toDateString()) {
+                dateKey = 'Yesterday';
+            } else {
+                dateKey = messageDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+
+            if (!grouped[dateKey]) {
+                grouped[dateKey] = [];
+            }
+            grouped[dateKey].push(message);
+        });
+
+        return Object.entries(grouped).map(([date, messages]) => ({
+            date,
+            messages
+        }));
+    };
+
+
     const fetchConversation = async () => {
+        // if (!user?._id || !otherUser?._id) return;
+        // setLoading(true);
         try {
             //@ts-ignore
-            const conversation = await getConversation(user?._id, otherUser._id);
-            setChatData(conversation[0]);
-            setMessages([...conversation[0]?.messages]);
+            const conversation = await getConversation(user._id, otherUser._id);
+            const groupedMessages = groupMessagesByDate(conversation[0]?.messages || []);
+            setMessages(groupedMessages);
         } catch (error) {
             console.error('Error fetching conversation:', error);
+        } finally {
+            setLoading(false);
+            setInitialLoading(false);
         }
     };
 
@@ -120,65 +159,113 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
         }
     };
 
+    const formatMessageTime = (date: Date) => {
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        const isToday = date.toDateString() === today.toDateString();
+        const isYesterday = date.toDateString() === yesterday.toDateString();
+
+        const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        if (isToday) return `Today, ${timeString}`;
+        if (isYesterday) return `Yesterday, ${timeString}`;
+
+        const dateString = date.toLocaleDateString([], { day: 'numeric', month: 'short' });
+        return `${dateString}, ${timeString}`;
+    };
+
+    const renderDateHeader = (date: string) => (
+        <View style={styles.dateHeaderContainer}>
+            <View style={[styles.dateHeader, { backgroundColor: theme.border }]}>
+                <Text style={[styles.dateHeaderText, { color: theme.text }]}>{date}</Text>
+            </View>
+        </View>
+    );
+
     const renderMessage = ({ item }: { item: any }) => {
+        if (item.date) {
+            return renderDateHeader(item.date);
+        }
+
         const isOwnMessage = isCurrentUserSender(item);
         const messageDate = new Date(item.createdAt);
         const formattedTime = messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
         return (
-            <View style={[
-                styles.messageContainer,
-                isOwnMessage ? styles.ownMessage : styles.otherMessage
-            ]}>
-                {!isOwnMessage && (
-                    <Image
-                        source={{ uri: otherUser?.profileUrl }}
-                        style={styles.messageAvatar}
-                    />
-                )}
+            <View key={item._id}>
+
+
                 <View style={[
-                    styles.messageBubble,
-                    {
-                        backgroundColor: isOwnMessage ? theme.primary : theme.surface,
-                        borderColor: theme.border,
-                    }
+                    styles.messageContainer,
+                    isOwnMessage ? styles.ownMessage : styles.otherMessage
                 ]}>
-                    <Text style={[
-                        styles.messageText,
-                        { color: isOwnMessage ? '#FFFFFF' : theme.text }
-                    ]}>
-                        {item.content}
-                    </Text>
-                    <Text style={[
-                        styles.messageTime,
+                    {!isOwnMessage && (
+                        <Image
+                            source={{ uri: otherUser?.profileUrl }}
+                            style={styles.messageAvatar}
+                        />
+                    )}
+                    <View style={[
+                        styles.messageBubble,
                         {
-                            color: isOwnMessage ? 'rgba(255,255,255,0.7)' : theme.textSecondary,
-                            textAlign: isOwnMessage ? 'right' : 'left'
+                            backgroundColor: isOwnMessage ? theme.primary : theme.surface,
+                            borderColor: theme.border,
                         }
                     ]}>
-                        {formattedTime}
-                    </Text>
+                        <Text style={[
+                            styles.messageText,
+                            { color: isOwnMessage ? '#FFFFFF' : theme.text }
+                        ]}>
+                            {item.content}
+                        </Text>
+                        <View style={styles.messageTimeContainer}>
+                            <Text style={[
+                                styles.messageTime,
+                                {
+                                    color: isOwnMessage ? 'rgba(255,255,255,0.7)' : theme.textSecondary,
+                                }
+                            ]}>
+                                {formattedTime}
+                            </Text>
+                            {/* {isOwnMessage && (
+                                <View style={styles.statusIcon}>
+                                    <Text style={{ color: isOwnMessage ? 'rgba(255,255,255,0.7)' : theme.textSecondary }}>✓✓</Text>
+                                </View>
+                            )} */}
+                        </View>
+                    </View>
                 </View>
             </View>
         );
     };
 
+    const renderItem = ({ item }: { item: any }) => {
+        if (item.date) {
+            return renderDateHeader(item.date);
+        }
+        return renderMessage({ item });
+    };
+
+    const getMessageItems = () => {
+        if (!messages || !Array.isArray(messages)) return [];
+
+        return messages.flatMap((group, groupIndex) => {
+            if (!group?.date || !Array.isArray(group.messages)) return [];
+
+            const dateItem = { type: 'date', id: `date-${group.date}-${groupIndex}`, date: group.date };
+            const messageItems = group.messages.map((message: any, index: number) => ({
+                ...message,
+                type: 'message',
+                // id: message._id || `msg-${group.date}-${index}`
+            }));
+
+            return [dateItem, ...messageItems];
+        });
+    };
 
 
-    if (loading) {
-        return (
-            <Modal
-                visible={visible}
-                transparent={false}
-                animationType="slide"
-                onRequestClose={onClose}
-            >
-                <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
-                    <ActivityIndicator size="large" color={theme.primary} />
-                </View>
-            </Modal>
-        );
-    }
 
     return (
         <Modal
@@ -187,95 +274,104 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
             transparent={false}
             onRequestClose={onClose}
         >
-            <View style={[styles.container, { backgroundColor: theme.background }]}>
-                <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    style={styles.keyboardAvoidingView}
-                    keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-                >
-                    {/* Header */}
-                    <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
-                        <TouchableOpacity onPress={onClose} style={styles.backButton}>
-                            <ArrowLeft size={24} color={theme.text} />
-                        </TouchableOpacity>
+            {initialLoading ? (
+                <View style={[styles.loaderContainer, { backgroundColor: theme.background }]}>
+                    <ActivityIndicator size="large" color={theme.primary} />
+                    <Text style={[styles.loadingText, { color: theme.text }]}>
+                        Loading chat...
+                    </Text>
+                </View>
+            ) : (
+                <View style={[styles.container, { backgroundColor: theme.background }]}>
+                    <KeyboardAvoidingView
+                        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                        style={styles.keyboardAvoidingView}
+                        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+                    >
+                        {/* Header */}
 
-                        {otherUser && (
-                            <View style={styles.headerUser}>
-                                <View style={styles.headerAvatar}>
-                                    {otherUser.profileUrl ? (
-                                        <Image
-                                            source={{ uri: otherUser.profileUrl }}
-                                            style={styles.avatarImage}
-                                        />
-                                    ) : (
-                                        <Text style={styles.avatarText}>
-                                            {otherUser.name?.charAt(0)?.toUpperCase() || 'U'}
+
+                        <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+                            <TouchableOpacity onPress={onClose} style={styles.backButton}>
+                                <ArrowLeft size={24} color={theme.text} />
+                            </TouchableOpacity>
+
+                            {otherUser && (
+                                <View style={styles.headerUser}>
+                                    <View style={styles.headerAvatar}>
+                                        {otherUser.profileUrl ? (
+                                            <Image
+                                                source={{ uri: otherUser.profileUrl }}
+                                                style={styles.avatarImage}
+                                            />
+                                        ) : (
+                                            <Text style={styles.avatarText}>
+                                                {otherUser.name?.charAt(0)?.toUpperCase() || 'U'}
+                                            </Text>
+                                        )}
+                                    </View>
+                                    <View style={styles.headerUserInfo}>
+                                        <Text style={[styles.headerName, { color: theme.text }]}>
+                                            {otherUser.name || 'Unknown User'}
                                         </Text>
-                                    )}
+                                        <Text style={[styles.headerStatus, { color: theme.textSecondary }]}>
+                                            {otherUser.isOnline ? 'Online' : 'Offline'}
+                                        </Text>
+                                    </View>
                                 </View>
-                                <View style={styles.headerUserInfo}>
-                                    <Text style={[styles.headerName, { color: theme.text }]}>
-                                        {otherUser.name || 'Unknown User'}
-                                    </Text>
-                                    <Text style={[styles.headerStatus, { color: theme.textSecondary }]}>
-                                        {otherUser.isOnline ? 'Online' : 'Offline'}
-                                    </Text>
-                                </View>
+                            )}
+                        </View>
+
+                        {/* Messages List */}
+                        {messages?.length > 0 ? (
+                            <FlatList
+                                data={getMessageItems().reverse()}
+                                renderItem={renderItem}
+                                keyExtractor={(item) => item._id}
+                                contentContainerStyle={styles.messagesList}
+                                inverted={true}
+                                style={{ flexGrow: 1 }}
+                                onEndReachedThreshold={0.5}
+                                showsVerticalScrollIndicator={false}
+                            />
+                        ) : (
+                            <View style={styles.noMessagesContainer}>
+                                <Text style={[styles.noMessagesText, { color: theme.textSecondary }]}>
+                                    No messages yet
+                                </Text>
                             </View>
                         )}
-                    </View>
-
-                    {/* Messages List */}
-                    {messages?.length > 0 ? (
-                        <FlatList
-                            data={[...messages].reverse()}
-                            keyExtractor={(item) => item._id}
-                            renderItem={renderMessage}
-                            contentContainerStyle={[styles.messagesList, { justifyContent: 'flex-end' }]}
-
-                            inverted={true}
-                            style={{ flexGrow: 1 }}
-                            onEndReachedThreshold={0.5}
-                            showsVerticalScrollIndicator={false}
-                        />
-                    ) : (
-                        <View style={styles.noMessagesContainer}>
-                            <Text style={[styles.noMessagesText, { color: theme.textSecondary }]}>
-                                No messages yet
-                            </Text>
+                        {/* Message Input */}
+                        <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderTopColor: theme.border }]}>
+                            <TextInput
+                                style={[styles.input, {
+                                    backgroundColor: theme.background,
+                                    color: theme.text,
+                                    borderColor: theme.border
+                                }]}
+                                placeholder="Type a message..."
+                                placeholderTextColor={theme.textSecondary}
+                                value={newMessage}
+                                onChangeText={setNewMessage}
+                                multiline
+                                maxLength={1000}
+                            />
+                            <TouchableOpacity
+                                style={[
+                                    styles.sendButton,
+                                    {
+                                        backgroundColor: theme.primary,
+                                        opacity: 1
+                                    }
+                                ]}
+                                onPress={handleSendMessage}
+                                disabled={!newMessage.trim()}
+                            >
+                                <Send size={20} color="#FFFFFF" />
+                            </TouchableOpacity>
                         </View>
-                    )}
-                    {/* Message Input */}
-                    <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderTopColor: theme.border }]}>
-                        <TextInput
-                            style={[styles.input, {
-                                backgroundColor: theme.background,
-                                color: theme.text,
-                                borderColor: theme.border
-                            }]}
-                            placeholder="Type a message..."
-                            placeholderTextColor={theme.textSecondary}
-                            value={newMessage}
-                            onChangeText={setNewMessage}
-                            multiline
-                            maxLength={1000}
-                        />
-                        <TouchableOpacity
-                            style={[
-                                styles.sendButton,
-                                {
-                                    backgroundColor: theme.primary,
-                                    opacity: 1
-                                }
-                            ]}
-                            onPress={handleSendMessage}
-                            disabled={!newMessage.trim()}
-                        >
-                            <Send size={20} color="#FFFFFF" />
-                        </TouchableOpacity>
-                    </View>
-                </KeyboardAvoidingView>
-            </View>
+                    </KeyboardAvoidingView>
+                </View>)}
         </Modal>
     );
 };
@@ -283,6 +379,11 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    loaderContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     loadingContainer: {
         flex: 1,
@@ -338,9 +439,8 @@ const styles = StyleSheet.create({
         marginTop: 2,
     },
     messagesList: {
-        flexGrow: 1,
         padding: 16,
-        justifyContent: 'flex-end',
+        paddingBottom: 80,
     },
     messageContainer: {
         marginVertical: 4,
@@ -370,8 +470,31 @@ const styles = StyleSheet.create({
         lineHeight: 20,
     },
     messageTime: {
+        fontSize: 11,
+        marginTop: 2,
+    },
+    dateHeaderContainer: {
+        alignItems: 'center',
+        marginVertical: 10,
+    },
+    dateHeader: {
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: 10,
+        backgroundColor: 'rgba(0,0,0,0.1)',
+    },
+    dateHeaderText: {
         fontSize: 12,
-        marginTop: 4,
+        opacity: 0.8,
+    },
+    messageTimeContainer: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        marginTop: 2,
+    },
+    statusIcon: {
+        marginLeft: 4,
     },
     inputContainer: {
         flexDirection: 'row',
@@ -395,6 +518,9 @@ const styles = StyleSheet.create({
     noMessagesText: {
         fontSize: 16,
         color: Colors.gray[500],
+    },
+    loadingText: {
+        fontSize: 16,
     },
     sendButton: {
         width: 40,

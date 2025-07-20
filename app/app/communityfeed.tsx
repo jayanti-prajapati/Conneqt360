@@ -95,6 +95,10 @@ export default function CommunityFeedScreen() {
         if (resp?.data?.statusCode == 201 || resp?.data?.statusCode == 200) {
             // console.log('Post upadted successfully:', resp.data.data);
             router.push('/(tabs)');
+            setContentText('');
+            setImageUrl('');
+            setVideoUrl('');
+            setError(null);
 
         } else {
             console.log("Error creating post:", resp);

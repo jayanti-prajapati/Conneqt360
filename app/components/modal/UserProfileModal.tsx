@@ -11,6 +11,8 @@ import Typography from '@/constants/Typography';
 import { useRouter } from 'expo-router';
 ;
 import useUsersStore from '@/store/useUsersStore';
+import useUserServiceStore from '@/store/useUserBusinessServices';
+import CustomLoader from '../loader/CustomLoader';
 
 interface UserProfileModalProps {
     visible: boolean;
@@ -31,19 +33,27 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     const [showSocialModal, setShowSocialModal] = useState(false);
     const [isAboutExpanded, setIsAboutExpanded] = useState(false);
     const { getUserById } = useUsersStore();
+    const [isLoading, setIsLoading] = useState(false)
+    const { response, getUserServicesByUserId } = useUserServiceStore();
+    const businessService = response?.data?.data || [];
 
     useEffect(() => {
+        setUser(null)
         if (userId) {
             getUserData()
+            getUserServicesByUserId(userId)
         }
 
     }, [userId])
 
     const getUserData = async () => {
+        setIsLoading(true)
         const data = await getUserById(userId)
         if (data?.data?.statusCode === 200) {
             setUser(data.data.data);
+            setIsLoading(false)
         }
+        setIsLoading(false)
     }
     const formatDate = (date: Date) => {
         return date.toLocaleDateString('en-US', {
@@ -76,6 +86,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             params: { userId: userId },
         });
     };
+    // if (isLoading) {
+    //     return <CustomLoader visible={isLoading} />
+    // }
 
     return (
         <Modal
@@ -84,6 +97,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             presentationStyle="pageSheet"
             onRequestClose={onClose}
         >
+            {isLoading && <CustomLoader visible={isLoading} />}
             <View style={[styles.container, { backgroundColor: theme.background }]}>
                 <View style={styles.header}>
                     <Text style={[styles.name, { fontSize: 20 }]}>{user?.businessName || 'Unknown User'}</Text>
@@ -182,7 +196,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                                 <Briefcase size={24} color={theme.primary} />
                                 <Text style={[styles.featureTitle, { color: theme.text }]}>Catalog</Text>
                                 <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
-                                    {user?.catalog?.length || 0} items
+                                    {businessService?.catalog?.length || 0} items
                                 </Text>
                             </TouchableOpacity>
 
@@ -193,7 +207,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                                 <Settings size={24} color={theme.primary} />
                                 <Text style={[styles.featureTitle, { color: theme.text }]}>Services</Text>
                                 <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
-                                    {user?.services?.length || 0} services
+                                    {businessService?.services?.length || 0} services
                                 </Text>
                             </TouchableOpacity>
 
@@ -204,7 +218,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                                 <Users size={24} color={theme.primary} />
                                 <Text style={[styles.featureTitle, { color: theme.text }]}>Clients</Text>
                                 <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
-                                    {user?.clients?.length || 0} clients
+                                    {businessService?.client?.length || 0} clients
                                 </Text>
                             </TouchableOpacity>
 

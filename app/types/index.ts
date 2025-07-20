@@ -105,10 +105,12 @@ export interface Message {
 
 
 export interface Comment {
-  id?: string;
+  _id?: string;
   userId?: string;
   user: User;
   content: string;
+  parentCommentId?: string;
+  replyTo?: string;
   createdAt?: Date;
 }
 

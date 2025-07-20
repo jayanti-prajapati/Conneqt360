@@ -21,6 +21,7 @@ import { EditProfileModal } from '@/components/profile/EditProfileModal';
 import { User } from '@/types';
 import { ProfileImageModal } from '@/components/modal/ProfileImageModal';
 import { SocialMediaModal } from '@/components/profile/SocialMediaModal';
+import useUserServiceStore from '@/store/useUserBusinessServices';
 
 // Mock user data
 
@@ -38,7 +39,8 @@ export default function ProfileScreen() {
   const [showProfileImage, setShowProfileImage] = useState(false);
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
   const [showSocialModal, setShowSocialModal] = useState(false);
-
+  const { response, getUserServicesByUserId } = useUserServiceStore();
+  const businessService = response?.data?.data || [];
   const { loading, getUserById, updateUser } = useUsersStore();
 
   // Fetch user data
@@ -53,6 +55,7 @@ export default function ProfileScreen() {
         return;
       }
 
+      await getUserServicesByUserId(userId as string);
       const response = await getUserById(userId);
       if (response?.data?.statusCode === 200) {
         setUser(response.data.data);
@@ -69,6 +72,7 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     fetchUserById();
+
   }, []);
 
   // Profile completion calculation
@@ -333,7 +337,7 @@ export default function ProfileScreen() {
               <Briefcase size={24} color={theme.primary} />
               <Text style={[styles.featureTitle, { color: theme.text }]}>Catalog</Text>
               <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
-                {user?.catalog?.length || 0} items
+                {businessService?.catalog?.length || 0} items
               </Text>
             </TouchableOpacity>
 
@@ -344,7 +348,7 @@ export default function ProfileScreen() {
               <Settings size={24} color={theme.primary} />
               <Text style={[styles.featureTitle, { color: theme.text }]}>Services</Text>
               <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
-                {user?.services?.length || 0} services
+                {businessService?.services?.length || 0} services
               </Text>
             </TouchableOpacity>
 
@@ -355,7 +359,7 @@ export default function ProfileScreen() {
               <Users size={24} color={theme.primary} />
               <Text style={[styles.featureTitle, { color: theme.text }]}>Clients</Text>
               <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
-                {user?.clients?.length || 0} clients
+                {businessService?.client?.length || 0} clients
               </Text>
             </TouchableOpacity>
 

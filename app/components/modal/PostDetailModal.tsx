@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, Modal } from 'react-native';
-import { ArrowLeft, Heart, MessageCircle, Share as ShareIcon, MoreVertical } from 'lucide-react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, Modal, Alert } from 'react-native';
+import { ArrowLeft, Heart, MessageCircle, Share as ShareIcon, MoreVertical, MessageSquare, Send } from 'lucide-react-native';
 
 
 
@@ -8,7 +8,7 @@ import { PostOptionsModal } from './PostOptionsModal';
 import { ProfileImageModal } from './ProfileImageModal';
 
 
-import { Comment } from '@/types';
+import { Comment, User } from '@/types';
 import { useThemeStore } from '@/store/themeStore';
 import { getAuthData } from '@/services/secureStore';
 import { CommunityPost } from '@/types/feeds';
@@ -18,8 +18,12 @@ import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
 import { ResizeMode, Video } from 'expo-av';
 import CustomVideoPlayer from '../utils/CustomVideoPlayer';
-import { handleBlock, handleCopyLink, handleDelete, handleReport, handleSave, handleShare } from '@/app/(tabs)';
+import { handleBlock, handleCopyLink, handleReport, handleSave, handleShare } from '@/app/(tabs)';
 import useCommunityFeedsStore from '@/store/useCommunityFeeds';
+import useChatStore from '@/store/useChatStore';
+import { UserSelectionModal } from './UserSelectionModal';
+import { useRouter } from 'expo-router';
+import Spacing from '@/constants/Spacing';
 
 const { width, height } = Dimensions.get('window');
 
@@ -39,13 +43,16 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
     const { theme } = useThemeStore();
     const [user, setUser] = useState<any>(null);
 
-    const { updateFeed } = useCommunityFeedsStore()
+    const { updateFeed, deleteFeed } = useCommunityFeedsStore()
     const [isLiked, setIsLiked] = useState(false);
+    const router = useRouter();
     const [likesCount, setLikesCount] = useState(0);
     const [comments, setComments] = useState<Comment[]>([]);
     const [showOptions, setShowOptions] = useState(false);
     const [showProfileImage, setShowProfileImage] = useState(false);
     const [showComments, setShowComments] = useState(false);
+    const [showUserSelection, setShowUserSelection] = useState(false);
+    const { sendMessage } = useChatStore();
 
 
     useEffect(() => {
@@ -65,9 +72,27 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
             setComments(post.comments);
 
 
+
         }
     }, [post, user, comments]);
 
+    const handleDelete = (id: string) => {
+        Alert.alert(
+            'Delete Post',
+            'Are you sure you want to delete this post?',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Delete', style: 'destructive', onPress: () => {
+                        Alert.alert('Deleted', 'Post has been deleted.');
+                        deleteFeed(id)
+                        onRefresh?.()
+                        router.back()
+                    }
+                },
+            ]
+        );
+    };
     const handleLike = async () => {
         if (!user || !post) return;
         try {
@@ -173,36 +198,88 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
                         )}
 
                         {/* Post Actions */}
-                        <View style={[styles.actions, { borderTopColor: theme.border }]}>
-                            <TouchableOpacity style={styles.actionButton} onPress={handleLike}>
-                                <Heart
-                                    size={24}
-                                    fill={isLiked ? '#E0245E' : 'none'}
-                                    color={isLiked ? '#E0245E' : Colors.gray[600]}
-                                />
-                                <Text style={[styles.actionText, { color: theme.textSecondary }]}>
-                                    {likesCount}
-                                </Text>
-                            </TouchableOpacity>
+                        <View style={styles.actionsContainer}>
+                            <View style={styles.leftActions}>
+                                <TouchableOpacity
+                                    style={styles.actionButton}
+                                    onPress={() => handleLike()}
+                                    activeOpacity={0.7}
+                                >
+                                    {isLiked ? (
+                                        <Heart size={20} fill="#ff3040" color="#ff3040" />
+                                    ) : (
+                                        <Heart size={20} color="#262626" />
+                                    )}
+                                    {likesCount > 0 && (
+                                        <Text style={{ color: '#262626', fontSize: 16, marginLeft: 8 }}>
+                                            {likesCount}
+                                        </Text>
+                                    )}
+                                </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.actionButton} onPress={(e) => {
-                                e.stopPropagation();
-                                setShowComments(!showComments)
+                                <TouchableOpacity
+                                    style={[styles.actionButton]}
+                                    onPress={(e) => {
+                                        e.stopPropagation();
+                                        setShowComments(!showComments);
+                                    }}
+                                    activeOpacity={0.7}
+                                >
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <MessageSquare size={20} color="#262626" />
 
-                            }}>
-                                <MessageCircle size={24} color={theme.textSecondary} />
-                                <Text style={[styles.actionText, { color: theme.textSecondary }]}>
-                                    {comments.length}
-                                </Text>
-                            </TouchableOpacity>
+                                    </View>
+                                    {comments?.length > 0 && (
+                                        <Text style={{ color: '#262626', fontSize: 16, marginLeft: 8 }}>
+                                            {comments.length}
+                                        </Text>
+                                    )}
+                                </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.actionButton} onPress={() => handleShare(post?._id)}
-                            >
-                                <ShareIcon size={24} color={theme.textSecondary} />
+                                <TouchableOpacity
+                                    style={styles.actionButton}
+                                    onPress={() => setShowUserSelection(true)}
+                                    activeOpacity={0.7}
+                                >
+                                    <Send size={20} color="#262626" />
+                                </TouchableOpacity>
+                            </View>
 
-                            </TouchableOpacity>
+                            {/* <TouchableOpacity
+            onPress={() => { }}
+            activeOpacity={0.7}
+          >
+            <Bookmark size={24} color="#262626" />
+          </TouchableOpacity> */}
                         </View>
 
+                        {/* {likesCount > 0 && (
+                            <Text style={styles.likesText}>
+                                {likesCount.toLocaleString()} {likesCount === 1 ? 'like' : 'likes'}
+                            </Text>
+                        )} */}
+
+                        {showUserSelection && <UserSelectionModal
+                            visible={showUserSelection}
+                            onClose={() => setShowUserSelection(false)}
+                            onUserSelect={async (receiver: User) => {
+                                // Handle sending the post to the selected user
+                                await sendMessage({
+                                    sender: user?.data?._id,
+                                    receiver: receiver._id,
+                                    content: post.content,
+                                    type: 'text'
+                                });
+
+                                // Here you would typically:
+                                // 1. Create a chat with this user if it doesn't exist
+                                // 2. Send the post as a message in that chat
+                                // 3. Close the modal
+                                setShowUserSelection(false);
+                                // Show success message
+                                Alert.alert('Sent!', `Post shared with ${receiver.name}`);
+                            }}
+                        />}
                         {/* Comments Section */}
                         {showComments && <CommentSection
                             postId={post?._id}
@@ -222,7 +299,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
                     onSave={() => handleSave()}
                     onCopyLink={() => handleCopyLink()}
                     onBlock={() => handleBlock()}
-                    onDelete={() => handleDelete()}
+                    onDelete={() => handleDelete(post?._id || '')}
                 />
 
                 <ProfileImageModal
@@ -239,6 +316,17 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    actionsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+    },
+    leftActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     header: {
         flexDirection: 'row',
@@ -302,6 +390,11 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         marginBottom: 16,
     },
+    likesText: {
+        fontWeight: '600',
+        paddingHorizontal: 16,
+        paddingBottom: 8,
+    },
     actions: {
         flexDirection: 'row',
         justifyContent: 'space-around',
@@ -312,9 +405,12 @@ const styles = StyleSheet.create({
     actionButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
-        paddingVertical: 8,
-        paddingHorizontal: 16,
+        // gap: 8,
+        // paddingVertical: 8,
+        paddingRight: Spacing.sm,
+        paddingTop: Spacing.sm,
+        paddingBottom: Spacing.sm,
+        // paddingHorizontal: 16,
     },
     actionText: {
         fontSize: 14,

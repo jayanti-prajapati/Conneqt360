@@ -58,20 +58,20 @@ export default function ChatScreen() {
   // 🔹 Fetch chats
   const fetchChats = useCallback(async (showLoader: boolean = false) => {
     try {
-      if (showLoader) setInitialLoading(true);
+      if (showLoader && !searchQuery) setInitialLoading(true);
       if (!user?._id) return;
 
       const userChats = await getChatsBySenderUserId(user._id);
-      const sortedChats = [...(userChats || [])].sort((a, b) => {
-        const aLast = a.messages[a.messages.length - 1]?.createdAt || a.updatedAt || 0;
-        const bLast = b.messages[b.messages.length - 1]?.createdAt || b.updatedAt || 0;
-        return new Date(bLast).getTime() - new Date(aLast).getTime();
-      });
-      setChats(sortedChats);
+      // const sortedChats = [...(userChats || [])].sort((a, b) => {
+      //   const aLast = a.messages[a.messages.length - 1]?.createdAt || a.updatedAt || 0;
+      //   const bLast = b.messages[b.messages.length - 1]?.createdAt || b.updatedAt || 0;
+      //   return new Date(bLast).getTime() - new Date(aLast).getTime();
+      // });
+      setChats(userChats);
     } catch (error) {
       console.error('Error fetching chats:', error);
     } finally {
-      if (showLoader) setInitialLoading(false);
+      if (showLoader && !searchQuery) setInitialLoading(false);
     }
   }, [user, getChatsBySenderUserId]);
 
@@ -93,6 +93,7 @@ export default function ChatScreen() {
   useEffect(() => {
     if (user?._id) {
       // First time loader
+
       fetchChats(true);
 
       // Interval updates without loader

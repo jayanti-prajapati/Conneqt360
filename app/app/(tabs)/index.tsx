@@ -34,21 +34,7 @@ import { UserProfileModal } from '@/components/modal/UserProfileModal';
 
 
 
-export const handleDelete = () => {
-  Alert.alert(
-    'Delete Post',
-    'Are you sure you want to delete this post?',
-    [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete', style: 'destructive', onPress: () => {
-          Alert.alert('Deleted', 'Post has been deleted.');
-          // onRefresh?.()
-        }
-      },
-    ]
-  );
-};
+
 export const handleReport = () => {
   Alert.alert(
     'Report Post',
@@ -103,7 +89,7 @@ export const handleShare = async (id: string) => {
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { getAllFeeds, loading, updateFeed, response, getFeedById } = useCommunityFeedsStore()
+  const { getAllFeeds, loading, updateFeed, response, deleteFeed, getFeedById } = useCommunityFeedsStore()
   const [searchQuery, setSearchQuery] = useState('');
   const [feedData, setFeedData] = useState([]);
   const [visibleItemIds, setVisibleItemIds] = useState<string[]>([]);
@@ -121,6 +107,10 @@ export default function HomeScreen() {
     setVisibleItemIds(visibleIds);
   });
 
+  const [isConnected, setIsConnected] = useState<boolean | null>(true);
+
+
+
   const viewConfigRef = useRef({
     itemVisiblePercentThreshold: 60, // play only if 60% is visible
   });
@@ -137,20 +127,37 @@ export default function HomeScreen() {
 
   const handlePostPress = (post: CommunityPost) => {
     setSelectedPost(post);
-    setShowPostModal(true);
+
   };
   const handleLike = async (id: string, likes: string[]) => {
-    console.log(likes);
-
-
     updateFeed(id, { likes: likes });
     fetchFeeds();
   };
   const handleComments = async (id: string, comments: any) => {
-    updateFeed(id, { comments: [comments] });
+    console.log("comments", comments);
+    updateFeed(id, { comments: comments });
     fetchFeeds();
   };
 
+
+  const handleDelete = (id: string) => {
+    Alert.alert(
+      'Delete Post',
+      'Are you sure you want to delete this post?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete', style: 'destructive', onPress: () => {
+            Alert.alert('Deleted', 'Post has been deleted.');
+            // onRefresh?.()
+            deleteFeed(id)
+            fetchFeeds();
+          }
+
+        },
+      ]
+    );
+  };
   const onRefresh = async () => {
     setRefreshing(true);
     try {
@@ -190,6 +197,7 @@ export default function HomeScreen() {
       // console.log('Fetched feeds successfully:', data);
       if (data?.data?.statusCode == 200 || data?.data?.statusCode == 201) {
         setFeedData(data?.data?.data || []);
+
       }
     } catch (error) {
       console.error('Error fetching feedsds:', error);
@@ -264,6 +272,9 @@ export default function HomeScreen() {
                 onMoreOptions={handleMoreOptions}
                 onPress={handlePostPress}
                 likesIds={item?.likes}
+                setSelectedPost={setSelectedPost}
+                setShowPostModal={setShowPostModal}
+                setShowProfileModal={setShowProfileModal}
                 verified={item?.user?.verified}
                 isVisible={visibleItemIds.includes(item._id) && isFocused} likes={0} />
             )}
@@ -295,7 +306,7 @@ export default function HomeScreen() {
           onSave={() => handleSave()}
           onCopyLink={() => handleCopyLink()}
           onBlock={() => handleBlock()}
-          onDelete={() => handleDelete()}
+          onDelete={() => handleDelete(selectedPost?._id || '')}
           onViewProfile={() => {
             setShowProfileModal(true)
           }}
@@ -317,6 +328,14 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: Spacing.xl + 72,
     paddingTop: Spacing.sm,
+  },
+  text: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  subText: {
+    fontSize: 18,
+    color: '#666',
   },
   header: {
     flexDirection: 'row',
