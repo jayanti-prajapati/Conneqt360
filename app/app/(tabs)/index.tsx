@@ -31,6 +31,8 @@ import { PostDetailModal } from '@/components/modal/PostDetailModal';
 import { CommunityPost } from '@/types/feeds';
 import { PostOptionsModal } from '@/components/modal/PostOptionsModal';
 import { UserProfileModal } from '@/components/modal/UserProfileModal';
+import useNetworkStatus from '@/hooks/useNetworkStatus';
+import NoInternetScreen from '../lib/NoInternetScreen';
 
 
 
@@ -100,6 +102,7 @@ export default function HomeScreen() {
   const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
   const [showPostModal, setShowPostModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const isConnected = useNetworkStatus(false);
 
   const [users, setUsers] = useState<any>(null);
   const onViewRef = useRef(({ viewableItems }: { viewableItems: Array<{ item: any }> }) => {
@@ -107,7 +110,6 @@ export default function HomeScreen() {
     setVisibleItemIds(visibleIds);
   });
 
-  const [isConnected, setIsConnected] = useState<boolean | null>(true);
 
 
 
@@ -216,102 +218,106 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safeArea}>
       <Form closeText="Skip" />
       {/* <CustomLoader visible={loading} /> */}
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+      {isConnected ? (
+        <KeyboardAvoidingView
+          style={styles.container}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
 
-        <View style={styles.header}>
+          <View style={styles.header}>
 
-          <View style={styles.searchBar}>
-            <Search size={20} color={Colors.gray[500]} style={styles.searchIcon} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search businesses, products..."
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-          </View>
-          <TouchableOpacity style={styles.notificationButton}>
-            <Bell size={24} color={Colors.gray[700]} />
-            <View style={styles.notificationBadge}>
-              <Text style={styles.notificationBadgeText}>3</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-        {feedData.length > 0 ? (
-          <FlatList
-            data={feedData}
-            keyExtractor={(item) => item?._id}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                colors={[Colors.primary[600]]} // Customize the loading indicator color
-                tintColor={Colors.primary[600]} // For iOS
+            <View style={styles.searchBar}>
+              <Search size={20} color={Colors.gray[500]} style={styles.searchIcon} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search businesses, products..."
+                value={searchQuery}
+                onChangeText={setSearchQuery}
               />
-            }
-            renderItem={({ item }) => (
-              <FeedCard
-                id={item?._id}
-                phone={item?.user?.phone}
-                profileImage={item?.user?.profileUrl}
-                user={users}
-                post={item}
-                username={item?.user?.username}
-                businessName={item?.user?.businessName}
-                timestamp={item?.createdAt}
-                content={item?.content}
-                imageUrl={item?.imageUrl}
-                videoUrl={item?.videoUrl}
-                onLike={handleLike}
-                onComment={handleComments}
-                onShare={handleShare}
-                onMoreOptions={handleMoreOptions}
-                onPress={handlePostPress}
-                likesIds={item?.likes}
-                setSelectedPost={setSelectedPost}
-                setShowPostModal={setShowPostModal}
-                setShowProfileModal={setShowProfileModal}
-                verified={item?.user?.verified}
-                isVisible={visibleItemIds.includes(item._id) && isFocused} likes={0} />
+            </View>
+            <TouchableOpacity style={styles.notificationButton}>
+              <Bell size={24} color={Colors.gray[700]} />
+              <View style={styles.notificationBadge}>
+                <Text style={styles.notificationBadgeText}>3</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+          {feedData.length > 0 ? (
+            <FlatList
+              data={feedData}
+              keyExtractor={(item) => item?._id}
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  colors={[Colors.primary[600]]} // Customize the loading indicator color
+                  tintColor={Colors.primary[600]} // For iOS
+                />
+              }
+              renderItem={({ item }) => (
+                <FeedCard
+                  id={item?._id}
+                  phone={item?.user?.phone}
+                  profileImage={item?.user?.profileUrl}
+                  user={users}
+                  post={item}
+                  username={item?.user?.username}
+                  businessName={item?.user?.businessName}
+                  timestamp={item?.createdAt}
+                  content={item?.content}
+                  imageUrl={item?.imageUrl}
+                  videoUrl={item?.videoUrl}
+                  onLike={handleLike}
+                  onComment={handleComments}
+                  onShare={handleShare}
+                  onMoreOptions={handleMoreOptions}
+                  onPress={handlePostPress}
+                  likesIds={item?.likes}
+                  setSelectedPost={setSelectedPost}
+                  setShowPostModal={setShowPostModal}
+                  setShowProfileModal={setShowProfileModal}
+                  verified={item?.user?.verified}
+                  isVisible={visibleItemIds.includes(item._id) && isFocused} likes={0} />
+              )}
+              onViewableItemsChanged={onViewRef.current}
+              viewabilityConfig={viewConfigRef.current}
+            />
+          )
+            :
+            loading ? (
+              <CustomLoader visible={loading} />
+            ) : (
+              <NotFound />
             )}
-            onViewableItemsChanged={onViewRef.current}
-            viewabilityConfig={viewConfigRef.current}
+
+          <PostDetailModal
+            visible={showPostModal}
+            post={selectedPost}
+            onClose={handleClosePostModal}
+            onRefresh={refreshSelectedPost}
+
           />
-        )
-          :
-          loading ? (
-            <CustomLoader visible={loading} />
-          ) : (
-            <NotFound />
-          )}
-
-        <PostDetailModal
-          visible={showPostModal}
-          post={selectedPost}
-          onClose={handleClosePostModal}
-          onRefresh={refreshSelectedPost}
-
-        />
-        {selectedPost?.user && <UserProfileModal visible={showProfileModal} onClose={() => setShowProfileModal(false)} userId={selectedPost?.user?._id} />}
-        <PostOptionsModal
-          visible={showOptions}
-          onClose={() => setShowOptions(false)}
-          isOwnPost={isOwnPost}
-          onShare={() => handleShare(selectedPost?._id || '')}
-          onReport={() => handleReport()}
-          onSave={() => handleSave()}
-          onCopyLink={() => handleCopyLink()}
-          onBlock={() => handleBlock()}
-          onDelete={() => handleDelete(selectedPost?._id || '')}
-          onViewProfile={() => {
-            setShowProfileModal(true)
-          }}
-        />
-      </KeyboardAvoidingView>
+          {selectedPost?.user && <UserProfileModal visible={showProfileModal} onClose={() => setShowProfileModal(false)} userId={selectedPost?.user?._id} />}
+          <PostOptionsModal
+            visible={showOptions}
+            onClose={() => setShowOptions(false)}
+            isOwnPost={isOwnPost}
+            onShare={() => handleShare(selectedPost?._id || '')}
+            onReport={() => handleReport()}
+            onSave={() => handleSave()}
+            onCopyLink={() => handleCopyLink()}
+            onBlock={() => handleBlock()}
+            onDelete={() => handleDelete(selectedPost?._id || '')}
+            onViewProfile={() => {
+              setShowProfileModal(true)
+            }}
+          />
+        </KeyboardAvoidingView>
+      ) :
+        <NoInternetScreen />
+      }
     </SafeAreaView>
   );
 }

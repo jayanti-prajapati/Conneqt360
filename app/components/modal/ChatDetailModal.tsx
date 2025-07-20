@@ -258,7 +258,7 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
             const messageItems = group.messages.map((message: any, index: number) => ({
                 ...message,
                 type: 'message',
-                // id: message._id || `msg-${group.date}-${index}`
+                id: message._id || `msg-${group.date}-${index}`
             }));
 
             return [dateItem, ...messageItems];

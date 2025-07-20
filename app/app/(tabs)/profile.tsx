@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Share } from 'react-native';
+import { StyleSheet, View, Text, Image, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Share, SafeAreaView } from 'react-native';
 
 import { useRouter } from 'expo-router';
 
@@ -22,6 +22,8 @@ import { User } from '@/types';
 import { ProfileImageModal } from '@/components/modal/ProfileImageModal';
 import { SocialMediaModal } from '@/components/profile/SocialMediaModal';
 import useUserServiceStore from '@/store/useUserBusinessServices';
+import useNetworkStatus from '@/hooks/useNetworkStatus';
+import NoInternetScreen from '../lib/NoInternetScreen';
 
 // Mock user data
 
@@ -42,6 +44,7 @@ export default function ProfileScreen() {
   const { response, getUserServicesByUserId } = useUserServiceStore();
   const businessService = response?.data?.data || [];
   const { loading, getUserById, updateUser } = useUsersStore();
+  const isConnected = useNetworkStatus(false);
 
   // Fetch user data
   const fetchUserById = async () => {
@@ -71,9 +74,11 @@ export default function ProfileScreen() {
   };
 
   useEffect(() => {
-    fetchUserById();
+    if (isConnected) {
+      fetchUserById();
+    }
 
-  }, []);
+  }, [isConnected]);
 
   // Profile completion calculation
   const calculateProfileCompletion = (userData: any = {}) => {
@@ -184,348 +189,348 @@ export default function ProfileScreen() {
   };
   return (
 
-    // <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <Form isPresent={isPresent} onClose={close} closeText="Close" users={user} />
-      <About isAbout={isAbout} onClose={close} userId={user?._id} />
-      {/* Replace LogOut icon with a custom Logout modal/component if needed */}
-      <LogoutModal isLogout={isLogout} onClose={close} />
-      {loading && <CustomLoader visible={loading} />}
-
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={router.back} style={styles.backButton} />
-        <Text style={styles.headerTitle}>
-          <Image source={require('../../assets/images/logo.png')} style={styles.logoImage} resizeMode="contain" />
-        </Text>
-        <TouchableOpacity onPress={handleLogout} style={styles.iconButton}>
-          <LogOut />
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+    <>
+      {isConnected ? <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        {/* Profile Section */}
-        <View style={styles.profileSection}>
-          <View style={styles.profileImageContainer}>
-            {user?.profileUrl ?
-              <TouchableOpacity onPress={() => setShowProfileImage(true)}>
-                <Image
-                  source={{
-                    uri: user?.profileUrl,
-                  }}
-                  style={styles.profileImage}
-                />
-              </TouchableOpacity> :
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{user?.username?.charAt(0) ? user?.username?.charAt(0)?.toUpperCase() : "U"}</Text>
-              </View>
-            }
+        <Form isPresent={isPresent} onClose={close} closeText="Close" users={user} />
+        <About isAbout={isAbout} onClose={close} userId={user?._id} />
+        {/* Replace LogOut icon with a custom Logout modal/component if needed */}
+        <LogoutModal isLogout={isLogout} onClose={close} />
+        {loading && <CustomLoader visible={loading} />}
 
-            <View style={styles.imageUploadOverlay}>
-              <TouchableOpacity style={styles.uploadButton} onPress={handleProfileImageUpload}>
-                <Ionicons name="camera" size={15} color="black" />
-              </TouchableOpacity>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={router.back} style={styles.backButton} />
+          <Text style={styles.headerTitle}>
+            <Image source={require('../../assets/images/logo.png')} style={styles.logoImage} resizeMode="contain" />
+          </Text>
+          <TouchableOpacity onPress={handleLogout} style={styles.iconButton}>
+            <LogOut />
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Profile Section */}
+          <View style={styles.profileSection}>
+            <View style={styles.profileImageContainer}>
+              {user?.profileUrl ?
+                <TouchableOpacity onPress={() => setShowProfileImage(true)}>
+                  <Image
+                    source={{
+                      uri: user?.profileUrl,
+                    }}
+                    style={styles.profileImage}
+                  />
+                </TouchableOpacity> :
+                <View style={styles.avatar}>
+                  <Text style={styles.avatarText}>{user?.username?.charAt(0) ? user?.username?.charAt(0)?.toUpperCase() : "U"}</Text>
+                </View>
+              }
+
+              <View style={styles.imageUploadOverlay}>
+                <TouchableOpacity style={styles.uploadButton} onPress={handleProfileImageUpload}>
+                  <Ionicons name="camera" size={15} color="black" />
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
 
-          <View style={styles.nameContainer}>
-            <Text style={styles.name}>{user?.businessName || 'Unknown User'}</Text>
-            {user?.verified && (
-              <View style={styles.verifiedBadge}>
-                <Check size={16} color={Colors.white} />
-              </View>
-            )}
-          </View>
-          <Text style={styles.username}>{user?.name || '-'}</Text>
-          <Text style={styles.title}>{user?.jobTitle || '-'}</Text>
+            <View style={styles.nameContainer}>
+              <Text style={styles.name}>{user?.businessName || 'Unknown User'}</Text>
+              {user?.verified && (
+                <View style={styles.verifiedBadge}>
+                  <Check size={16} color={Colors.white} />
+                </View>
+              )}
+            </View>
+            <Text style={styles.username}>{user?.name || '-'}</Text>
+            <Text style={styles.title}>{user?.jobTitle || '-'}</Text>
 
-          <View style={[styles.buttonRow, { width: "100%" }]}>
-            <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: theme.primary, width: "45%" }]}
-              onPress={() => setShowEditModal(true)}
-            >
-              <Text style={styles.actionButtonText}>Edit Profile</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: theme.primary, width: "45%" }]}
-              onPress={() => handleShare()}
-            >
-              <Text style={styles.actionButtonText}>Share Card</Text>
-            </TouchableOpacity>
-            {/* <Button title="Edit Profile" variant="outline" size="small" onPress={() => setShowEditModal(true)} style={styles.button} />
+            <View style={[styles.buttonRow, { width: "100%" }]}>
+              <TouchableOpacity
+                style={[styles.actionButton, { backgroundColor: theme.primary, width: "45%" }]}
+                onPress={() => setShowEditModal(true)}
+              >
+                <Text style={styles.actionButtonText}>Edit Profile</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.actionButton, { backgroundColor: theme.primary, width: "45%" }]}
+                onPress={() => handleShare()}
+              >
+                <Text style={styles.actionButtonText}>Share Card</Text>
+              </TouchableOpacity>
+              {/* <Button title="Edit Profile" variant="outline" size="small" onPress={() => setShowEditModal(true)} style={styles.button} />
             <Button title="Share Card" variant="outline" size="small" onPress={() => handleShare()} style={styles.button} /> */}
 
 
 
-            {/* <Button title="View Business" variant="primary" size="small" onPress={() => setShowBusinessCard(true)} style={styles.button} /> */}
+              {/* <Button title="View Business" variant="primary" size="small" onPress={() => setShowBusinessCard(true)} style={styles.button} /> */}
+            </View>
+            <TouchableOpacity
+              style={[styles.actionButton, { backgroundColor: theme.primary, width: "100%" }]}
+              onPress={() => setShowBusinessCard(true)}
+            >
+              <Text style={styles.actionButtonText}>View Business</Text>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: theme.primary, width: "100%" }]}
-            onPress={() => setShowBusinessCard(true)}
-          >
-            <Text style={styles.actionButtonText}>View Business</Text>
-          </TouchableOpacity>
-        </View>
 
-        {/* Profile Completion */}
-        <View style={[styles.card, { marginTop: Spacing.md, marginHorizontal: Spacing.lg }]}>
-          <View style={styles.progressHeader}>
-            <Text style={styles.progressTitle}>Profile Completion</Text>
-            <Text style={profileCompletion === 100 ? styles.progressPercentSuccess : styles.progressPercent}>
-              {profileCompletion}%
-            </Text>
+          {/* Profile Completion */}
+          <View style={[styles.card, { marginTop: Spacing.md, marginHorizontal: Spacing.lg }]}>
+            <View style={styles.progressHeader}>
+              <Text style={styles.progressTitle}>Profile Completion</Text>
+              <Text style={profileCompletion === 100 ? styles.progressPercentSuccess : styles.progressPercent}>
+                {profileCompletion}%
+              </Text>
+            </View>
+            <View style={styles.progressBar}>
+              <View
+                style={[
+                  profileCompletion === 100 ? styles.progressSuccess : styles.progressFill,
+                  { width: `${profileCompletion}%` },
+                ]}
+              />
+            </View>
           </View>
-          <View style={styles.progressBar}>
+
+
+
+          {/* Abour us */}
+          {user?.aboutUs && (
             <View
               style={[
-                profileCompletion === 100 ? styles.progressSuccess : styles.progressFill,
-                { width: `${profileCompletion}%` },
+                styles.infoSection,
+                { backgroundColor: theme.surface, borderColor: theme.border },
               ]}
-            />
-          </View>
-        </View>
-
-
-
-        {/* Abour us */}
-        {user?.aboutUs && (
-          <View
-            style={[
-              styles.infoSection,
-              { backgroundColor: theme.surface, borderColor: theme.border },
-            ]}
-          >
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>About Us</Text>
-
-            <Text
-              style={[styles.infoValue, { color: theme.text }]}
-              numberOfLines={isAboutExpanded ? undefined : 5}
-              ellipsizeMode="tail"
             >
-              {user.aboutUs}
-            </Text>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>About Us</Text>
 
-            {user?.aboutUs?.length > 100 && ( // show toggle only if content is long
-              <TouchableOpacity
-                onPress={() => setIsAboutExpanded((prev) => !prev)}
-                style={{ marginTop: 8 }}
+              <Text
+                style={[styles.infoValue, { color: theme.text }]}
+                numberOfLines={isAboutExpanded ? undefined : 5}
+                ellipsizeMode="tail"
               >
-                <Text style={{ color: theme.primary, fontWeight: '600' }}>
-                  {isAboutExpanded ? 'See less' : 'See more'}
+                {user.aboutUs}
+              </Text>
+
+              {user?.aboutUs?.length > 100 && ( // show toggle only if content is long
+                <TouchableOpacity
+                  onPress={() => setIsAboutExpanded((prev) => !prev)}
+                  style={{ marginTop: 8 }}
+                >
+                  <Text style={{ color: theme.primary, fontWeight: '600' }}>
+                    {isAboutExpanded ? 'See less' : 'See more'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
+          {/* catalogue */}
+          <View style={styles.businessFeaturesSection}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Business Features</Text>
+
+            <View style={styles.featuresGrid}>
+              <TouchableOpacity
+                style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                onPress={() => openCatalog()}
+              >
+                <Briefcase size={24} color={theme.primary} />
+                <Text style={[styles.featureTitle, { color: theme.text }]}>Catalog</Text>
+                <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
+                  {businessService?.catalog?.length || 0} items
                 </Text>
               </TouchableOpacity>
-            )}
-          </View>
-        )}
 
-        {/* catalogue */}
-        <View style={styles.businessFeaturesSection}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>Business Features</Text>
-
-          <View style={styles.featuresGrid}>
-            <TouchableOpacity
-              style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => openCatalog()}
-            >
-              <Briefcase size={24} color={theme.primary} />
-              <Text style={[styles.featureTitle, { color: theme.text }]}>Catalog</Text>
-              <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
-                {businessService?.catalog?.length || 0} items
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => openServices()}
-            >
-              <Settings size={24} color={theme.primary} />
-              <Text style={[styles.featureTitle, { color: theme.text }]}>Services</Text>
-              <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
-                {businessService?.services?.length || 0} services
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => openClients()}
-            >
-              <Users size={24} color={theme.primary} />
-              <Text style={[styles.featureTitle, { color: theme.text }]}>Clients</Text>
-              <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
-                {businessService?.client?.length || 0} clients
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => setShowSocialModal(true)}
-            >
-              <Globe size={24} color={theme.primary} />
-              <Text style={[styles.featureTitle, { color: theme.text }]}>Connect</Text>
-              <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
-                Social & Web
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-
-        {/* Business Information */}
-        {(user?.businessName || user?.businessType) && (
-          <View style={[styles.infoSection, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Business Information</Text>
-
-            {user?.businessName && (
-              <View style={styles.infoItem}>
-                <Building size={20} color={theme.textSecondary} />
-                <View style={styles.infoContent}>
-                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Business Name</Text>
-                  <Text style={[styles.infoValue, { color: theme.text }]}>{user.businessName}</Text>
-                </View>
-              </View>
-            )}
-
-            {user?.businessType && (
-              <View style={styles.infoItem}>
-                <Hash size={20} color={theme.textSecondary} />
-                <View style={styles.infoContent}>
-                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Business Type</Text>
-                  <Text style={[styles.infoValue, { color: theme.text }]}>{user.businessType}</Text>
-                </View>
-              </View>
-            )}
-
-            {user?.businessEmail && (
-              <View style={styles.infoItem}>
-                <AtSign size={20} color={theme.textSecondary} />
-                <View style={styles.infoContent}>
-                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Business Email</Text>
-                  <Text style={[styles.infoValue, { color: theme.text }]}>{user.businessEmail}</Text>
-                </View>
-              </View>
-            )}
-
-            {user?.website && (
-              <View style={styles.infoItem}>
-                <Globe size={20} color={theme.textSecondary} />
-                <View style={styles.infoContent}>
-                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Website</Text>
-                  <Text style={[styles.infoValue, { color: theme.text }]}>{user.website}</Text>
-                </View>
-              </View>
-            )}
-
-            {user?.gstNumber && (
-              <View style={styles.infoItem}>
-                <Hash size={20} color={theme.textSecondary} />
-                <View style={styles.infoContent}>
-                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>GST Number</Text>
-                  <Text style={[styles.infoValue, { color: theme.text }]}>{user.gstNumber}</Text>
-                </View>
-              </View>
-            )}
-
-            {user?.udyamNumber && (
-              <View style={styles.infoItem}>
-                <Hash size={20} color={theme.textSecondary} />
-                <View style={styles.infoContent}>
-                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Udyam Number</Text>
-                  <Text style={[styles.infoValue, { color: theme.text }]}>{user.udyamNumber}</Text>
-                </View>
-              </View>
-            )}
-          </View>
-        )}
-
-        {/* Contact Information */}
-        <View style={[styles.infoSection, { backgroundColor: theme.surface, borderColor: theme.border, marginBottom: 100 }]}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>Contact Information</Text>
-
-          {user?.email && <View style={styles.infoItem}>
-            <Mail size={20} color={theme.textSecondary} />
-            <View style={styles.infoContent}>
-              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Email</Text>
-              <Text style={[styles.infoValue, { color: theme.text }]}>{user?.email}</Text>
-            </View>
-          </View>}
-
-          {user?.phone && (
-            <View style={styles.infoItem}>
-              <Phone size={20} color={theme.textSecondary} />
-              <View style={styles.infoContent}>
-                <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Phone</Text>
-                <Text style={[styles.infoValue, { color: theme.text }]}>{user?.phone}</Text>
-              </View>
-            </View>
-          )}
-
-          {(user?.address || user?.city || user?.state || user?.country) && (
-            <View style={styles.infoItem}>
-              <MapPin size={20} color={theme.textSecondary} />
-              <View style={styles.infoContent}>
-                <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Address</Text>
-                <Text style={[styles.infoValue, { color: theme.text }]}>
-                  {[user.address, user.city, user.state, user.postalCode, user.country]
-                    .filter(Boolean)
-                    .join(', ')}
+              <TouchableOpacity
+                style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                onPress={() => openServices()}
+              >
+                <Settings size={24} color={theme.primary} />
+                <Text style={[styles.featureTitle, { color: theme.text }]}>Services</Text>
+                <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
+                  {businessService?.services?.length || 0} services
                 </Text>
-              </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                onPress={() => openClients()}
+              >
+                <Users size={24} color={theme.primary} />
+                <Text style={[styles.featureTitle, { color: theme.text }]}>Clients</Text>
+                <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
+                  {businessService?.client?.length || 0} clients
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                onPress={() => setShowSocialModal(true)}
+              >
+                <Globe size={24} color={theme.primary} />
+                <Text style={[styles.featureTitle, { color: theme.text }]}>Connect</Text>
+                <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
+                  Social & Web
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+
+          {/* Business Information */}
+          {(user?.businessName || user?.businessType) && (
+            <View style={[styles.infoSection, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>Business Information</Text>
+
+              {user?.businessName && (
+                <View style={styles.infoItem}>
+                  <Building size={20} color={theme.textSecondary} />
+                  <View style={styles.infoContent}>
+                    <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Business Name</Text>
+                    <Text style={[styles.infoValue, { color: theme.text }]}>{user.businessName}</Text>
+                  </View>
+                </View>
+              )}
+
+              {user?.businessType && (
+                <View style={styles.infoItem}>
+                  <Hash size={20} color={theme.textSecondary} />
+                  <View style={styles.infoContent}>
+                    <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Business Type</Text>
+                    <Text style={[styles.infoValue, { color: theme.text }]}>{user.businessType}</Text>
+                  </View>
+                </View>
+              )}
+
+              {user?.businessEmail && (
+                <View style={styles.infoItem}>
+                  <AtSign size={20} color={theme.textSecondary} />
+                  <View style={styles.infoContent}>
+                    <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Business Email</Text>
+                    <Text style={[styles.infoValue, { color: theme.text }]}>{user.businessEmail}</Text>
+                  </View>
+                </View>
+              )}
+
+              {user?.website && (
+                <View style={styles.infoItem}>
+                  <Globe size={20} color={theme.textSecondary} />
+                  <View style={styles.infoContent}>
+                    <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Website</Text>
+                    <Text style={[styles.infoValue, { color: theme.text }]}>{user.website}</Text>
+                  </View>
+                </View>
+              )}
+
+              {user?.gstNumber && (
+                <View style={styles.infoItem}>
+                  <Hash size={20} color={theme.textSecondary} />
+                  <View style={styles.infoContent}>
+                    <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>GST Number</Text>
+                    <Text style={[styles.infoValue, { color: theme.text }]}>{user.gstNumber}</Text>
+                  </View>
+                </View>
+              )}
+
+              {user?.udyamNumber && (
+                <View style={styles.infoItem}>
+                  <Hash size={20} color={theme.textSecondary} />
+                  <View style={styles.infoContent}>
+                    <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Udyam Number</Text>
+                    <Text style={[styles.infoValue, { color: theme.text }]}>{user.udyamNumber}</Text>
+                  </View>
+                </View>
+              )}
             </View>
           )}
-        </View>
 
-      </ScrollView>
-      {showBusinessCard && (
+          {/* Contact Information */}
+          <View style={[styles.infoSection, { backgroundColor: theme.surface, borderColor: theme.border, marginBottom: 100 }]}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Contact Information</Text>
 
-        <View style={styles.businessCardModal}>
-          <TouchableOpacity
-            style={styles.businessCardOverlay}
-            onPress={() => setShowBusinessCard(false)}
-          />
-          <View style={styles.businessCardContainer}>
-            <BusinessCard user={user} setShowBusinessCard={setShowBusinessCard} />
-            {/* <TouchableOpacity
+            {user?.email && <View style={styles.infoItem}>
+              <Mail size={20} color={theme.textSecondary} />
+              <View style={styles.infoContent}>
+                <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Email</Text>
+                <Text style={[styles.infoValue, { color: theme.text }]}>{user?.email}</Text>
+              </View>
+            </View>}
+
+            {user?.phone && (
+              <View style={styles.infoItem}>
+                <Phone size={20} color={theme.textSecondary} />
+                <View style={styles.infoContent}>
+                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Phone</Text>
+                  <Text style={[styles.infoValue, { color: theme.text }]}>{user?.phone}</Text>
+                </View>
+              </View>
+            )}
+
+            {(user?.address || user?.city || user?.state || user?.country) && (
+              <View style={styles.infoItem}>
+                <MapPin size={20} color={theme.textSecondary} />
+                <View style={styles.infoContent}>
+                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Address</Text>
+                  <Text style={[styles.infoValue, { color: theme.text }]}>
+                    {[user.address, user.city, user.state, user.postalCode, user.country]
+                      .filter(Boolean)
+                      .join(', ')}
+                  </Text>
+                </View>
+              </View>
+            )}
+          </View>
+
+        </ScrollView>
+        {showBusinessCard && (
+
+          <View style={styles.businessCardModal}>
+            <TouchableOpacity
+              style={styles.businessCardOverlay}
+              onPress={() => setShowBusinessCard(false)}
+            />
+            <View style={styles.businessCardContainer}>
+              <BusinessCard user={user} setShowBusinessCard={setShowBusinessCard} />
+              {/* <TouchableOpacity
               style={[styles.closeBusinessCardButton, { backgroundColor: theme.surface }]}
               onPress={() => setShowBusinessCard(false)}
             >
               <Text style={[styles.closeBusinessCardText, { color: theme.text }]}>Close</Text>
             </TouchableOpacity> */}
+            </View>
           </View>
-        </View>
-      )}
+        )}
 
-      {showEditModal && <EditProfileModal
-        visible={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        user={user}
-        onSave={handleSubmit}
-      />}
-
-      {showProfileImage && <ProfileImageModal
-        visible={showProfileImage}
-        imageUri={user.profileUrl || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=2'}
-        onClose={() => setShowProfileImage(false)}
-      />}
-
-      {showSocialModal &&
-        <SocialMediaModal
-          visible={showSocialModal}
-          onClose={() => setShowSocialModal(false)}
-          socialMedia={user.socialMedia || {}}
-          website={user.website}
-          businessEmail={user.businessEmail}
+        {showEditModal && <EditProfileModal
+          visible={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          user={user}
+          onSave={handleSubmit}
         />}
 
+        {showProfileImage && <ProfileImageModal
+          visible={showProfileImage}
+          imageUri={user.profileUrl || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=2'}
+          onClose={() => setShowProfileImage(false)}
+        />}
 
-    </KeyboardAvoidingView>
-    // </SafeAreaView>
+        {showSocialModal &&
+          <SocialMediaModal
+            visible={showSocialModal}
+            onClose={() => setShowSocialModal(false)}
+            socialMedia={user.socialMedia || {}}
+            website={user.website}
+            businessEmail={user.businessEmail}
+          />}
+
+
+      </KeyboardAvoidingView> : <NoInternetScreen />}
+    </>
   );
 }
 

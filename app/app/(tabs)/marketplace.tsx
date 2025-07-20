@@ -16,6 +16,8 @@ import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
 import Spacing from '@/constants/Spacing';
 import { Product } from '@/types';
+import useNetworkStatus from '@/hooks/useNetworkStatus';
+import NoInternetScreen from '../lib/NoInternetScreen';
 
 // Mock data for products
 const mockProducts: Product[] = [
@@ -107,6 +109,7 @@ const mockProducts: Product[] = [
 export default function MarketplaceScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const isConnected = useNetworkStatus(false);
 
   const handleProductPress = (id: string) => {
     console.log(`Product ${id} pressed`);
@@ -124,91 +127,96 @@ export default function MarketplaceScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>B2B Marketplace</Text>
-      </View>
+    <>
+      {isConnected ? (
+        <SafeAreaView style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.title}>B2B Marketplace</Text>
+          </View>
 
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Search
-            size={20}
-            color={Colors.gray[500]}
-            style={styles.searchIcon}
-          />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search products & services..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-        </View>
-        <TouchableOpacity style={styles.filterButton}>
-          <Filter size={20} color={Colors.gray[700]} />
-        </TouchableOpacity>
-      </View>
+          <View style={styles.searchContainer}>
+            <View style={styles.searchBar}>
+              <Search
+                size={20}
+                color={Colors.gray[500]}
+                style={styles.searchIcon}
+              />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search products & services..."
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
+            </View>
+            <TouchableOpacity style={styles.filterButton}>
+              <Filter size={20} color={Colors.gray[700]} />
+            </TouchableOpacity>
+          </View>
 
-      <View style={styles.categoryTabs}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoryTabsContent}
-        >
-          <TouchableOpacity
-            style={[styles.categoryTab, styles.categoryTabActive]}
-          >
-            <Text
-              style={[styles.categoryTabText, styles.categoryTabTextActive]}
+          <View style={styles.categoryTabs}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.categoryTabsContent}
             >
-              All
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.categoryTab}>
-            <Text style={styles.categoryTabText}>Materials</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.categoryTab}>
-            <Text style={styles.categoryTabText}>Equipment</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.categoryTab}>
-            <Text style={styles.categoryTabText}>Services</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.categoryTab}>
-            <Text style={styles.categoryTabText}>Digital</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
+              <TouchableOpacity
+                style={[styles.categoryTab, styles.categoryTabActive]}
+              >
+                <Text
+                  style={[styles.categoryTabText, styles.categoryTabTextActive]}
+                >
+                  All
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.categoryTab}>
+                <Text style={styles.categoryTabText}>Materials</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.categoryTab}>
+                <Text style={styles.categoryTabText}>Equipment</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.categoryTab}>
+                <Text style={styles.categoryTabText}>Services</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.categoryTab}>
+                <Text style={styles.categoryTabText}>Digital</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
 
-      <FlatList
-        data={mockProducts}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        contentContainerStyle={styles.productGrid}
-        columnWrapperStyle={styles.productRow}
-        renderItem={({ item }) => (
-          <ProductCard
-            id={item.id}
-            title={item.title}
-            price={item.price}
-            description={item.description}
-            imageUrl={item.imageUrl}
-            sellerName={item.sellerName}
-            rating={item.rating}
-            location={item.location}
-            onPress={handleProductPress}
-            onInquiry={handleInquiry}
-            verified={item.verified}
+          <FlatList
+            data={mockProducts}
+            keyExtractor={(item) => item.id}
+            numColumns={2}
+            contentContainerStyle={styles.productGrid}
+            columnWrapperStyle={styles.productRow}
+            renderItem={({ item }) => (
+              <ProductCard
+                id={item.id}
+                title={item.title}
+                price={item.price}
+                description={item.description}
+                imageUrl={item.imageUrl}
+                sellerName={item.sellerName}
+                rating={item.rating}
+                location={item.location}
+                onPress={handleProductPress}
+                onInquiry={handleInquiry}
+                verified={item.verified}
+              />
+            )}
           />
-        )}
-      />
 
-      <TouchableOpacity
-        style={styles.floatingButton}
-        onPress={handleCreateListing}
-      >
-        <Plus size={24} color={Colors.white} />
-      </TouchableOpacity>
-    </SafeAreaView>
+          <TouchableOpacity
+            style={styles.floatingButton}
+            onPress={handleCreateListing}
+          >
+            <Plus size={24} color={Colors.white} />
+          </TouchableOpacity>
+        </SafeAreaView>)
+        : <NoInternetScreen />}
+    </>
   );
+
 }
 
 const styles = StyleSheet.create({
