@@ -14,7 +14,7 @@ import CustomVideoPlayer from '../utils/CustomVideoPlayer';
 
 import { CommunityPost } from '@/types/feeds';
 
-import { CommentSection } from '../comments/CommentSection';
+import CommentModal from '../comments/CommentModal';
 import { Comment } from '@/types';
 import useChatStore from '@/store/useChatStore';
 import useCommunityFeedsStore from '@/store/useCommunityFeeds';
@@ -78,8 +78,8 @@ export default function FeedCard({
   // const isliked = user?.data?._id ? likesIds?.includes(user?.data?._id) : false;
 
   // console.log("isliked", likesIds, userId);
-  const [comments, setComments] = useState<Comment[]>(post.comments);
-  const [showComments, setShowComments] = useState(false);
+  const [comments, setComments] = useState<Comment[]>(post.comments || []);
+  const commentModalRef = useRef<any>(null);
   const [showFullText, setShowFullText] = useState(false);
   const [isLiked, setIsLiked] = useState(post.likes.includes(user?.data?._id || false));
   const [likesCount, setLikesCount] = useState(post.likes.length);
@@ -174,6 +174,7 @@ export default function FeedCard({
                   )}
                 </View>
                 <Text style={styles.username}>@{username ? username : phone} • {formatTimestamp(timestamp)}</Text>
+                {/* <Text style={styles.username}>{post?.location}</Text> */}
               </View>
             </View>
           </TouchableOpacity>
@@ -211,7 +212,7 @@ export default function FeedCard({
 
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => setShowPostModal && setShowPostModal(true)}
+          onPress={() => { setShowPostModal(true); setSelectedPost(post) }}
         >
           {content && (
             <View style={styles.content}>
@@ -273,13 +274,12 @@ export default function FeedCard({
               style={[styles.actionButton]}
               onPress={(e) => {
                 e.stopPropagation();
-                setShowComments(!showComments);
+                commentModalRef.current?.open();
               }}
               activeOpacity={0.7}
             >
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <MessageSquare size={20} color="#262626" />
-
               </View>
               {comments?.length > 0 && (
                 <Text style={{ color: '#262626', fontSize: 16, marginLeft: 8 }}>
@@ -297,6 +297,8 @@ export default function FeedCard({
             </TouchableOpacity>
           </View>
 
+
+
           {/* <TouchableOpacity
             onPress={() => { }}
             activeOpacity={0.7}
@@ -304,17 +306,44 @@ export default function FeedCard({
             <Bookmark size={24} color="#262626" />
           </TouchableOpacity> */}
         </View>
-
-        {/* {likesCount > 0 && (
-          <Text style={styles.likesText}>
-            {likesCount.toLocaleString()} {likesCount === 1 ? 'like' : 'likes'}
+        {post?.location && <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginLeft: 10 }}>
+          <Text style={{ color: '#262626', fontSize: 12, marginRight: 8, fontWeight: 'bold', marginBottom: 4 }}>Location:</Text>
+          <Text
+            style={{
+              color: 'blue',
+              fontSize: 12,
+              marginRight: 3,
+              marginBottom: 2
+            }}
+          >
+            {post.location}
           </Text>
-        )} */}
-        {showComments && (
-          <CommentSection
-            postId={post.id}
+
+        </View>}
+
+        {post?.tags?.length > 0 && <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginLeft: 10 }}>
+          <Text style={{ color: '#262626', fontSize: 12, marginRight: 8, fontWeight: 'bold', marginBottom: 4 }}>{post.user.username}:</Text>
+          {post?.tags?.map((tag: string, index: number) => (
+            <Text
+              key={index}
+              style={{
+                color: 'blue',
+                fontSize: 12,
+                marginRight: 3,
+                marginBottom: 2
+              }}
+            >
+              #{tag}
+            </Text>
+          ))}
+        </View>}
+
+        {post?._id && (
+          <CommentModal
+            ref={commentModalRef}
+            postId={post._id}
             comments={comments}
-            user={user}
+            user={user?.data}
             onAddComment={handleAddComment}
           />
         )}

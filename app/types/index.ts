@@ -111,7 +111,7 @@ export interface Comment {
   content: string;
   parentCommentId?: string;
   replyTo?: string;
-  createdAt?: Date;
+  createdAt?: Date | string;
 }
 
 export interface CatalogItem {

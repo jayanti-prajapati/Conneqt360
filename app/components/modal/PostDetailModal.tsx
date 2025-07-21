@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, Modal, Alert } from 'react-native';
 import { ArrowLeft, Heart, MessageCircle, Share as ShareIcon, MoreVertical, MessageSquare, Send } from 'lucide-react-native';
 
@@ -24,6 +24,7 @@ import useChatStore from '@/store/useChatStore';
 import { UserSelectionModal } from './UserSelectionModal';
 import { useRouter } from 'expo-router';
 import Spacing from '@/constants/Spacing';
+import CommentModal from '../comments/CommentModal';
 
 const { width, height } = Dimensions.get('window');
 
@@ -42,7 +43,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
 }) => {
     const { theme } = useThemeStore();
     const [user, setUser] = useState<any>(null);
-
+    const commentModalRef = useRef<any>(null);
     const { updateFeed, deleteFeed } = useCommunityFeedsStore()
     const [isLiked, setIsLiked] = useState(false);
     const router = useRouter();
@@ -221,7 +222,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
                                     style={[styles.actionButton]}
                                     onPress={(e) => {
                                         e.stopPropagation();
-                                        setShowComments(!showComments);
+                                        commentModalRef.current?.open();
                                     }}
                                     activeOpacity={0.7}
                                 >
@@ -281,12 +282,16 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
                             }}
                         />}
                         {/* Comments Section */}
-                        {showComments && <CommentSection
-                            postId={post?._id}
-                            comments={comments}
-                            user={user}
-                            onAddComment={handleAddComment}
-                        />}
+
+                        {post?._id && (
+                            <CommentModal
+                                ref={commentModalRef}
+                                postId={post._id}
+                                comments={comments}
+                                user={user?.data}
+                                onAddComment={handleAddComment}
+                            />
+                        )}
                     </View>
                 </ScrollView>
 

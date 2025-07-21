@@ -171,7 +171,8 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                 <TextInput
                     style={[styles.input, {
                         color: theme.text,
-                        backgroundColor: theme.background
+                        backgroundColor: theme.background,
+                        maxHeight: 120, // Maximum height before scrolling
                     }]}
                     placeholder={replyingTo ? `Reply to @${replyingTo.user}...` : 'Add a comment...'}
                     placeholderTextColor={theme.textSecondary}
@@ -179,6 +180,8 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                     onChangeText={setNewComment}
                     multiline
                     maxLength={500}
+                    scrollEnabled={true}
+                    textAlignVertical="top"
                 />
                 <TouchableOpacity
                     style={[styles.sendButton, {
@@ -310,12 +313,14 @@ const styles = StyleSheet.create({
     },
     input: {
         flex: 1,
+        padding: 12,
+        marginLeft: 8,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
         fontSize: 14,
+        minHeight: 40,
         maxHeight: 120,
-        minHeight: 36,
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderRadius: 18,
     },
     sendButton: {
         width: 36,

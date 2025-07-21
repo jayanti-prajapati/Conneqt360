@@ -136,7 +136,7 @@ export default function HomeScreen() {
     fetchFeeds();
   };
   const handleComments = async (id: string, comments: any) => {
-    console.log("comments", comments);
+    // console.log("comments", comments);
     updateFeed(id, { comments: comments });
     fetchFeeds();
   };

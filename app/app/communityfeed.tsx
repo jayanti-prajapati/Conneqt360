@@ -22,7 +22,7 @@ import { pickImage, takePhoto } from "@/utils/imageUtils";
 import { pickVideo } from "@/utils/videoUtils";
 import useFilesStore from "@/store/useFilesStore";
 import { useThemeStore } from "@/store/themeStore";
-import { Camera, ImageIcon, VideoIcon, X } from "lucide-react-native";
+import { Camera, X, Image as ImageIcon, Video as VideoIcon, XCircle } from 'lucide-react-native';
 import { ThemedButton } from "@/components/themeButton/ThemedButton";
 
 export default function CommunityFeedScreen() {
@@ -33,6 +33,9 @@ export default function CommunityFeedScreen() {
     const [contentText, setContentText] = useState("");
     const [imageUrl, setImageUrl] = useState("");
     const [videoUrl, setVideoUrl] = useState("");
+    const [location, setLocation] = useState<string | null>("");
+    const [tags, setTags] = useState<string[]>([]);
+    const [tagInput, setTagInput] = useState('');
     const { loading } = useFilesStore()
 
 
@@ -65,6 +68,8 @@ export default function CommunityFeedScreen() {
         setContentText('');
         setImageUrl('');
         setVideoUrl('');
+        setLocation('');
+        setTags([]);
         setError(null);
     };
 
@@ -86,6 +91,8 @@ export default function CommunityFeedScreen() {
             content: contentText,
             imageUrl,
             videoUrl,
+            location,
+            tags,
             user: userData?.userData?.data?._id
         };
 
@@ -98,6 +105,8 @@ export default function CommunityFeedScreen() {
             setContentText('');
             setImageUrl('');
             setVideoUrl('');
+            setLocation('');
+            setTags([]);
             setError(null);
 
         } else {
@@ -123,14 +132,92 @@ export default function CommunityFeedScreen() {
 
                 <View style={styles.content}>
                     <TextInput
-                        style={[styles.textInput, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
+                        style={[styles.textInput, { 
+                            backgroundColor: theme.surface, 
+                            color: theme.text, 
+                            borderColor: theme.border,
+                            minHeight: 100,
+                            maxHeight: 100,
+                            textAlignVertical: 'top',
+                            paddingTop: 12
+                        }]}
                         placeholder="What's happening in your business?"
                         placeholderTextColor={theme.textSecondary}
                         value={contentText}
                         onChangeText={setContentText}
                         multiline
-                        textAlignVertical="top"
+                        numberOfLines={4}
                     />
+
+                    {/* Location Input */}
+                    <View style={[styles.inputContainer, { marginBottom: 16 }]}>
+                        <Text style={[styles.label, { color: theme.textSecondary, marginBottom: 8 }]}>
+                            Location (Optional)
+                        </Text>
+                        <TextInput
+                            style={[
+                                styles.textInput,
+                                {
+                                    minHeight: 50,
+                                    backgroundColor: theme.surface,
+                                    borderColor: theme.border,
+                                    color: theme.text
+                                }
+                            ]}
+                            placeholder="Add location"
+                            placeholderTextColor={theme.textSecondary}
+                            value={location || ''}
+                            onChangeText={setLocation}
+                        />
+                    </View>
+
+                    {/* Tags Input */}
+                    <View style={styles.inputContainer}>
+                        <Text style={[styles.label, { color: theme.textSecondary, marginBottom: 8 }]}>
+                            Tags (Press enter or comma to add)
+                        </Text>
+                        <View style={[styles.tagsContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                            {tags.map((tag, index) => (
+                                <View key={index} style={[styles.tag, { backgroundColor: theme.primary + '20' }]}>
+                                    <Text style={[styles.tagText, { color: theme.primary }]}>{tag}</Text>
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            const newTags = [...tags];
+                                            newTags.splice(index, 1);
+                                            setTags(newTags);
+                                        }}
+                                        style={styles.removeTag}
+                                    >
+                                        <XCircle size={16} color={theme.primary} />
+                                    </TouchableOpacity>
+                                </View>
+                            ))}
+                            <TextInput
+                                style={[styles.tagInput, { color: theme.text }]}
+                                placeholder={tags.length === 0 ? "e.g., travel, food, adventure" : ""}
+                                placeholderTextColor={theme.textSecondary}
+                                value={tagInput}
+                                onChangeText={setTagInput}
+                                onSubmitEditing={() => {
+                                    if (tagInput.trim()) {
+                                        setTags([...tags, tagInput.trim()]);
+                                        setTagInput('');
+                                    }
+                                }}
+                                onKeyPress={({ nativeEvent }) => {
+                                    if ((nativeEvent.key === ',' || nativeEvent.key === ' ') && tagInput.trim()) {
+
+                                        setTags([...tags, tagInput.trim()]);
+                                        setTagInput('');
+                                    }
+                                }}
+                                maxLength={20}
+                            />
+                        </View>
+                        <Text style={[styles.hint, { color: theme.textSecondary }]}>
+                            {tags.length}/5 tags (Press enter or comma to add)
+                        </Text>
+                    </View>
 
                     {imageUrl && (
                         <View style={styles.mediaContainer}>
@@ -180,6 +267,8 @@ export default function CommunityFeedScreen() {
                             <Text style={[styles.mediaButtonText, { color: theme.textSecondary }]}>Video</Text>
                         </TouchableOpacity>
                     </View>
+
+
                 </View>
             </ScrollView>
 
@@ -234,10 +323,55 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 12,
         paddingHorizontal: 16,
-        paddingVertical: 16,
+        paddingVertical: 12,
         fontSize: 16,
-        minHeight: 120,
+        minHeight: 50,
         marginBottom: 16,
+    },
+    inputContainer: {
+        marginBottom: 16,
+    },
+    label: {
+        fontSize: 14,
+        fontWeight: '500',
+        marginBottom: 8,
+    },
+    hint: {
+        fontSize: 12,
+        marginTop: 4,
+        marginBottom: 8,
+        marginLeft: 4,
+    },
+    tagsContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderRadius: 12,
+        padding: 8,
+        minHeight: 50,
+    },
+    tag: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 16,
+        margin: 4,
+    },
+    tagText: {
+        fontSize: 14,
+        marginRight: 4,
+    },
+    removeTag: {
+        marginLeft: 4,
+    },
+    tagInput: {
+        flex: 1,
+        minWidth: 100,
+        height: 40,
+        paddingHorizontal: 8,
+        fontSize: 16,
     },
     mediaContainer: {
         position: 'relative',
