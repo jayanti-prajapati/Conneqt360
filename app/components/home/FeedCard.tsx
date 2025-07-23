@@ -1,7 +1,10 @@
 import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity, Dimensions, Alert } from 'react-native';
-import Card from '@/components/ui-components/Card';
-import { Heart, MessageSquare, Share, MoreVertical } from 'lucide-react-native';
+
+import { Heart, MessageSquare, Send, Bookmark, MoreVertical, X } from 'lucide-react-native';
+import { UserSelectionModal } from '../modal/UserSelectionModal';
+import useUsersStore from '@/store/useUsersStore';
+import { User } from '@/types';
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
 import Spacing from '@/constants/Spacing';
@@ -13,7 +16,10 @@ import { CommunityPost } from '@/types/feeds';
 
 import { CommentSection } from '../comments/CommentSection';
 import { Comment } from '@/types';
-import { UserProfileModal } from '../modal/UserProfileModal';
+import useChatStore from '@/store/useChatStore';
+import useCommunityFeedsStore from '@/store/useCommunityFeeds';
+import Card from '../ui-components/Card';
+import CommentModal from '../comments/CommentModal';
 
 const { width } = Dimensions.get('window');
 
@@ -39,9 +45,11 @@ interface FeedCardProps {
   onMoreOptions: (post: CommunityPost) => void;
   onPress: (post: CommunityPost) => void;
   post: any;
-
   onLike: (id: any, likes: any) => void;
   onComment: (id: any, comments: any) => void;
+  setShowPostModal: Dispatch<SetStateAction<boolean>>;
+  setShowProfileModal: Dispatch<SetStateAction<boolean>>;
+  setSelectedPost: Dispatch<SetStateAction<any>>;
 
 
 }
@@ -65,8 +73,9 @@ export default function FeedCard({
   profileImage,
   isVisible = false,
   verified = false,
-
-}: FeedCardProps) {
+  setShowPostModal,
+  setShowProfileModal,
+  setSelectedPost }: FeedCardProps) {
 
   // const isliked = user?.data?._id ? likesIds?.includes(user?.data?._id) : false;
 
@@ -76,30 +85,55 @@ export default function FeedCard({
   const [showFullText, setShowFullText] = useState(false);
   const [isLiked, setIsLiked] = useState(post.likes.includes(user?.data?._id || false));
   const [likesCount, setLikesCount] = useState(post.likes.length);
-  const [showProfileModal, setShowProfileModal] = useState(false);
-
+  const [showUserSelection, setShowUserSelection] = useState(false);
+  const { getFeedById } = useCommunityFeedsStore();
+  const { sendMessage } = useChatStore();
+  // const { user: currentUser } = useUsersStore();
+  const commentModalRef = useRef<any>(null);
   useEffect(() => {
     if (post && post?.likes && Array.isArray(post.likes) && user?.data?._id) {
       setIsLiked(post.likes.includes(user.data._id));
       setLikesCount(post.likes.length);
     }
-
-    if (post && post.comments) {
-      setComments(post.comments);
+    if (post) {
+      handleGetComments();
     }
+    // if (post && post.comments) {
+    //   setComments(post.comments);
+    // }
   }, [post]);
 
 
-  const handleAddComment = (content: string) => {
+  const handleGetComments = async () => {
+    const comments = await getFeedById(post._id);
+    // console.log("comments", comments.data);
+    if (comments && comments?.data?.data) {
+      setComments(comments?.data?.data?.comments);
+    }
+  }
+  const handleAddComment = (content: string, parentCommentId?: string, replyTo?: string) => {
     if (!user) return;
+    if (parentCommentId) {
+      const newComment: Comment = {
+        user: user?.data?._id,
+        content,
+        parentCommentId,
+        replyTo,
+      };
 
-    const newComment: Comment = {
-      user: user?.data?._id,
-      content,
-    };
+      // setComments(prev => [...prev, newComment]);
+      onComment(post?._id, newComment)
+    }
+    else {
+      const newComment: Comment = {
+        user: user?.data?._id,
+        content,
+      };
 
-    // setComments(prev => [...prev, newComment]);
-    onComment(post?._id, newComment)
+      // setComments(prev => [...prev, newComment]);
+      onComment(post?._id, newComment)
+    }
+
   };
   const handleLike = () => {
     const updatedLikes = isLiked
@@ -111,148 +145,255 @@ export default function FeedCard({
     onLike(post._id, updatedLikes);
   };
 
+
   return (
+    <TouchableOpacity activeOpacity={0.9} onPress={() => onPress(post)}>
+      <Card style={styles.card}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => { setShowProfileModal(true); setSelectedPost(post) }}
+          >
+            <View style={styles.profileContainer}>
+              <View style={styles.avatar}>
+                {profileImage ? (
+                  <Image
+                    source={{ uri: profileImage }}
+                    style={{ width: '100%', height: '100%', borderRadius: 20 }}
+                  />
+                ) : (
+                  <Text style={styles.avatarText}>{username?.charAt(0)?.toUpperCase() || "U"}</Text>
+                )}
+                {/* <Text style={styles.avatarText}>{username?.charAt(0) ? username?.charAt(0)?.toUpperCase() : "U"}</Text> */}
+              </View>
+              <View style={styles.userInfo}>
+                <View style={styles.nameContainer}>
+                  <Text style={styles.businessName}>{businessName || "Unknown User"}</Text>
+                  {verified && (
+                    <View style={styles.verifiedBadge}>
+                      <Text style={styles.verifiedText}>✓</Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={styles.username}>@{username ? username : phone} • {formatTimestamp(timestamp)}</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+          <View style={styles.headerRight}>
+            {/* <View style={[styles.postTypeTag, { backgroundColor: getPostTypeColor(type) }]}>
+              <Text style={styles.postTypeText}>{getPostTypeLabel(type)}</Text>
+            </View> */}
+            <TouchableOpacity onPress={() => onMoreOptions(post)} hitSlop={10}>
+              <MoreVertical size={20} color={Colors.gray[600]} />
+            </TouchableOpacity>
+          </View>
+        </View>
 
-    <Card style={styles.card}>
-      <View style={styles.header}>
+        {showUserSelection && <UserSelectionModal
+          visible={showUserSelection}
+          onClose={() => setShowUserSelection(false)}
+          onUserSelect={async (receiver: User) => {
+            // Handle sending the post to the selected user
+            await sendMessage({
+              sender: user?.data?._id,
+              receiver: receiver._id,
+              content: post.content,
+              type: 'text'
+            });
+
+            // Here you would typically:
+            // 1. Create a chat with this user if it doesn't exist
+            // 2. Send the post as a message in that chat
+            // 3. Close the modal
+            setShowUserSelection(false);
+            // Show success message
+            Alert.alert('Sent!', `Post shared with ${receiver.name}`);
+          }}
+        />}
+
         <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => setShowProfileModal(true)}
-          style={styles.profileContainer}
+          activeOpacity={1}
+          onPress={() => { setShowPostModal(true); setSelectedPost(post); }}
         >
-          <View style={{ flexDirection: 'row', flex: 1 }}>
+          {content && (
+            <View style={styles.content}>
+              <Text
+                style={styles.contentText}
+                numberOfLines={showFullText ? undefined : 3}
+              >
+                {content}
+              </Text>
 
-            <View style={styles.avatar}>
-              {profileImage ? (
-                <Image
-                  source={{ uri: profileImage }}
-                  style={{ width: '100%', height: '100%', borderRadius: 20 }}
-                />
-              ) : (
-                <Text style={styles.avatarText}>{username?.charAt(0)?.toUpperCase() || "U"}</Text>
+              {content.length > 100 && (
+                <TouchableOpacity onPress={() => setShowFullText(!showFullText)}>
+                  <Text style={styles.seeMoreText}>
+                    {showFullText ? 'See less' : 'See more'}
+                  </Text>
+                </TouchableOpacity>
               )}
             </View>
+          )}
 
-            <View style={styles.userInfo}>
-              <View style={styles.nameContainer}>
-                <Text style={styles.businessName}>{businessName || "Unknown User"}</Text>
-                {verified && (
-                  <View style={styles.verifiedBadge}>
-                    <Text style={styles.verifiedText}>✓</Text>
-                  </View>
-                )}
-              </View>
-              <Text style={styles.username}>@{username ? username : phone} • {formatTimestamp(timestamp)}</Text>
+          {imageUrl && (
+            <View style={{ width: '100%' }}>
+              <Image
+                source={{ uri: imageUrl }}
+                style={styles.image}
+                resizeMode='contain'
+              />
             </View>
+          )}
 
-          </View>
-        </TouchableOpacity>
-        <View style={styles.headerRight}>
-          <TouchableOpacity onPress={() => onMoreOptions(post)} hitSlop={10}>
-            <MoreVertical size={20} color={Colors.gray[600]} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <TouchableOpacity activeOpacity={0.9} onPress={() => onPress(post)}>
-        {content && (
-          <View style={styles.content}>
-            <Text
-              style={styles.contentText}
-              numberOfLines={showFullText ? undefined : 3}
-            >
-              {content}
-            </Text>
-
-            {content.length > 100 && (
-              <TouchableOpacity onPress={() => setShowFullText(!showFullText)}>
-                <Text style={styles.seeMoreText}>
-                  {showFullText ? 'See less' : 'See more'}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
-
-        {imageUrl && (
-          <View style={{ width: '100%' }}>
-            <Image
-              source={{ uri: imageUrl }}
-              style={styles.image}
-              resizeMode='contain'
+          {videoUrl && (
+            <CustomVideoPlayer
+              videoUrl={videoUrl}
+              isVisible={isVisible}
             />
+          )}
+        </TouchableOpacity>
+        <View style={styles.actionsContainer}>
+          <View style={styles.leftActions}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => handleLike()}
+              activeOpacity={0.7}
+            >
+              {isLiked ? (
+                <Heart size={20} fill="#ff3040" color="#ff3040" />
+              ) : (
+                <Heart size={20} color="#262626" />
+              )}
+
+              {likesCount > 0 && (
+                <Text style={{ color: '#262626', fontSize: 16, marginLeft: 8 }}>
+                  {likesCount}
+                </Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.actionButton]}
+              onPress={(e) => {
+                e.stopPropagation();
+                commentModalRef.current?.open();
+              }}
+              activeOpacity={0.7}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <MessageSquare size={20} color="#262626" />
+
+              </View>
+              {comments?.length > 0 && (
+                <Text style={{ color: '#262626', fontSize: 16, marginLeft: 8 }}>
+                  {comments.length}
+                </Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => setShowUserSelection(true)}
+              activeOpacity={0.7}
+            >
+              <Send size={20} color="#262626" />
+            </TouchableOpacity>
           </View>
-        )}
 
-        {videoUrl && (
-          <CustomVideoPlayer
-            videoUrl={videoUrl}
-            isVisible={isVisible}
-          />
-        )}
-      </TouchableOpacity>
-      <View style={styles.actions}>
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={handleLike}
-        >
-          <Heart
-            size={20}
-            fill={isLiked ? '#E0245E' : 'none'}
-            color={isLiked ? '#E0245E' : Colors.gray[600]}
-          />
-          <Text style={styles.actionText}>{likesCount}</Text>
-        </TouchableOpacity>
+          {/* <TouchableOpacity
+            onPress={() => { }}
+            activeOpacity={0.7}
+          >
+            <Bookmark size={24} color="#262626" />
+          </TouchableOpacity> */}
+        </View>
 
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={(e) => {
-            e.stopPropagation();
-            setShowComments(!showComments);
-          }}
-        >
-          <MessageSquare size={20} color={Colors.gray[600]} />
-          <Text style={styles.actionText}>{comments?.length}</Text>
-        </TouchableOpacity>
+        {post?.location && <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginLeft: 10 }}>
+          {/* <Text style={{ color: '#262626', fontSize: 12, marginRight: 8, fontWeight: 'bold', marginBottom: 4 }}>Location:</Text> */}
+          <Text
+            style={{
+              color: 'blue',
+              fontSize: 12,
+              marginRight: 3,
+              marginBottom: 2
+            }}
+          >
+            #{post.location}
+          </Text>
 
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => onShare(id)}
-        >
-          <Share size={20} color={Colors.gray[600]} />
-          <Text style={styles.actionText}>Share</Text>
-        </TouchableOpacity>
-      </View>
+        </View>}
 
-      {
-        showComments && (
-          <CommentSection
-            postId={post.id}
-            comments={comments}
-            user={user}
-            onAddComment={handleAddComment}
-          />
-        )
-      }
+        {post?.tags?.length > 0 && <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginLeft: 10 }}>
+          {/* <Text style={{ color: '#262626', fontSize: 12, marginRight: 8, fontWeight: 'bold', marginBottom: 4 }}>{post.user.username}:</Text> */}
+          {post?.tags?.map((tag: string, index: number) => (
+            <Text
+              key={index}
+              style={{
+                color: 'blue',
+                fontSize: 12,
+                marginRight: 3,
+                marginBottom: 2
+              }}
+            >
+              #{tag}
+            </Text>
+          ))}
+        </View>}
+        {
+          post?._id && (
+            <CommentModal
+              ref={commentModalRef}
+              postId={post._id}
+              comments={comments}
+              user={user?.data}
+              onAddComment={handleAddComment}
+            />
+          )
+        }
+      </Card >
 
-      <UserProfileModal visible={showProfileModal} onClose={() => setShowProfileModal(false)} userId={post?.user?._id} />
-    </Card >
-
+    </TouchableOpacity >
   );
 }
 
 const styles = StyleSheet.create({
+  actionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  leftActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  // actionButton: {
+  //   padding: 8,
+  //   marginRight: 16,
+  // },
+  commentButton: {
+    transform: [{ scaleX: -1 }], // Flip the comment icon horizontally
+  },
+  likesText: {
+    fontWeight: '600',
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+  },
   card: {
     marginBottom: Spacing.md,
-    width: "100%",
+    width: width - Spacing.sm * 2,
+    alignSelf: 'center',
+    // height: 300
+    // minHeight: 450, // Example: increase to your desired height
+    // paddingBottom: Spacing.md,
+
   },
 
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-
-    paddingRight: Spacing.md,
+    // paddingHorizontal: Spacing.md,
     paddingTop: Spacing.md,
   },
   profileContainer: {
@@ -344,7 +485,9 @@ const styles = StyleSheet.create({
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: Spacing.sm,
+    paddingRight: Spacing.sm,
+    paddingTop: Spacing.sm,
+    paddingBottom: Spacing.sm,
   },
   actionText: {
     marginLeft: Spacing.xs,

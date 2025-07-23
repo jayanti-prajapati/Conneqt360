@@ -32,24 +32,11 @@ import { PostOptionsModal } from '@/components/modal/PostOptionsModal';
 import { UserProfileModal } from '@/components/modal/UserProfileModal';
 import Layout from '@/components/common/Layout';
 import Search from '@/components/common/Search';
+import useNetworkStatus from '@/hooks/useNetworkStatus';
+import NoInternetScreen from '@/components/utils/NoInternetScreen';
 
 
 
-export const handleDelete = () => {
-  Alert.alert(
-    'Delete Post',
-    'Are you sure you want to delete this post?',
-    [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete', style: 'destructive', onPress: () => {
-          Alert.alert('Deleted', 'Post has been deleted.');
-          // onRefresh?.()
-        }
-      },
-    ]
-  );
-};
 export const handleReport = () => {
   Alert.alert(
     'Report Post',
@@ -104,7 +91,7 @@ export const handleShare = async (id: string) => {
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { getAllFeeds, loading, updateFeed, response, getFeedById } = useCommunityFeedsStore()
+  const { getAllFeeds, loading, updateFeed, deleteFeed, getFeedById } = useCommunityFeedsStore()
   const [searchQuery, setSearchQuery] = useState('');
   const [feedData, setFeedData] = useState([]);
   const [visibleItemIds, setVisibleItemIds] = useState<string[]>([]);
@@ -117,6 +104,7 @@ export default function HomeScreen() {
   const [showProfileModal, setShowProfileModal] = useState(false);
 
   const [users, setUsers] = useState<any>(null);
+  const isConnected = useNetworkStatus(false);
   const onViewRef = useRef(({ viewableItems }: { viewableItems: Array<{ item: any }> }) => {
     const visibleIds = viewableItems.map((item) => item.item._id);
     setVisibleItemIds(visibleIds);
@@ -152,6 +140,23 @@ export default function HomeScreen() {
     fetchFeeds();
   };
 
+  const handleDelete = (id: string) => {
+    Alert.alert(
+      'Delete Post',
+      'Are you sure you want to delete this post?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete', style: 'destructive', onPress: () => {
+            Alert.alert('Deleted', 'Post has been deleted.');
+            // onRefresh?.()
+            deleteFeed(id)
+            fetchFeeds();
+          }
+        },
+      ]
+    );
+  };
   const onRefresh = async () => {
     setRefreshing(true);
     try {
@@ -209,7 +214,7 @@ export default function HomeScreen() {
     <Layout title={'Home'}>
       <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       <Form closeText="Skip" />
-      <SafeAreaView style={styles.safeArea}>
+      {isConnected ? (<SafeAreaView style={styles.safeArea}>
 
         {/* <CustomLoader visible={loading} /> */}
         <KeyboardAvoidingView
@@ -248,7 +253,9 @@ export default function HomeScreen() {
                   onLike={handleLike}
                   onComment={handleComments}
                   onShare={handleShare}
-
+                  setSelectedPost={setSelectedPost}
+                  setShowPostModal={setShowPostModal}
+                  setShowProfileModal={setShowProfileModal}
                   onMoreOptions={handleMoreOptions}
                   onPress={handlePostPress}
                   likesIds={item?.likes}
@@ -283,13 +290,14 @@ export default function HomeScreen() {
             onSave={() => handleSave()}
             onCopyLink={() => handleCopyLink()}
             onBlock={() => handleBlock()}
-            onDelete={() => handleDelete()}
+            onDelete={() => handleDelete(selectedPost?._id || '')}
             onViewProfile={() => {
               setShowProfileModal(true)
             }}
           />
         </KeyboardAvoidingView>
-      </SafeAreaView>
+      </SafeAreaView>) :
+        <NoInternetScreen />}
     </Layout>
   );
 }
@@ -358,6 +366,14 @@ const styles = StyleSheet.create({
   feedHeaderContainer: {
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
+  },
+  text: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  subText: {
+    fontSize: 18,
+    color: '#666',
   },
   feedHeader: {
     fontSize: Typography.size.lg,

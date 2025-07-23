@@ -39,6 +39,7 @@ export interface User {
   createdAt: Date;
 }
 
+
 export interface Client {
   _id: string;
   name: string;
@@ -106,12 +107,15 @@ export interface Product {
 
 
 export interface Comment {
-  id?: string;
+  _id?: string;
   userId?: string;
   user: User;
   content: string;
-  createdAt?: Date;
+  parentCommentId?: string;
+  replyTo?: string;
+  createdAt?: Date | string;
 }
+
 
 export interface CatalogItem {
   _id: string;

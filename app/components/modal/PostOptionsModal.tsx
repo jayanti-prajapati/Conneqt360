@@ -15,7 +15,7 @@ interface PostOptionsModalProps {
     onSave: () => void;
     onCopyLink: () => void;
     onBlock?: () => void;
-    onDelete?: () => void;
+    onDelete?: (id: string) => void;
     onViewProfile?: () => void
 }
 

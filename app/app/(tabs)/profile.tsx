@@ -46,8 +46,10 @@ import { SocialMediaModal } from '@/components/profile/SocialMediaModal';
 import InfoItem from '@/components/common/InfoItem';
 import InfoCard from '@/components/common/InfoCard';
 import { useRouter } from 'expo-router';
-// Remove any lingering useRouter variable declarations
-// (If you see '' anywhere below, delete it)
+import useUserBusinessServices from '@/store/useUserBusinessServices';
+import useNetworkStatus from '@/hooks/useNetworkStatus';
+import NoInternetScreen from '@/components/utils/NoInternetScreen';
+
 
 
 export default function ProfileScreen() {
@@ -62,7 +64,10 @@ export default function ProfileScreen() {
   const [showProfileImage, setShowProfileImage] = useState(false);
   const [showSocialModal, setShowSocialModal] = useState(false);
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
+  const isConnected = useNetworkStatus(false);
   const { loading, getUserById, updateUser } = useUsersStore();
+  const { response, getUserServicesByUserId } = useUserBusinessServices();
+  const businessService = response?.data?.data || [];
 
   const fetchUserById = async () => {
     try {
@@ -74,6 +79,8 @@ export default function ProfileScreen() {
         router.replace('/(auth)/login');
         return;
       }
+
+      await getUserServicesByUserId(userId as string);
 
       const response = await getUserById(userId);
       if (response?.data?.statusCode === 200) {
@@ -90,9 +97,11 @@ export default function ProfileScreen() {
   };
 
   useEffect(() => {
-    fetchUserById();
-  }, []);
+    if (isConnected) {
+      fetchUserById();
+    }
 
+  }, [isConnected]);
 
   const onLogoutPress = () => {
     clearAuthData();
@@ -158,7 +167,7 @@ export default function ProfileScreen() {
   const profileCompletion = user ? calculateProfileCompletion(user) : 0;
 
 
-  console.log("user", user);
+
   const handleLogout = () => {
     setIsLogout(true);
   };
@@ -211,9 +220,11 @@ export default function ProfileScreen() {
   //   return <CustomLoader visible={loading} />;
   // }
   return (
-    <Layout showBackButton title={'Profile'} scrollable>
-      <View style={styles.scrollContent}>
-        {/* <Form
+    <>    {
+      isConnected ?
+        <Layout showBackButton title={'Profile'} scrollable>
+          < View style={styles.scrollContent} >
+            {/* <Form
         isPresent={isPresent}
         onClose={close}
         closeText="Close"
@@ -221,297 +232,301 @@ export default function ProfileScreen() {
         users={user}
       />
       <About isAbout={isAbout} onClose={close} userId={user?._id} /> */}
-        <LogoutModal isLogout={isLogout} onClose={close} />
+            < LogoutModal isLogout={isLogout} onClose={close} />
 
 
-        {/* Profile Completion */}
-        <View style={[styles.card]}>
-          <View style={styles.progressHeader}>
-            <Text style={styles.progressTitle}>Profile Completion</Text>
-            <Text
-              style={
-                profileCompletion === 100
-                  ? styles.progressPercentSuccess
-                  : styles.progressPercent
-              }
-            >
-              {profileCompletion}%
-            </Text>
-          </View>
-          <View style={styles.progressBar}>
-            <View
-              style={[
-                profileCompletion === 100
-                  ? styles.progressSuccess
-                  : styles.progressFill,
-                { width: `${profileCompletion}%` },
-              ]}
-            />
-          </View>
-        </View>
-
-        {/* Profile Section */}
-        <View style={styles.profileSection}>
-          <View style={styles.profileImageContainer}>
-            {user?.profileUrl ?
-              <TouchableOpacity onPress={() => setShowProfileImage(true)}>
-                <Image
-                  source={{
-                    uri: user?.profileUrl,
-                  }}
-                  style={styles.profileImage}
-                />
-              </TouchableOpacity> :
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{user?.name?.charAt(0) ? user?.name?.charAt(0)?.toUpperCase() : "U"}</Text>
-              </View>
-            }
-
-            <View style={styles.imageUploadOverlay}>
-              <TouchableOpacity style={styles.uploadButton} onPress={handleProfileImageUpload}>
-                <Ionicons name="camera" size={15} color="black" />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <View style={styles.nameContainer}>
-            <Text style={styles.name}>{user?.businessName || 'Unknown User'}</Text>
-            {user?.verified && (
-              <View style={styles.verifiedBadge}>
-                <Check size={16} color={Colors.white} />
-              </View>
-            )}
-          </View>
-          <Text style={styles.title}>{user?.name || '-'}</Text>
-          <Text style={styles.username}>{user?.jobTitle || '-'}</Text>
-
-          <View style={[styles.buttonRow, { width: '100%' }]}>
-            <Button
-              title="Edit Profile"
-              variant="ghost"
-              size="medium"
-              onPress={() => setShowEditModal(true)}
-              style={styles.actionButton}
-            />
-
-            <Button
-              title="Share Card"
-              variant="ghost"
-              size="medium"
-              onPress={handleShare}
-              style={styles.actionButton}
-            ></Button>
-          </View>
-          <Button
-            title="View Business"
-            variant="primary"
-            size="medium"
-            onPress={() => setShowBusinessCard(true)}
-            style={{ ...styles.actionButton, width: '100%' }}
-          />
-        </View>
-
-
-        {/* catalogue */}
-        <View style={styles.businessFeaturesSection}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>
-            Business Features
-          </Text>
-
-          <View style={styles.featuresGrid}>
-            <Button
-              title="Catalog"
-              variant="ghost"
-              style={styles.featureCard}
-              onPress={openCatalog}
-            >
-              <Briefcase size={32} color={theme.primary} />
-              <Text style={[styles.featureTitle, { color: theme.text }]}>
-                Catalog
-              </Text>
-              <Text
-                style={[styles.featureSubtitle, { color: theme.textSecondary }]}
-              >
-                {user?.catalog?.length || 0} items
-              </Text>
-            </Button>
-
-            <Button
-              title="Services"
-              variant="ghost"
-              style={styles.featureCard}
-              onPress={openServices}
-            >
-              <Settings size={32} color={theme.primary} />
-              <Text>Services</Text>
-              <Text
-                style={[styles.featureSubtitle, { color: theme.textSecondary }]}
-              >
-                {user?.services?.length || 0} services
-              </Text>
-            </Button>
-
-            <Button
-              title="Clients"
-              variant="ghost"
-              style={styles.featureCard}
-              onPress={openClients}
-            >
-              <Users size={32} color={theme.primary} />
-              <Text>Clients</Text>
-              <Text
-                style={[styles.featureSubtitle, { color: theme.textSecondary }]}
-              >
-                {user?.clients?.length || 0} clients
-              </Text>
-            </Button>
-
-            <Button
-              title="Connect"
-              variant="ghost"
-              style={styles.featureCard}
-              onPress={() => setShowSocialModal(true)}
-            >
-              <Globe size={32} color={theme.primary} />
-              <Text>Connect</Text>
-              <Text>Social & Web</Text>
-            </Button>
-          </View>
-        </View>
-
-        {/* Business Information */}
-        {
-          (user?.businessName || user?.businessType) && (
-            <InfoCard
-              title="Business Information"
-              items={[
-                {
-                  label: 'Business Name',
-                  value: user?.businessName,
-                  icon: <Building size={30} color={theme.textSecondary} />,
-                },
-                {
-                  label: 'Business Type',
-                  value: user?.businessType,
-                  icon: <Hash size={32} color={Colors.gray[400]} />,
-                },
-                {
-                  label: 'Business Email',
-                  value: user?.businessEmail,
-                  icon: <AtSign size={32} color={Colors.gray[400]} />,
-                },
-                {
-                  label: 'Website',
-                  value: user?.website,
-                  icon: <Globe size={32} color={Colors.gray[400]} />,
-                },
-                {
-                  label: 'GST Number',
-                  value: user?.gstNumber,
-                  icon: <Hash size={32} color={Colors.gray[400]} />,
-                },
-                {
-                  label: 'Udyam Number',
-                  value: user?.udyamNumber,
-                  icon: <Hash size={32} color={Colors.gray[400]} />,
-                },
-              ]}
-            />
-          )
-        }
-
-        <InfoCard
-          title="Contact Information"
-          items={[
-            {
-              label: 'Email',
-              value: user?.email,
-              icon: <Mail size={32} color={Colors.gray[400]} />,
-            },
-            {
-              label: 'Phone',
-              value: user?.phone,
-              icon: <Phone size={32} color={Colors.gray[400]} />,
-            },
-            {
-              label: 'Address',
-              value: [
-                user?.address,
-                user?.city,
-                user?.state,
-                user?.postalCode,
-                user?.country,
-              ]
-                .filter(Boolean)
-                .join(', '),
-              icon: <MapPin size={32} color={Colors.gray[400]} />,
-            },
-          ]}
-        />
-
-        {
-          showBusinessCard && user && (
-            <View style={styles.businessCardModal}>
-              <Button
-                variant="ghost"
-                style={styles.businessCardOverlay as ViewStyle}
-                onPress={() => setShowBusinessCard(false)}
-              />
-              <View style={styles.businessCardContainer}>
-                <BusinessCard user={user} setShowBusinessCard={setShowBusinessCard} />
-                <Button
-                  variant="outline"
-                  size="small"
-                  onPress={() => setShowBusinessCard(false)}
-                  style={styles.closeBusinessCardButton}
+            {/* Profile Completion */}
+            < View style={[styles.card]} >
+              <View style={styles.progressHeader}>
+                <Text style={styles.progressTitle}>Profile Completion</Text>
+                <Text
+                  style={
+                    profileCompletion === 100
+                      ? styles.progressPercentSuccess
+                      : styles.progressPercent
+                  }
                 >
-                  Close
+                  {profileCompletion}%
+                </Text>
+              </View>
+              <View style={styles.progressBar}>
+                <View
+                  style={[
+                    profileCompletion === 100
+                      ? styles.progressSuccess
+                      : styles.progressFill,
+                    { width: `${profileCompletion}%` },
+                  ]}
+                />
+              </View>
+            </View >
+
+            {/* Profile Section */}
+            < View style={styles.profileSection} >
+              <View style={styles.profileImageContainer}>
+                {user?.profileUrl ?
+                  <TouchableOpacity onPress={() => setShowProfileImage(true)}>
+                    <Image
+                      source={{
+                        uri: user?.profileUrl,
+                      }}
+                      style={styles.profileImage}
+                    />
+                  </TouchableOpacity> :
+                  <View style={styles.avatar}>
+                    <Text style={styles.avatarText}>{user?.name?.charAt(0) ? user?.name?.charAt(0)?.toUpperCase() : "U"}</Text>
+                  </View>
+                }
+
+                <View style={styles.imageUploadOverlay}>
+                  <TouchableOpacity style={styles.uploadButton} onPress={handleProfileImageUpload}>
+                    <Ionicons name="camera" size={15} color="black" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <View style={styles.nameContainer}>
+                <Text style={styles.name}>{user?.businessName || 'Unknown User'}</Text>
+                {user?.verified && (
+                  <View style={styles.verifiedBadge}>
+                    <Check size={16} color={Colors.white} />
+                  </View>
+                )}
+              </View>
+              <Text style={styles.title}>{user?.name || '-'}</Text>
+              <Text style={styles.username}>{user?.jobTitle || '-'}</Text>
+
+              <View style={[styles.buttonRow, { width: '100%' }]}>
+                <Button
+                  title="Edit Profile"
+                  variant="ghost"
+                  size="medium"
+                  onPress={() => setShowEditModal(true)}
+                  style={styles.actionButton}
+                />
+
+                <Button
+                  title="Share Card"
+                  variant="ghost"
+                  size="medium"
+                  onPress={handleShare}
+                  style={styles.actionButton}
+                ></Button>
+              </View>
+              <Button
+                title="View Business"
+                variant="primary"
+                size="medium"
+                onPress={() => setShowBusinessCard(true)}
+                style={{ ...styles.actionButton, width: '100%' }}
+              />
+            </View >
+
+
+            {/* catalogue */}
+            < View style={styles.businessFeaturesSection} >
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>
+                Business Features
+              </Text>
+
+              <View style={styles.featuresGrid}>
+                <Button
+                  title="Catalog"
+                  variant="ghost"
+                  style={styles.featureCard}
+                  onPress={openCatalog}
+                >
+                  <Briefcase size={32} color={theme.primary} />
+                  <Text style={[styles.featureTitle, { color: theme.text }]}>
+                    Catalog
+                  </Text>
+                  <Text
+                    style={[styles.featureSubtitle, { color: theme.textSecondary }]}
+                  >
+                    {businessService?.catalog?.length || 0} items
+                  </Text>
+                </Button>
+
+                <Button
+                  title="Services"
+                  variant="ghost"
+                  style={styles.featureCard}
+                  onPress={openServices}
+                >
+                  <Settings size={32} color={theme.primary} />
+                  <Text>Services</Text>
+                  <Text
+                    style={[styles.featureSubtitle, { color: theme.textSecondary }]}
+                  >
+                    {businessService?.services?.length || 0} services
+                  </Text>
+                </Button>
+
+                <Button
+                  title="Clients"
+                  variant="ghost"
+                  style={styles.featureCard}
+                  onPress={openClients}
+                >
+                  <Users size={32} color={theme.primary} />
+                  <Text>Clients</Text>
+                  <Text
+                    style={[styles.featureSubtitle, { color: theme.textSecondary }]}
+                  >
+                    {businessService?.client?.length || 0} clients
+                  </Text>
+                </Button>
+
+                <Button
+                  title="Connect"
+                  variant="ghost"
+                  style={styles.featureCard}
+                  onPress={() => setShowSocialModal(true)}
+                >
+                  <Globe size={32} color={theme.primary} />
+                  <Text>Connect</Text>
+                  <Text>Social & Web</Text>
                 </Button>
               </View>
+            </View >
+
+            {/* Business Information */}
+            {
+              (user?.businessName || user?.businessType) && (
+                <InfoCard
+                  title="Business Information"
+                  items={[
+                    {
+                      label: 'Business Name',
+                      value: user?.businessName,
+                      icon: <Building size={30} color={theme.textSecondary} />,
+                    },
+                    {
+                      label: 'Business Type',
+                      value: user?.businessType,
+                      icon: <Hash size={32} color={Colors.gray[400]} />,
+                    },
+                    {
+                      label: 'Business Email',
+                      value: user?.businessEmail,
+                      icon: <AtSign size={32} color={Colors.gray[400]} />,
+                    },
+                    {
+                      label: 'Website',
+                      value: user?.website,
+                      icon: <Globe size={32} color={Colors.gray[400]} />,
+                    },
+                    {
+                      label: 'GST Number',
+                      value: user?.gstNumber,
+                      icon: <Hash size={32} color={Colors.gray[400]} />,
+                    },
+                    {
+                      label: 'Udyam Number',
+                      value: user?.udyamNumber,
+                      icon: <Hash size={32} color={Colors.gray[400]} />,
+                    },
+                  ]}
+                />
+              )
+            }
+
+            <InfoCard
+              title="Contact Information"
+              items={[
+                {
+                  label: 'Email',
+                  value: user?.email,
+                  icon: <Mail size={32} color={Colors.gray[400]} />,
+                },
+                {
+                  label: 'Phone',
+                  value: user?.phone,
+                  icon: <Phone size={32} color={Colors.gray[400]} />,
+                },
+                {
+                  label: 'Address',
+                  value: [
+                    user?.address,
+                    user?.city,
+                    user?.state,
+                    user?.postalCode,
+                    user?.country,
+                  ]
+                    .filter(Boolean)
+                    .join(', '),
+                  icon: <MapPin size={32} color={Colors.gray[400]} />,
+                },
+              ]}
+            />
+
+
+
+            {
+              showEditModal && user && (
+                <EditProfileModal
+                  visible={showEditModal}
+                  onClose={() => setShowEditModal(false)}
+                  user={user}
+                  onSave={handleSubmit}
+                />
+              )
+            }
+
+            {
+              showProfileImage && user?.profileUrl && (
+                <ProfileImageModal
+                  visible={showProfileImage}
+                  imageUri={user.profileUrl}
+                  onClose={() => setShowProfileImage(false)}
+                />
+              )
+            }
+
+            {
+              showSocialModal && user && (
+                <SocialMediaModal
+                  visible={showSocialModal}
+                  onClose={() => setShowSocialModal(false)}
+                  socialMedia={user.socialMedia || {}}
+                  website={user.website}
+                  businessEmail={user.businessEmail}
+                />
+              )
+            }
+
+            <Button
+              title="Logout"
+              style={styles.logoutButton}
+              variant="ghost"
+              onPress={handleLogout}
+            />
+
+          </View >
+        </Layout >
+
+        :
+        <NoInternetScreen />
+    }
+
+      {
+        showBusinessCard && user && (
+          <View style={styles.businessCardModal}>
+            <Button
+              variant="ghost"
+              style={styles.businessCardOverlay as ViewStyle}
+              onPress={() => setShowBusinessCard(false)}
+            />
+            <View style={styles.businessCardContainer}>
+              <BusinessCard user={user} setShowBusinessCard={setShowBusinessCard} />
+
             </View>
-          )
-        }
+          </View>
+        )
+      }
+    </>
 
-        {
-          showEditModal && user && (
-            <EditProfileModal
-              visible={showEditModal}
-              onClose={() => setShowEditModal(false)}
-              user={user}
-              onSave={handleSubmit}
-            />
-          )
-        }
 
-        {
-          showProfileImage && user?.profileUrl && (
-            <ProfileImageModal
-              visible={showProfileImage}
-              imageUri={user.profileUrl}
-              onClose={() => setShowProfileImage(false)}
-            />
-          )
-        }
-
-        {
-          showSocialModal && user && (
-            <SocialMediaModal
-              visible={showSocialModal}
-              onClose={() => setShowSocialModal(false)}
-              socialMedia={user.socialMedia || {}}
-              website={user.website}
-              businessEmail={user.businessEmail}
-            />
-          )
-        }
-        <Button
-          title="Logout"
-          style={styles.logoutButton}
-          variant="ghost"
-          onPress={handleLogout}
-        />
-      </View>
-    </Layout >
 
   );
 }
@@ -575,7 +590,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: Spacing.sm,
+    paddingBottom: Spacing.lg,
     paddingTop: Spacing.sm,
     marginBottom: Spacing.xxl,
   },
@@ -721,7 +736,7 @@ const styles = StyleSheet.create({
   //   color: Colors.gray[800],
   // },
   card: {
-    backgroundColor: Colors.primary[600],
+    backgroundColor: Colors.white,
     borderRadius: 12,
     padding: Spacing.md,
     marginHorizontal: Spacing.md,
@@ -741,17 +756,17 @@ const styles = StyleSheet.create({
   progressTitle: {
     fontSize: 16,
     fontWeight: '500',
-    color: Colors.white,
+    color: Colors.blue,
   },
   progressPercent: {
     fontSize: 16,
     fontWeight: '600',
-    color: Colors.white,
+    color: Colors.blue,
   },
   progressPercentSuccess: {
     fontSize: 16,
     fontWeight: '600',
-    color: Colors.white,
+    color: Colors.blue,
   },
 
   progressBar: {
@@ -841,6 +856,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 1000,
   },
   businessCardOverlay: {
     position: 'absolute',

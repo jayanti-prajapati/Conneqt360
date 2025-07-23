@@ -4,6 +4,8 @@ import { Building, Mail, Phone, MapPin, Share as ShareIcon, QrCode, X } from 'lu
 import { useThemeStore } from '@/store/themeStore';
 import { User } from '@/types';
 import { router } from 'expo-router';
+import Button from '../ui-components/Button';
+import Layout from '../common/Layout';
 
 
 const { width } = Dimensions.get('window');
@@ -28,6 +30,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ user, setShowBusines
     };
 
     return (
+        // <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', }}>
 
 
         <View style={[styles.container, { backgroundColor: theme.surface, borderColor: theme.border }]}>
@@ -57,98 +60,96 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ user, setShowBusines
             </View>
 
             {/* Contact Information */}
-            <View style={[styles.content]}>
-                <View style={styles.contactSection}>
-                    <View style={styles.contactItem}>
-                        <Mail size={16} color={theme.primary} />
-                        <Text style={[styles.contactText, { color: theme.text }]} numberOfLines={1}>{user.email}</Text>
-                    </View>
-
-                    {user.phone && (
+            <ScrollView contentContainerStyle={styles.scrollContainer}>
+                <View style={[styles.content]}>
+                    <View style={styles.contactSection}>
                         <View style={styles.contactItem}>
-                            <Phone size={16} color={theme.primary} />
-                            <Text style={[styles.contactText, { color: theme.text }]} numberOfLines={1}>{user.phone}</Text>
+                            <Mail size={16} color={theme.primary} />
+                            <Text style={[styles.contactText, { color: theme.text }]} numberOfLines={1}>{user.email}</Text>
                         </View>
-                    )}
 
-                    {(user.address || user.city) && (
-                        <View style={styles.contactItem}>
-                            <MapPin size={16} color={theme.primary} />
-                            <Text style={[styles.contactText, { color: theme.text }]} >
-                                {[user.address, user.city, user.state, user.country]
-                                    .filter(Boolean)
-                                    .join(', ')}
-                            </Text>
-                        </View>
-                    )}
-                </View>
-
-                {/* Business Details */}
-                {(user?.gstNumber || user?.udyamNumber) && (
-                    <View style={[styles.businessSection, { borderTopColor: theme.border }]}>
-                        <Text style={[styles.sectionTitle, { color: theme.text }]}>Business Details</Text>
-                        {user?.businessName && (
-                            <View style={styles.businessItem}>
-                                <Text style={[styles.businessLabel, { color: theme.textSecondary }]}>Business Name</Text>
-                                <Text style={[styles.businessValue, { color: theme.text }]} numberOfLines={1}>{user.businessName}</Text>
-                            </View>
-                        )}
-                        {user?.businessType && (
-                            <View style={styles.businessItem}>
-                                <Text style={[styles.businessLabel, { color: theme.textSecondary }]}>Business Type</Text>
-                                <Text style={[styles.businessValue, { color: theme.text }]} numberOfLines={1}>{user.businessType}</Text>
-                            </View>
-                        )}
-                        {user?.businessEmail && (
-                            <View style={styles.businessItem}>
-                                <Text style={[styles.businessLabel, { color: theme.textSecondary }]}>Business Email</Text>
-                                <Text style={[styles.businessValue, { color: theme.text }]} numberOfLines={1}>{user.businessEmail}</Text>
+                        {user.phone && (
+                            <View style={styles.contactItem}>
+                                <Phone size={16} color={theme.primary} />
+                                <Text style={[styles.contactText, { color: theme.text }]} numberOfLines={1}>{user.phone}</Text>
                             </View>
                         )}
 
-                        {user.gstNumber && (
-                            <View style={styles.businessItem}>
-                                <Text style={[styles.businessLabel, { color: theme.textSecondary }]}>GST Number</Text>
-                                <Text style={[styles.businessValue, { color: theme.text }]} numberOfLines={1}>{user.gstNumber}</Text>
-                            </View>
-                        )}
-
-
-                        {user.udyamNumber && (
-                            <View style={styles.businessItem}>
-                                <Text style={[styles.businessLabel, { color: theme.textSecondary }]}>Udyam Number</Text>
-                                <Text style={[styles.businessValue, { color: theme.text }]} numberOfLines={1}>{user.udyamNumber}</Text>
-                            </View>
-                        )}
-                        {user?.website && (
-                            <View style={styles.businessItem}>
-                                <Text style={[styles.businessLabel, { color: theme.textSecondary }]}>website</Text>
-                                <Text style={[styles.businessValue, { color: theme.text }]} numberOfLines={1}>{user?.website}</Text>
+                        {(user.address || user.city) && (
+                            <View style={styles.contactItem}>
+                                <MapPin size={16} color={theme.primary} />
+                                <Text style={[styles.contactText, { color: theme.text }]} >
+                                    {[user.address, user.city, user.state, user.country]
+                                        .filter(Boolean)
+                                        .join(', ')}
+                                </Text>
                             </View>
                         )}
                     </View>
-                )}
 
-                {/* Action Buttons */}
-                <View style={styles.actionButtons}>
-                    <TouchableOpacity
-                        style={[styles.actionButton, { backgroundColor: theme.primary }]}
-                        onPress={handleShare}
-                    >
-                        <ShareIcon size={18} color="#FFFFFF" />
-                        <Text style={styles.actionButtonText}>Share</Text>
-                    </TouchableOpacity>
+                    {/* Business Details */}
+                    {(user?.gstNumber || user?.udyamNumber) && (
+                        <View style={[styles.businessSection, { borderTopColor: theme.border }]}>
+                            <Text style={[styles.sectionTitle, { color: theme.text }]}>Business Details</Text>
+                            {user?.businessName && (
+                                <View style={styles.businessItem}>
+                                    <Text style={[styles.businessLabel, { color: theme.textSecondary }]}>Business Name</Text>
+                                    <Text style={[styles.businessValue, { color: theme.text }]} numberOfLines={1}>{user.businessName}</Text>
+                                </View>
+                            )}
+                            {user?.businessType && (
+                                <View style={styles.businessItem}>
+                                    <Text style={[styles.businessLabel, { color: theme.textSecondary }]}>Business Type</Text>
+                                    <Text style={[styles.businessValue, { color: theme.text }]} numberOfLines={1}>{user.businessType}</Text>
+                                </View>
+                            )}
+                            {user?.businessEmail && (
+                                <View style={styles.businessItem}>
+                                    <Text style={[styles.businessLabel, { color: theme.textSecondary }]}>Business Email</Text>
+                                    <Text style={[styles.businessValue, { color: theme.text }]} numberOfLines={1}>{user.businessEmail}</Text>
+                                </View>
+                            )}
 
-                    {/* <TouchableOpacity
-                        style={[styles.actionButton, { backgroundColor: theme.surface, borderColor: theme.border, borderWidth: 1 }]}
-                    >
-                        <QrCode size={18} color={theme.primary} />
-                        <Text style={[styles.actionButtonText, { color: theme.primary }]}>QR Code</Text>
-                    </TouchableOpacity> */}
+                            {user.gstNumber && (
+                                <View style={styles.businessItem}>
+                                    <Text style={[styles.businessLabel, { color: theme.textSecondary }]}>GST Number</Text>
+                                    <Text style={[styles.businessValue, { color: theme.text }]} numberOfLines={1}>{user.gstNumber}</Text>
+                                </View>
+                            )}
+
+
+                            {user.udyamNumber && (
+                                <View style={styles.businessItem}>
+                                    <Text style={[styles.businessLabel, { color: theme.textSecondary }]}>Udyam Number</Text>
+                                    <Text style={[styles.businessValue, { color: theme.text }]} numberOfLines={1}>{user.udyamNumber}</Text>
+                                </View>
+                            )}
+                            {user?.website && (
+                                <View style={styles.businessItem}>
+                                    <Text style={[styles.businessLabel, { color: theme.textSecondary }]}>website</Text>
+                                    <Text style={[styles.businessValue, { color: theme.text }]} numberOfLines={1}>{user?.website}</Text>
+                                </View>
+                            )}
+
+                        </View>
+                    )}
+
                 </View>
+            </ScrollView>
+
+            {/* Action Buttons */}
+            <View style={styles.actionButtons}>
+                <Button
+                    title="Share Card"
+                    variant="ghost"
+                    size="medium"
+                    onPress={handleShare}
+                    style={styles.actionButton}
+                ></Button>
             </View>
 
-        </View>
+        </View >
+        // </Vi ew >
 
 
 
@@ -158,6 +159,10 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ user, setShowBusines
 };
 
 const styles = StyleSheet.create({
+    scrollContainer: {
+        padding: 6,
+    },
+
     closeIcon: {
         position: 'absolute',
         top: 16,
@@ -166,8 +171,9 @@ const styles = StyleSheet.create({
     },
     container: {
         width: Math.min(width - 40, 400),
-        maxWidth: 400,
+        maxWidth: '100%',
         borderRadius: 16,
+        maxHeight: width * 1.5,
         overflow: 'hidden',
         borderWidth: 1,
         shadowColor: '#000',
@@ -175,6 +181,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 12,
         elevation: 5,
+        justifyContent: 'center',
         alignSelf: 'center',
     },
     header: {
@@ -183,6 +190,7 @@ const styles = StyleSheet.create({
     headerContent: {
         flexDirection: 'row',
         alignItems: 'center',
+
     },
     profileImage: {
         width: 60,
@@ -255,16 +263,14 @@ const styles = StyleSheet.create({
     actionButtons: {
         flexDirection: 'row',
         gap: 10,
-        height: 40
+        height: 40,
+        marginBottom: 16,
     },
     actionButton: {
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 10,
-        paddingHorizontal: 12,
-        borderRadius: 10,
         gap: 6,
     },
     actionButtonText: {

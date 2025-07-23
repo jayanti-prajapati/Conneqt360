@@ -10,9 +10,10 @@ import { useCommunityFeedsStore } from '@/store/communityFeedsStore';
 type SearchProps = {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  placeholder?: string;
 }
 
-export default function Search({ searchQuery, setSearchQuery }: SearchProps) {
+export default function Search({ searchQuery, setSearchQuery, placeholder }: SearchProps) {
   // const [searchQuery, setSearchQuery] = useState('');
   // const { feeds } = useCommunityFeedsStore();
   // const [feedData, setFeedData] = useState<any>([]);
@@ -35,7 +36,7 @@ export default function Search({ searchQuery, setSearchQuery }: SearchProps) {
         <SearchIcon color={Colors.gray[500]} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search businesses, products..."
+          placeholder={placeholder ? placeholder : 'Search ...'}
           value={searchQuery}
           onChangeText={(text) => {
             setSearchQuery(text);
@@ -59,7 +60,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.gray[100],
+    backgroundColor: Colors.white,
     borderRadius: 24,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
@@ -74,7 +75,7 @@ const styles = StyleSheet.create({
   },
   filterButton: {
     marginLeft: 10,
-    backgroundColor: Colors.gray[100],
+    backgroundColor: Colors.white,
     borderRadius: 24,
     padding: 10,
     borderColor: Colors.gray[200],

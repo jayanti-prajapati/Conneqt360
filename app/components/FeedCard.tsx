@@ -2,7 +2,7 @@ import React from 'react';
 import {
   View,
   Text,
-  Image,
+
   TouchableOpacity,
   StyleSheet,
   Platform,
@@ -51,7 +51,7 @@ export const FeedCard: React.FC<FeedCardProps> = ({
           <Text style={styles.businessName}>{businessName}</Text>
         </View>
       </View>
-      
+
       <Text style={styles.content}>{content}</Text>
 
       {imageUrl && (

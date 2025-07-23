@@ -11,6 +11,12 @@ import Typography from '@/constants/Typography';
 import { useRouter } from 'expo-router';
 ;
 import useUsersStore from '@/store/useUsersStore';
+import useUserBusinessServices from '@/store/useUserBusinessServices';
+import CustomLoader from '../loader/CustomLoader';
+import InfoCard from '../common/InfoCard';
+
+import { Ionicons } from '@expo/vector-icons';
+import Button from '../ui-components/Button';
 
 interface UserProfileModalProps {
     visible: boolean;
@@ -31,19 +37,27 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     const [showSocialModal, setShowSocialModal] = useState(false);
     const [isAboutExpanded, setIsAboutExpanded] = useState(false);
     const { getUserById } = useUsersStore();
+    const [isLoading, setIsLoading] = useState(false)
+    const { response, getUserServicesByUserId } = useUserBusinessServices();
+    const businessService = response?.data?.data || [];
 
     useEffect(() => {
+        setUser(null)
         if (userId) {
             getUserData()
+            getUserServicesByUserId(userId)
         }
 
     }, [userId])
 
     const getUserData = async () => {
+        setIsLoading(true)
         const data = await getUserById(userId)
         if (data?.data?.statusCode === 200) {
             setUser(data.data.data);
+            setIsLoading(false)
         }
+        setIsLoading(false)
     }
     const formatDate = (date: Date) => {
         return date.toLocaleDateString('en-US', {
@@ -84,9 +98,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             presentationStyle="pageSheet"
             onRequestClose={onClose}
         >
-            <View style={[styles.container, { backgroundColor: theme.background }]}>
+            {isLoading && <CustomLoader visible={isLoading} />}
+            <View style={[styles.container]}>
                 <View style={styles.header}>
-                    <Text style={[styles.name, { fontSize: 20 }]}>{user?.businessName || 'Unknown User'}</Text>
+                    <Text style={[styles.name, { fontSize: 20, marginLeft: Spacing.sm }]}>{user?.businessName || 'Unknown User'}</Text>
                     <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                         <X size={24} color={theme.text} />
                     </TouchableOpacity>
@@ -97,7 +112,17 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     showsVerticalScrollIndicator={false}
                 >
                     {/* Profile Section */}
-                    <View style={styles.profileSection}>
+
+
+
+
+
+
+
+
+
+                    {/* Profile Section */}
+                    < View style={styles.profileSection} >
                         <View style={styles.profileImageContainer}>
                             {user?.profileUrl ?
                                 <TouchableOpacity onPress={() => setShowProfileImage(true)}>
@@ -109,10 +134,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                                     />
                                 </TouchableOpacity> :
                                 <View style={styles.avatar}>
-                                    <Text style={styles.avatarText}>{user?.username?.charAt(0) ? user?.username?.charAt(0)?.toUpperCase() : "U"}</Text>
+                                    <Text style={styles.avatarText}>{user?.name?.charAt(0) ? user?.name?.charAt(0)?.toUpperCase() : "U"}</Text>
                                 </View>
                             }
-                            {/*  */}
+
+
                         </View>
 
                         <View style={styles.nameContainer}>
@@ -123,211 +149,159 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                                 </View>
                             )}
                         </View>
-                        <Text style={styles.username}>{user?.name || '-'}</Text>
-                        <Text style={styles.title}>{user?.jobTitle || '-'}</Text>
+                        <Text style={styles.title}>{user?.name || '-'}</Text>
+                        <Text style={styles.username}>{user?.jobTitle || '-'}</Text>
 
+                        <View style={[styles.buttonRow, { width: '100%' }]}>
 
-                        <TouchableOpacity
-                            style={[styles.actionButton, { backgroundColor: theme.primary, width: "100%" }]}
-                            onPress={() => setShowBusinessCard(true)}
-                        >
-                            <Text style={styles.actionButtonText}>View Business</Text>
-                        </TouchableOpacity>
-                    </View>
-
-
-
-
-
-                    {/* Abour us */}
-                    {user?.aboutUs && (
-                        <View
-                            style={[
-                                styles.infoSection,
-                                { backgroundColor: theme.surface, borderColor: theme.border },
-                            ]}
-                        >
-                            <Text style={[styles.sectionTitle, { color: theme.text }]}>About Us</Text>
-
-                            <Text
-                                style={[styles.infoValue, { color: theme.text }]}
-                                numberOfLines={isAboutExpanded ? undefined : 5}
-                                ellipsizeMode="tail"
-                            >
-                                {user.aboutUs}
-                            </Text>
-
-                            {user?.aboutUs?.length > 100 && ( // show toggle only if content is long
-                                <TouchableOpacity
-                                    onPress={() => setIsAboutExpanded((prev) => !prev)}
-                                    style={{ marginTop: 8 }}
-                                >
-                                    <Text style={{ color: theme.primary, fontWeight: '600' }}>
-                                        {isAboutExpanded ? 'See less' : 'See more'}
-                                    </Text>
-                                </TouchableOpacity>
-                            )}
                         </View>
-                    )}
+                        <Button
+                            title="View Business"
+                            variant="primary"
+                            size="medium"
+                            onPress={() => setShowBusinessCard(true)}
+                            style={{ ...styles.actionButton, width: '100%' }}
+                        />
+                    </View >
+
 
                     {/* catalogue */}
-                    <View style={styles.businessFeaturesSection}>
-                        <Text style={[styles.sectionTitle, { color: theme.text }]}>Business Features</Text>
+                    < View style={styles.businessFeaturesSection} >
+                        <Text style={[styles.sectionTitle, { color: theme.text }]}>
+                            Business Features
+                        </Text>
 
                         <View style={styles.featuresGrid}>
-                            <TouchableOpacity
-                                style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-                                onPress={() => openCatalog()}
-                            >
-                                <Briefcase size={24} color={theme.primary} />
-                                <Text style={[styles.featureTitle, { color: theme.text }]}>Catalog</Text>
-                                <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
-                                    {user?.catalog?.length || 0} items
-                                </Text>
-                            </TouchableOpacity>
+                            <Button
+                                title="Catalog"
+                                variant="ghost"
 
-                            <TouchableOpacity
-                                style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-                                onPress={() => openServices()}
+                                style={styles.featureCard}
+                                onPress={openCatalog}
                             >
-                                <Settings size={24} color={theme.primary} />
-                                <Text style={[styles.featureTitle, { color: theme.text }]}>Services</Text>
-                                <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
-                                    {user?.services?.length || 0} services
+                                {/* <Briefcase size={32} color={theme.primary} />
+                                <Text style={[styles.featureTitle, { color: theme.text }]}>
+                                    Catalog
                                 </Text>
-                            </TouchableOpacity>
+                                <Text
+                                    style={[styles.featureSubtitle, { color: theme.textSecondary }]}
+                                >
+                                    {businessService?.catalog?.length || 0} items
+                                </Text> */}
+                            </Button>
 
-                            <TouchableOpacity
-                                style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-                                onPress={() => openClients()}
+                            <Button
+                                title="Services"
+                                variant="ghost"
+                                style={styles.featureCard}
+                                onPress={openServices}
                             >
-                                <Users size={24} color={theme.primary} />
-                                <Text style={[styles.featureTitle, { color: theme.text }]}>Clients</Text>
-                                <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
-                                    {user?.clients?.length || 0} clients
-                                </Text>
-                            </TouchableOpacity>
+                                {/* <Settings size={32} color={theme.primary} />
+                                <Text>Services</Text>
+                                <Text
+                                    style={[styles.featureSubtitle, { color: theme.textSecondary }]}
+                                >
+                                    {businessService?.services?.length || 0} services
+                                </Text> */}
+                            </Button>
 
-                            <TouchableOpacity
-                                style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                            <Button
+                                title="Clients"
+                                variant="ghost"
+                                style={styles.featureCard}
+                                onPress={openClients}
+                            >
+                                {/* <Users size={32} color={theme.primary} />
+                                <Text>Clients</Text>
+                                <Text
+                                    style={[styles.featureSubtitle, { color: theme.textSecondary }]}
+                                >
+                                    {businessService?.client?.length || 0} clients
+                                </Text> */}
+                            </Button>
+
+                            <Button
+                                title="Connect"
+                                variant="ghost"
+                                style={styles.featureCard}
                                 onPress={() => setShowSocialModal(true)}
                             >
-                                <Globe size={24} color={theme.primary} />
-                                <Text style={[styles.featureTitle, { color: theme.text }]}>Connect</Text>
-                                <Text style={[styles.featureSubtitle, { color: theme.textSecondary }]}>
-                                    Social & Web
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
 
+                            </Button>
+                        </View>
+                    </View >
 
                     {/* Business Information */}
-                    {(user?.businessName || user?.businessType) && (
-                        <View style={[styles.infoSection, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                            <Text style={[styles.sectionTitle, { color: theme.text }]}>Business Information</Text>
+                    {
+                        (user?.businessName || user?.businessType) && (
+                            <InfoCard
+                                title="Business Information"
+                                items={[
+                                    {
+                                        label: 'Business Name',
+                                        value: user?.businessName,
+                                        icon: <Building size={30} color={theme.textSecondary} />,
+                                    },
+                                    {
+                                        label: 'Business Type',
+                                        value: user?.businessType,
+                                        icon: <Hash size={32} color={Colors.gray[400]} />,
+                                    },
+                                    {
+                                        label: 'Business Email',
+                                        value: user?.businessEmail,
+                                        icon: <AtSign size={32} color={Colors.gray[400]} />,
+                                    },
+                                    {
+                                        label: 'Website',
+                                        value: user?.website,
+                                        icon: <Globe size={32} color={Colors.gray[400]} />,
+                                    },
+                                    {
+                                        label: 'GST Number',
+                                        value: user?.gstNumber,
+                                        icon: <Hash size={32} color={Colors.gray[400]} />,
+                                    },
+                                    {
+                                        label: 'Udyam Number',
+                                        value: user?.udyamNumber,
+                                        icon: <Hash size={32} color={Colors.gray[400]} />,
+                                    },
+                                ]}
+                            />
+                        )
+                    }
 
-                            {user?.businessName && (
-                                <View style={styles.infoItem}>
-                                    <Building size={20} color={theme.textSecondary} />
-                                    <View style={styles.infoContent}>
-                                        <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Business Name</Text>
-                                        <Text style={[styles.infoValue, { color: theme.text }]}>{user.businessName}</Text>
-                                    </View>
-                                </View>
-                            )}
-
-                            {user?.businessType && (
-                                <View style={styles.infoItem}>
-                                    <Hash size={20} color={theme.textSecondary} />
-                                    <View style={styles.infoContent}>
-                                        <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Business Type</Text>
-                                        <Text style={[styles.infoValue, { color: theme.text }]}>{user.businessType}</Text>
-                                    </View>
-                                </View>
-                            )}
-
-                            {user?.businessEmail && (
-                                <View style={styles.infoItem}>
-                                    <AtSign size={20} color={theme.textSecondary} />
-                                    <View style={styles.infoContent}>
-                                        <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Business Email</Text>
-                                        <Text style={[styles.infoValue, { color: theme.text }]}>{user.businessEmail}</Text>
-                                    </View>
-                                </View>
-                            )}
-
-                            {user?.website && (
-                                <View style={styles.infoItem}>
-                                    <Globe size={20} color={theme.textSecondary} />
-                                    <View style={styles.infoContent}>
-                                        <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Website</Text>
-                                        <Text style={[styles.infoValue, { color: theme.text }]}>{user.website}</Text>
-                                    </View>
-                                </View>
-                            )}
-
-                            {user?.gstNumber && (
-                                <View style={styles.infoItem}>
-                                    <Hash size={20} color={theme.textSecondary} />
-                                    <View style={styles.infoContent}>
-                                        <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>GST Number</Text>
-                                        <Text style={[styles.infoValue, { color: theme.text }]}>{user.gstNumber}</Text>
-                                    </View>
-                                </View>
-                            )}
-
-                            {user?.udyamNumber && (
-                                <View style={styles.infoItem}>
-                                    <Hash size={20} color={theme.textSecondary} />
-                                    <View style={styles.infoContent}>
-                                        <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Udyam Number</Text>
-                                        <Text style={[styles.infoValue, { color: theme.text }]}>{user.udyamNumber}</Text>
-                                    </View>
-                                </View>
-                            )}
-                        </View>
-                    )}
-
-                    {/* Contact Information */}
-                    <View style={[styles.infoSection, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                        <Text style={[styles.sectionTitle, { color: theme.text }]}>Contact Information</Text>
-
-                        {user?.email && <View style={styles.infoItem}>
-                            <Mail size={20} color={theme.textSecondary} />
-                            <View style={styles.infoContent}>
-                                <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Email</Text>
-                                <Text style={[styles.infoValue, { color: theme.text }]}>{user?.email}</Text>
-                            </View>
-                        </View>}
-
-                        {user?.phone && (
-                            <View style={styles.infoItem}>
-                                <Phone size={20} color={theme.textSecondary} />
-                                <View style={styles.infoContent}>
-                                    <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Phone</Text>
-                                    <Text style={[styles.infoValue, { color: theme.text }]}>{user?.phone}</Text>
-                                </View>
-                            </View>
-                        )}
-
-                        {(user?.address || user?.city || user?.state || user?.country) && (
-                            <View style={styles.infoItem}>
-                                <MapPin size={20} color={theme.textSecondary} />
-                                <View style={styles.infoContent}>
-                                    <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Address</Text>
-                                    <Text style={[styles.infoValue, { color: theme.text }]}>
-                                        {[user.address, user.city, user.state, user.postalCode, user.country]
-                                            .filter(Boolean)
-                                            .join(', ')}
-                                    </Text>
-                                </View>
-                            </View>
-                        )}
-
-                    </View>
+                    <InfoCard
+                        title="Contact Information"
+                        items={[
+                            {
+                                label: 'Email',
+                                value: user?.email,
+                                icon: <Mail size={32} color={Colors.gray[400]} />,
+                            },
+                            {
+                                label: 'Phone',
+                                value: user?.phone,
+                                icon: <Phone size={32} color={Colors.gray[400]} />,
+                            },
+                            {
+                                label: 'Address',
+                                value: [
+                                    user?.address,
+                                    user?.city,
+                                    user?.state,
+                                    user?.postalCode,
+                                    user?.country,
+                                ]
+                                    .filter(Boolean)
+                                    .join(', '),
+                                icon: <MapPin size={32} color={Colors.gray[400]} />,
+                            },
+                        ]}
+                    />
                     {/* Member Since */}
-                    <View style={[styles.memberSection, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                    <View style={[styles.memberSection, { borderColor: theme.border }]}>
                         <Text style={[styles.memberText, { color: theme.textSecondary }]}>
                             Member since {user?.createdAt ? formatDate(new Date(user?.createdAt)) : '-'}
                         </Text>
@@ -364,18 +338,17 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     );
 };
 
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         // paddingTop: Spacing.md,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.gray[100],
     },
     closeButton: {
         padding: Spacing.sm,
     },
     avatarText: {
-        // width: '100%',
-        // height: '100%',
         color: Colors.primary[700],
         fontSize: 40,
         fontWeight: Typography.weight.bold as any,
@@ -395,31 +368,30 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 10,
-        paddingHorizontal: 12,
-        borderRadius: 10,
         gap: 6,
     },
     actionButtonText: {
-        fontSize: 14,
-        fontWeight: '600',
+        fontSize: Typography.size.sm,
+        fontWeight: Typography.weight.bold as any,
         color: '#FFFFFF',
     },
     header: {
+        marginTop: Spacing.md,
+        paddingVertical: Spacing.xs,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: Spacing.md,
         borderBottomWidth: 1,
-        borderBottomColor: Colors.gray[200],
+        borderBottomColor: Colors.white,
     },
-    backButton: {
-        padding: Spacing.xs,
+    logoutButton: {
+        marginHorizontal: Spacing.md,
+        marginBottom: Spacing.md,
     },
     headerTitle: {
-        fontSize: 20,
-        fontWeight: '600',
-        color: Colors.gray[800],
+        fontSize: Typography.size.md,
+        fontWeight: Typography.weight.bold as any,
+        color: Colors.white,
     },
     headerIcons: {
         flexDirection: 'row',
@@ -427,14 +399,16 @@ const styles = StyleSheet.create({
     },
     logoutText: {
         color: Colors.primary[900],
-        fontSize: 14,
+        fontSize: Typography.size.sm,
+        fontWeight: Typography.weight.bold as any,
     },
     scrollView: {
         flex: 1,
     },
     scrollContent: {
-        paddingBottom: Spacing.xl,
-        paddingTop: Spacing.md,
+        paddingBottom: Spacing.lg,
+        paddingTop: Spacing.sm,
+        marginBottom: Spacing.xxl,
     },
     profileSection: {
         alignItems: 'center',
@@ -453,8 +427,8 @@ const styles = StyleSheet.create({
         height: 120,
         borderRadius: 60,
         alignSelf: 'center',
-        marginTop: 20,
-        marginBottom: 20,
+        // marginTop: 10,
+        // marginBottom: 20,
     },
     profileImage: {
         width: '100%',
@@ -490,10 +464,11 @@ const styles = StyleSheet.create({
         paddingVertical: 20,
     },
     sectionTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        marginBottom: 16,
+        fontSize: Typography.size.lg,
+        fontWeight: Typography.weight.bold as any,
+        marginBottom: Spacing.md,
     },
+
     featuresGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -503,7 +478,7 @@ const styles = StyleSheet.create({
         width: '48%',
         padding: 16,
         borderRadius: 12,
-        borderWidth: 1,
+        backgroundColor: Colors.white,
         alignItems: 'center',
         gap: 8,
     },
@@ -529,7 +504,7 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.primary[500],
         width: 20,
         height: 20,
-        borderRadius: 10,
+        borderRadius: '100%',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -545,20 +520,20 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 16,
         color: Colors.gray[600],
-        marginBottom: Spacing.lg,
+
     },
     username: {
         fontSize: 16,
         color: Colors.gray[600],
-
+        marginBottom: Spacing.lg,
     },
     buttonRow: {
         flexDirection: 'row',
         gap: 4,
 
         justifyContent: 'space-between',
-        marginHorizontal: -Spacing.xs,
-        marginBottom: Spacing.sm
+        marginHorizontal: Spacing.md,
+        marginBottom: Spacing.md,
     },
     button: {
         margin: Spacing.xs,
@@ -576,6 +551,7 @@ const styles = StyleSheet.create({
         padding: 16,
         borderRadius: 12,
         borderWidth: 1,
+        backgroundColor: Colors.white,
         alignItems: 'center',
     },
     memberText: {
@@ -588,9 +564,9 @@ const styles = StyleSheet.create({
     card: {
         backgroundColor: Colors.white,
         borderRadius: 12,
-        padding: Spacing.lg,
-        marginBottom: Spacing.md,
-        // marginHorizontal: Spacing.lg,
+        padding: Spacing.md,
+        marginHorizontal: Spacing.md,
+        marginVertical: Spacing.sm,
         shadowColor: Colors.black,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
@@ -606,34 +582,35 @@ const styles = StyleSheet.create({
     progressTitle: {
         fontSize: 16,
         fontWeight: '500',
-        color: Colors.gray[800],
+        color: Colors.blue,
     },
     progressPercent: {
         fontSize: 16,
         fontWeight: '600',
-        color: Colors.primary[600],
+        color: Colors.blue,
     },
     progressPercentSuccess: {
         fontSize: 16,
         fontWeight: '600',
-        color: 'green',
+        color: Colors.blue,
     },
+
     progressBar: {
-        height: 8,
-        backgroundColor: Colors.gray[200],
-        borderRadius: 4,
+        height: 16,
+        backgroundColor: Colors.primary[200],
+        borderRadius: 8,
         overflow: 'hidden',
         marginTop: Spacing.sm,
     },
     progressFill: {
         height: '100%',
-        backgroundColor: Colors.primary[500],
-        borderRadius: 4,
+        backgroundColor: Colors.white,
+        borderRadius: 8,
     },
     progressSuccess: {
         height: '100%',
-        backgroundColor: "green",
-        borderRadius: 4,
+        backgroundColor: 'green',
+        borderRadius: 8,
     },
     aboutText: {
         fontSize: 14,
@@ -703,9 +680,9 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
-        // marginBottom: 20,
         justifyContent: 'center',
         alignItems: 'center',
+        zIndex: 1000,
     },
     businessCardOverlay: {
         position: 'absolute',
@@ -713,12 +690,13 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
     },
     businessCardContainer: {
         margin: 20,
         borderRadius: 16,
         overflow: 'hidden',
+        backgroundColor: Colors.white,
     },
     closeBusinessCardButton: {
         paddingVertical: 16,
@@ -733,13 +711,13 @@ const styles = StyleSheet.create({
         marginVertical: 12,
         padding: 16,
         borderRadius: 12,
-        borderWidth: 1,
+        backgroundColor: Colors.white,
     },
     infoItem: {
         flexDirection: 'row',
         alignItems: 'flex-start',
-        marginBottom: 12,
-        gap: 12,
+        marginBottom: Spacing.md,
+        gap: Spacing.md,
     },
     infoContent: {
         flex: 1,
@@ -747,10 +725,11 @@ const styles = StyleSheet.create({
     infoLabel: {
         fontSize: 12,
         fontWeight: '500',
-        marginBottom: 2,
+        marginBottom: Spacing.xs,
     },
     infoValue: {
         fontSize: 16,
+        fontWeight: '500',
         lineHeight: 22,
     },
 });
