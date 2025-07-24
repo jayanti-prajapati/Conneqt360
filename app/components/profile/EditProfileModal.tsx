@@ -165,9 +165,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 placeholder="Enter your email"
                 keyboardType="email-address"
                 autoCapitalize="none"
-                containerStyle={{ backgroundColor: theme.surface }}
-                inputStyle={{ color: theme.text }}
-                labelStyle={{ color: theme.textSecondary }}
+              // containerStyle={{ backgroundColor: theme.surface }}
+              // inputStyle={{ color: theme.text }}
+              // labelStyle={{ color: theme.textSecondary }}
               />
             </View>
             <View style={styles.inputGroup}>
@@ -179,9 +179,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 value={formData.username}
                 onChangeText={(value) => updateField('username', value)}
                 placeholder="Enter username"
-                containerStyle={{ backgroundColor: theme.surface }}
-                inputStyle={{ color: theme.text }}
-                labelStyle={{ color: theme.textSecondary }}
+              // containerStyle={{ backgroundColor: theme.surface }}
+              // inputStyle={{ color: theme.text }}
+              // labelStyle={{ color: theme.textSecondary }}
               />
             </View>
             <View style={styles.inputGroup}>
@@ -193,9 +193,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 value={formData.jobTitle}
                 onChangeText={(value) => updateField('jobTitle', value)}
                 placeholder="Enter your Job Title"
-                containerStyle={{ backgroundColor: theme.surface }}
-                inputStyle={{ color: theme.text }}
-                labelStyle={{ color: theme.textSecondary }}
+              // containerStyle={{ backgroundColor: theme.surface }}
+              // inputStyle={{ color: theme.text }}
+              // labelStyle={{ color: theme.textSecondary }}
               />
             </View>
 
@@ -208,9 +208,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 onChangeText={(value) => updateField('phone', value)}
                 placeholder="Enter your phone number"
                 keyboardType="phone-pad"
-                containerStyle={{ backgroundColor: theme.surface }}
-                inputStyle={{ color: theme.text }}
-                labelStyle={{ color: theme.textSecondary }}
+              // containerStyle={{ backgroundColor: theme.surface }}
+              // inputStyle={{ color: theme.text }}
+              // labelStyle={{ color: theme.textSecondary }}
               />
             </View>
 
@@ -218,23 +218,18 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
               <Text style={[styles.label, { color: theme.textSecondary }]}>
                 About
               </Text>
-              <View
-                style={[
-                  styles.textAreaContainer,
-                  { backgroundColor: theme.surface },
-                ]}
-              >
-                <Input
-                  multiline
-                  numberOfLines={4}
-                  inputStyle={{ color: theme.text, textAlignVertical: 'top' }}
-                  value={formData.aboutUs}
-                  onChangeText={(value: string) =>
-                    updateField('aboutUs', value)
-                  }
-                  placeholder="Tell us about yourself"
-                />
-              </View>
+
+              <Input
+                multiline
+                numberOfLines={4}
+                // inputStyle={{ color: theme.text, textAlignVertical: 'top' }}
+                value={formData.aboutUs}
+                onChangeText={(value: string) =>
+                  updateField('aboutUs', value)
+                }
+                placeholder="Tell us about yourself"
+              />
+
             </View>
           </View>
 
@@ -252,9 +247,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 value={formData.businessName}
                 onChangeText={(value) => updateField('businessName', value)}
                 placeholder="Enter your business name"
-                containerStyle={{ backgroundColor: theme.surface }}
-                inputStyle={{ color: theme.text }}
-                labelStyle={{ color: theme.textSecondary }}
+              // containerStyle={{ backgroundColor: theme.surface }}
+              // inputStyle={{ color: theme.text }}
+              // labelStyle={{ color: theme.textSecondary }}
               />
             </View>
 
@@ -267,9 +262,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 value={formData.businessType}
                 onChangeText={(value) => updateField('businessType', value)}
                 placeholder="e.g., Technology, Retail, Services"
-                containerStyle={{ backgroundColor: theme.surface }}
-                inputStyle={{ color: theme.text }}
-                labelStyle={{ color: theme.textSecondary }}
+              // containerStyle={{ backgroundColor: theme.surface }}
+              // inputStyle={{ color: theme.text }}
+              // labelStyle={{ color: theme.textSecondary }}
               />
             </View>
 
@@ -284,9 +279,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 placeholder="Enter business email"
                 keyboardType="email-address"
                 autoCapitalize="none"
-                containerStyle={{ backgroundColor: theme.surface }}
-                inputStyle={{ color: theme.text }}
-                labelStyle={{ color: theme.textSecondary }}
+              // containerStyle={{ backgroundColor: theme.surface }}
+              // inputStyle={{ color: theme.text }}
+              // labelStyle={{ color: theme.textSecondary }}
               />
             </View>
 
@@ -298,9 +293,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 value={formData.website}
                 onChangeText={(value) => updateField('website', value)}
                 placeholder="https://yourwebsite.com"
-                containerStyle={{ backgroundColor: theme.surface }}
-                inputStyle={{ color: theme.text }}
-                labelStyle={{ color: theme.textSecondary }}
+              // containerStyle={{ backgroundColor: theme.surface }}
+              // inputStyle={{ color: theme.text }}
+              // labelStyle={{ color: theme.textSecondary }}
               />
             </View>
 
@@ -313,9 +308,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 value={formData.gstNumber}
                 onChangeText={(value) => updateField('gstNumber', value)}
                 placeholder="Enter GST number"
-                containerStyle={{ backgroundColor: theme.surface }}
-                inputStyle={{ color: theme.text }}
-                labelStyle={{ color: theme.textSecondary }}
+              // containerStyle={{ backgroundColor: theme.surface }}
+              // inputStyle={{ color: theme.text }}
+              // labelStyle={{ color: theme.textSecondary }}
               />
             </View>
 
@@ -327,9 +322,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 value={formData.udyamNumber}
                 onChangeText={(value) => updateField('udyamNumber', value)}
                 placeholder="Enter Udyam registration number"
-                containerStyle={{ backgroundColor: theme.surface }}
-                inputStyle={{ color: theme.text }}
-                labelStyle={{ color: theme.textSecondary }}
+              // containerStyle={{ backgroundColor: theme.surface }}
+              // inputStyle={{ color: theme.text }}
+              // labelStyle={{ color: theme.textSecondary }}
               />
             </View>
           </View>
@@ -347,9 +342,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 value={formData.linkedin}
                 onChangeText={(value) => updateField('linkedin', value)}
                 placeholder="https://linkedin.com/in/yourprofile"
-                containerStyle={{ backgroundColor: theme.surface }}
-                inputStyle={{ color: theme.text }}
-                labelStyle={{ color: theme.textSecondary }}
+              // containerStyle={{ backgroundColor: theme.surface }}
+              // inputStyle={{ color: theme.text }}
+              // labelStyle={{ color: theme.textSecondary }}
               />
             </View>
 
@@ -361,9 +356,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 value={formData.twitter}
                 onChangeText={(value) => updateField('twitter', value)}
                 placeholder="https://twitter.com/yourhandle"
-                containerStyle={{ backgroundColor: theme.surface }}
-                inputStyle={{ color: theme.text }}
-                labelStyle={{ color: theme.textSecondary }}
+              // containerStyle={{ backgroundColor: theme.surface }}
+              // inputStyle={{ color: theme.text }}
+              // labelStyle={{ color: theme.textSecondary }}
               />
             </View>
 
@@ -375,14 +370,13 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 value={formData.instagram}
                 onChangeText={(value) => updateField('instagram', value)}
                 placeholder="https://instagram.com/yourhandle"
-                containerStyle={{ backgroundColor: theme.surface }}
+              // containerStyle={{ backgroundColor: theme.surface }}
               />
             </View>
 
             <View
               style={[
-                styles.inputGroup,
-                { borderRadius: 12, borderWidth: 1, borderColor: theme.border },
+                styles.inputGroup
               ]}
             >
               <Text style={[styles.label, { color: theme.textSecondary }]}>
@@ -518,8 +512,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   textAreaContainer: {
-    minHeight: 120,
+    minHeight: 110,
     marginBottom: 12,
+
     overflow: 'hidden',
   },
   row: {

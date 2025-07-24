@@ -16,6 +16,7 @@ import { ClientFormModal } from '@/components/modal/ClientFormModal';
 import useUserServiceStore from '@/store/useUserBusinessServices';
 import { clearAuthData, getAuthData } from '@/services/secureStore';
 import useUsersStore from '@/store/useUsersStore';
+import Layout from '@/components/common/Layout';
 
 export default function ClientsScreen() {
     const { theme } = useThemeStore();
@@ -139,18 +140,16 @@ export default function ClientsScreen() {
     };
 
     return (
-        <View style={[styles.container, { backgroundColor: theme.background }]}>
-            <View style={[styles.header, { borderBottomColor: theme.border }]}>
-                <TouchableOpacity onPress={() => router.back()}>
-                    <ArrowLeft size={24} color={theme.text} />
-                </TouchableOpacity>
-                <Text style={[styles.title, { color: theme.text }]}>Our Clients</Text>
-                {(isOwner != 'false') ? (
+        <Layout title="Our Clients"
+            showBackButton
+            headerRight={
+                (isOwner != 'false') ? (
                     <TouchableOpacity onPress={() => handleAddClient()}>
                         <PlusCircle size={24} color={theme.primary} />
                     </TouchableOpacity>
-                ) : <View style={{ width: 24 }} />}
-            </View>
+                ) : <View style={{ width: 24 }} />
+            }>
+
 
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 <View style={styles.statsSection}>
@@ -252,13 +251,17 @@ export default function ClientsScreen() {
                     client={editingClient}
                     isEdit={!!editingClient}
                 />}
-        </View>
+
+        </Layout>
     );
 }
 
 const styles = StyleSheet.create({
     // copy all styles from your modal — unchanged
-    container: { flex: 1, paddingTop: 40 },
+    container: {
+        flex: 1,
+        // paddingTop: 40
+    },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',

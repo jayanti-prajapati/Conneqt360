@@ -22,6 +22,7 @@ import CommentModal from '../comments/CommentModal';
 import { UserSelectionModal } from './UserSelectionModal';
 import useChatStore from '@/store/useChatStore';
 import { useRouter } from 'expo-router';
+import Layout from '../common/Layout';
 
 
 const { width, height } = Dimensions.get('window');
@@ -59,7 +60,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
             setUser(authData?.userData || null);
         };
         fetchUser();
-    }, [post, user, comments]);
+    }, [post]);
 
 
 
@@ -71,7 +72,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
 
 
         }
-    }, [post, user, comments]);
+    }, [visible]);
     const handleDelete = (id: string) => {
         Alert.alert(
             'Delete Post',
@@ -135,7 +136,6 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
 
 
     if (!post) return null;
-
     const isOwnPost = post?.user?._id === user?.data?._id;
 
     return (
@@ -143,10 +143,18 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
             visible={visible}
             animationType="slide"
             presentationStyle="pageSheet"
+
             onRequestClose={onClose}
         >
-            <View style={[styles.container, { backgroundColor: theme.background }]}>
-                <View style={[styles.header, { borderBottomColor: theme.border }]}>
+            <Layout title={'Post Details'} onBackPress={() => onClose?.()}
+                showBackButton
+                headerRight={
+                    <TouchableOpacity onPress={() => setShowOptions(true)}>
+                        <MoreVertical size={24} color={theme.textSecondary} />
+                    </TouchableOpacity>
+                }>
+                {/* <View style={[styles.container, { backgroundColor: theme.background }]}> */}
+                {/* <View style={[styles.header, { borderBottomColor: theme.border }]}>
                     <TouchableOpacity onPress={onClose}>
                         <ArrowLeft size={24} color={theme.text} />
                     </TouchableOpacity>
@@ -154,7 +162,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
                     <TouchableOpacity onPress={() => setShowOptions(true)}>
                         <MoreVertical size={24} color={theme.textSecondary} />
                     </TouchableOpacity>
-                </View>
+                </View> */}
 
                 <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                     <View style={[styles.postContainer, { borderColor: theme.border }]}>
@@ -312,7 +320,8 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
                     imageUri={post?.user?.profileUrl || 'https://via.placeholder.com/400'}
                     onClose={() => setShowProfileImage(false)}
                 />
-            </View>
+                {/* </View> */}
+            </Layout>
         </Modal>
     );
 };
@@ -344,8 +353,10 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
+
     },
     postContainer: {
+        backgroundColor: Colors.white,
         margin: 5,
         borderRadius: 16,
         padding: 16,

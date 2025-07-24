@@ -8,6 +8,7 @@ import { Service } from '@/types';
 import useUsersStore from '@/store/useUsersStore';
 import useUserServiceStore from '@/store/useUserBusinessServices';
 import { clearAuthData } from '@/services/secureStore';
+import Layout from '@/components/common/Layout';
 
 
 export default function ServicesScreen() {
@@ -118,21 +119,17 @@ export default function ServicesScreen() {
 
 
     return (
-        <View style={[styles.container, { backgroundColor: theme.background }]}>
-            <View style={[styles.header, { borderBottomColor: theme.border }]}>
-                <TouchableOpacity onPress={() => router.back()}>
-                    <ArrowLeft size={24} color={theme.text} />
-                </TouchableOpacity>
-                <Text style={[styles.title, { color: theme.text }]}>Our Services</Text>
-                {(isOwner != 'false') ? (
+
+        <Layout title="Our Services"
+            showBackButton
+            headerRight={
+                (isOwner != 'false') ? (
                     <TouchableOpacity onPress={() => handleAddService()}>
                         <PlusCircle size={24} color={theme.primary} />
                     </TouchableOpacity>
                 ) : <View style={{ width: 24 }} />
+            }>
 
-
-                }
-            </View>
 
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
@@ -201,7 +198,8 @@ export default function ServicesScreen() {
                     isEdit={!!editingService}
                 />}
 
-        </View>
+
+        </Layout>
     );
 }
 

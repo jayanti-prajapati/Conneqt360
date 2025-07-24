@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet, Modal, ScrollView, TouchableOpacity,
 import { X, Save, Plus, Trash2 } from 'lucide-react-native';
 import { CatalogItem } from '@/types';
 import { useThemeStore } from '@/store/themeStore';
+import Input from '../ui-components/Input';
 
 
 interface CatalogFormModalProps {
@@ -38,7 +39,7 @@ export const CatalogFormModal: React.FC<CatalogFormModalProps> = ({
         }
 
         const catalogItem: Partial<CatalogItem> = {
-            ...(isEdit && item ? { id: item.id } : {}),
+            ...(isEdit && item ? { _id: item._id } : {}),
             title: formData.title,
             description: formData.description,
             price: formData.price,
@@ -102,12 +103,10 @@ export const CatalogFormModal: React.FC<CatalogFormModalProps> = ({
                                 <Text >Title </Text>
                                 <Text style={{ color: 'red' }}>*</Text>
                             </Text>
-                            <TextInput
-                                style={[styles.input, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
+                            <Input
                                 value={formData.title}
                                 onChangeText={(value) => updateField('title', value)}
                                 placeholder="Enter item title"
-                                placeholderTextColor={theme.textSecondary}
                             />
                         </View>
 
@@ -116,38 +115,38 @@ export const CatalogFormModal: React.FC<CatalogFormModalProps> = ({
                                 <Text >Description </Text>
                                 <Text style={{ color: 'red' }}>*</Text>
                             </Text>
-                            <TextInput
-                                style={[styles.textArea, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
+                            <Input
                                 value={formData.description}
                                 onChangeText={(value) => updateField('description', value)}
                                 placeholder="Describe your item or service"
-                                placeholderTextColor={theme.textSecondary}
                                 multiline
                                 numberOfLines={4}
-                                textAlignVertical="top"
+
                             />
                         </View>
 
                         <View style={styles.row}>
                             <View style={[styles.inputGroup, styles.halfWidth]}>
-                                <Text style={[styles.label, { color: theme.textSecondary }]}>Price</Text>
-                                <TextInput
-                                    style={[styles.input, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
+                                <Text style={[styles.label, { color: theme.textSecondary }]}>
+                                    <Text >Price </Text>
+                                    <Text style={{ color: 'red' }}>*</Text>
+                                </Text>
+                                <Input
                                     value={formData.price}
                                     onChangeText={(value) => updateField('price', value)}
                                     placeholder="e.g., $500 or Starting from $1000"
-                                    placeholderTextColor={theme.textSecondary}
                                 />
                             </View>
 
                             <View style={[styles.inputGroup, styles.halfWidth]}>
-                                <Text style={[styles.label, { color: theme.textSecondary }]}>Category</Text>
-                                <TextInput
-                                    style={[styles.input, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
+                                <Text style={[styles.label, { color: theme.textSecondary }]}>
+                                    <Text >Category </Text>
+                                    <Text style={{ color: 'red' }}>*</Text>
+                                </Text>
+                                <Input
                                     value={formData.category}
                                     onChangeText={(value) => updateField('category', value)}
                                     placeholder="e.g., Web Development"
-                                    placeholderTextColor={theme.textSecondary}
                                 />
                             </View>
                         </View>
@@ -155,7 +154,10 @@ export const CatalogFormModal: React.FC<CatalogFormModalProps> = ({
 
                     <View style={styles.section}>
                         <View style={styles.arrayHeader}>
-                            <Text style={[styles.sectionTitle, { color: theme.text }]}>Images</Text>
+                            <Text style={[styles.label, { color: theme.textSecondary }]}>
+                                <Text >Image </Text>
+                                <Text style={{ color: 'red' }}>*</Text>
+                            </Text>
                             <TouchableOpacity
                                 style={[styles.addButton, { backgroundColor: theme.primary }]}
                                 onPress={() => addArrayField('images')}
@@ -166,12 +168,10 @@ export const CatalogFormModal: React.FC<CatalogFormModalProps> = ({
 
                         {formData.images.map((image, index) => (
                             <View key={index} style={styles.arrayItem}>
-                                <TextInput
-                                    style={[styles.arrayInput, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
+                                <Input
                                     value={image}
                                     onChangeText={(value) => updateArrayField('images', index, value)}
                                     placeholder="Enter image URL"
-                                    placeholderTextColor={theme.textSecondary}
                                 />
                                 {formData.images.length > 1 && (
                                     <TouchableOpacity
@@ -187,7 +187,10 @@ export const CatalogFormModal: React.FC<CatalogFormModalProps> = ({
 
                     <View style={styles.section}>
                         <View style={styles.arrayHeader}>
-                            <Text style={[styles.sectionTitle, { color: theme.text }]}>Tags</Text>
+                            <Text style={[styles.label, { color: theme.textSecondary }]}>
+                                <Text >Tags </Text>
+                                <Text style={{ color: 'red' }}>*</Text>
+                            </Text>
                             <TouchableOpacity
                                 style={[styles.addButton, { backgroundColor: theme.primary }]}
                                 onPress={() => addArrayField('tags')}
@@ -198,12 +201,10 @@ export const CatalogFormModal: React.FC<CatalogFormModalProps> = ({
 
                         {formData.tags.map((tag, index) => (
                             <View key={index} style={styles.arrayItem}>
-                                <TextInput
-                                    style={[styles.arrayInput, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
+                                <Input
                                     value={tag}
                                     onChangeText={(value) => updateArrayField('tags', index, value)}
                                     placeholder="Enter tag (e.g., React, Node.js)"
-                                    placeholderTextColor={theme.textSecondary}
                                 />
                                 {formData.tags.length > 1 && (
                                     <TouchableOpacity
@@ -298,6 +299,9 @@ const styles = StyleSheet.create({
     arrayItem: {
         flexDirection: 'row',
         alignItems: 'center',
+        width: '80%',
+        justifyContent: 'space-between',
+
         marginBottom: 12,
         gap: 12,
     },

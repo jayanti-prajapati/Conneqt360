@@ -3,6 +3,7 @@ import {
   View, Text, FlatList, StyleSheet,
   TouchableOpacity, Image, TextInput
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MessageCircle, Plus, Send, X, Search as SearchIcon } from 'lucide-react-native';
 
@@ -20,6 +21,7 @@ import NoInternetScreen from '@/components/utils/NoInternetScreen';
 import Search from '@/components/common/Search';
 import { ScrollView } from 'react-native-gesture-handler';
 import Spacing from '@/constants/Spacing';
+import Input from '@/components/ui-components/Input';
 
 const placeholderImage = 'https://via.placeholder.com/50';
 
@@ -191,8 +193,9 @@ export default function ChatScreen() {
   if (showNewChat) {
     return (
       isConnected ? (
-        <View style={[styles.container, { backgroundColor: theme.background }]}>
-          <View style={styles.header}>
+        <Layout title={'New Chat'} showBackButton={true} onBackPress={() => { setShowNewChat(false); allUsers = [], setSelectedUser(null) }}>
+          {/* <View style={[styles.container, { backgroundColor: theme.background }]}> */}
+          {/* <View style={styles.header}>
             <TouchableOpacity onPress={() => {
               setShowNewChat(false)
               allUsers = [];
@@ -201,7 +204,7 @@ export default function ChatScreen() {
             </TouchableOpacity>
             <Text style={[styles.title, { color: theme.text }]}>New Chat</Text>
             <View style={{ width: 50 }} />
-          </View>
+          </View> */}
           <View style={[styles.searchContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <SearchIcon size={20} color={theme.textSecondary} />
             <TextInput
@@ -215,17 +218,25 @@ export default function ChatScreen() {
           {selectedUser ? (
             <View style={styles.newChatContainer}>
               <View style={[styles.selectedUser, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                <Image source={{ uri: selectedUser.profileUrl || placeholderImage }} style={styles.chatAvatar} />
-                <Text style={[styles.selectedUserName, { color: theme.text }]}>{selectedUser.name}</Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <Image source={{ uri: selectedUser.profileUrl || placeholderImage }} style={styles.chatAvatar} />
+                  <Text style={[styles.selectedUserName, { color: theme.text }]}>{selectedUser.name}</Text>
+                </View>
+                <TouchableOpacity
+                  onPress={() => setSelectedUser(null)}
+                  style={styles.closeButton}
+                >
+                  <Ionicons name="close" size={20} color={theme.text} />
+                </TouchableOpacity>
               </View>
-              <View style={[styles.messageInputContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                <TextInput
-                  style={[styles.messageInput, { color: theme.text }]}
+              <View style={[styles.messageInputContainer, { width: "80%", alignItems: "center" }]}>
+                <Input
+                  // style={[styles.messageInput, { color: theme.text }]}
                   placeholder="Type your message..."
-                  placeholderTextColor={theme.textSecondary}
+                  // placeholderTextColor={theme.textSecondary}
                   value={newMessage}
                   onChangeText={setNewMessage}
-                  multiline
+
                 />
                 <TouchableOpacity
                   style={[styles.sendButton, { backgroundColor: theme.primary }]}
@@ -245,7 +256,8 @@ export default function ChatScreen() {
               showsVerticalScrollIndicator={false}
             />
           )}
-        </View>
+          {/* </View> */}
+        </Layout>
       ) : (
         <NoInternetScreen />
       )
@@ -358,14 +370,23 @@ const styles = StyleSheet.create({
   useraboutUs: { fontSize: 14 },
   newChatContainer: { flex: 1, padding: 16 },
   selectedUser: {
-    flexDirection: 'row', alignItems: 'center',
-    padding: 16, borderRadius: 12, borderWidth: 1, marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 10,
+    borderWidth: 1,
+    justifyContent: 'space-between',
+  },
+  closeButton: {
+    padding: 5,
+    marginLeft: 10,
   },
   newChatText: { fontSize: 16, fontWeight: '600' },
   selectedUserName: { fontSize: 16, fontWeight: '600', marginLeft: 12 },
   messageInputContainer: {
     flexDirection: 'row', alignItems: 'flex-end',
-    padding: 12, borderRadius: 12, borderWidth: 1, gap: 12,
+    padding: 2, gap: 12, width: "80%"
   },
   messageInput: { flex: 1, fontSize: 16, maxHeight: 100, minHeight: 40 },
   sendButton: {

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
     View,
@@ -12,12 +13,14 @@ import {
 import { X, Save, Plus } from 'lucide-react-native';
 import { useThemeStore } from '@/store/themeStore';
 import TagsInput from '../Input/TagsInput';
+import { Service } from '@/types';
+import Input from '../ui-components/Input';
 
 interface ServiceFormModalProps {
     visible: boolean;
     onClose: () => void;
-    onSave: (service: any) => void;
-    service?: string;
+    onSave: (service: Service) => void;
+    service: Service;
     isEdit?: boolean;
 }
 
@@ -29,24 +32,35 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
     isEdit = false,
 }) => {
     const { theme } = useThemeStore();
-    const [serviceName, setServiceName] = useState(service || '');
-    const [description, setDescription] = useState('');
-    const [tags, setTags] = useState<string[]>(['']);
+    const [serviceName, setServiceName] = useState(service?.title || '');
 
-
+    const [description, setDescription] = useState(service?.description || '');
+    const [tags, setTags] = useState<string[]>(service?.features || ['']);
 
 
     const handleSave = () => {
-        if (!serviceName.trim()) {
+        if (!serviceName) {
             Alert.alert('Error', 'Service name is required.');
             return;
         }
+        if (!description) {
+            Alert.alert('Error', 'Description is required.');
+            return;
+        }
+        if (!tags.length) {
+            Alert.alert('Error', 'Atleast add one feature.');
+            return;
+        }
 
-        onSave({
-            name: serviceName.trim(),
-            description: description.trim(),
-            tags,
-        });
+        onSave(
+            {
+                ...(isEdit && service ? { _id: service._id } : {}),
+                title: serviceName.trim(),
+                description: description.trim(),
+                features: tags,
+            }
+
+        );
 
         onClose();
         setServiceName('');
@@ -84,33 +98,32 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
 
                         {/* Name */}
                         <View style={styles.inputGroup}>
-                            <Text style={[styles.label, { color: theme.textSecondary }]}>Service Name *</Text>
-                            <TextInput
-                                style={[
-                                    styles.input,
-                                    { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border },
-                                ]}
+                            <Text style={[styles.label, { color: theme.textSecondary }]}>
+                                <Text >Service Name </Text>
+                                <Text style={{ color: 'red' }}>*</Text>
+                            </Text>
+
+                            <Input
                                 value={serviceName}
                                 onChangeText={setServiceName}
                                 placeholder="e.g., Web Development"
-                                placeholderTextColor={theme.textSecondary}
+
                             />
                         </View>
 
                         {/* Description */}
                         <View style={styles.inputGroup}>
-                            <Text style={[styles.label, { color: theme.textSecondary }]}>Description</Text>
-                            <TextInput
-                                style={[
-                                    styles.textArea,
-                                    { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border },
-                                ]}
+                            <Text style={[styles.label, { color: theme.textSecondary }]}>
+                                <Text >Description</Text>
+                                <Text style={{ color: 'red' }}>*</Text>
+                            </Text>
+
+                            <Input
                                 multiline
                                 numberOfLines={4}
                                 value={description}
                                 onChangeText={setDescription}
                                 placeholder="Describe your service..."
-                                placeholderTextColor={theme.textSecondary}
                             />
                         </View>
 

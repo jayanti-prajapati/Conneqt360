@@ -14,8 +14,10 @@
   "dependencies": {
     "@expo-google-fonts/poppins": "^0.2.3",
     "@expo/vector-icons": "^14.1.0",
+    "@gorhom/bottom-sheet": "^5.1.6",
     "@lucide/lab": "^0.1.2",
     "@react-native-async-storage/async-storage": "^2.2.0",
+    "@react-native-community/netinfo": "^11.4.1",
     "@react-native-community/slider": "^4.5.7",
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/drawer": "^7.5.0",
@@ -45,6 +47,7 @@
     "expo-system-ui": "~5.0.5",
     "expo-web-browser": "~14.1.5",
     "gesture-handler": "^0.0.1",
+    "lodash": "^4.17.21",
     "lucide-react-native": "^0.475.0",
     "moti": "^0.30.0",
     "react": "19.0.0",
@@ -68,6 +71,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@types/lodash": "^4.17.20",
     "@types/react": "~19.0.10",
     "@types/react-native-dotenv": "^0.2.2",
     "typescript": "~5.8.3"

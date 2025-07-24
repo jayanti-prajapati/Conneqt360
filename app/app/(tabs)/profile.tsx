@@ -49,6 +49,7 @@ import { useRouter } from 'expo-router';
 import useUserBusinessServices from '@/store/useUserBusinessServices';
 import useNetworkStatus from '@/hooks/useNetworkStatus';
 import NoInternetScreen from '@/components/utils/NoInternetScreen';
+import CustomLoader from '@/components/loader/CustomLoader';
 
 
 
@@ -220,18 +221,11 @@ export default function ProfileScreen() {
   //   return <CustomLoader visible={loading} />;
   // }
   return (
-    <>    {
+    <View style={{ flex: 1 }}>{
       isConnected ?
-        <Layout showBackButton title={'Profile'} scrollable>
+        <Layout title={'Profile'} scrollable>
           < View style={styles.scrollContent} >
-            {/* <Form
-        isPresent={isPresent}
-        onClose={close}
-        closeText="Close"
-
-        users={user}
-      />
-      <About isAbout={isAbout} onClose={close} userId={user?._id} /> */}
+            <CustomLoader visible={loading} />
             < LogoutModal isLogout={isLogout} onClose={close} />
 
 
@@ -524,7 +518,7 @@ export default function ProfileScreen() {
           </View>
         )
       }
-    </>
+    </View>
 
 
 
@@ -729,12 +723,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.gray[100],
   },
-  // sectionTitle: {
-  //   fontSize: 16,
-  //   fontWeight: '600',
-  //   marginBottom: Spacing.sm,
-  //   color: Colors.gray[800],
-  // },
+
   card: {
     backgroundColor: Colors.white,
     borderRadius: 12,

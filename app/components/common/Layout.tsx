@@ -29,6 +29,7 @@ type LayoutProps = {
   safeAreaEdges?: Array<'top' | 'right' | 'bottom' | 'left'>;
   statusBarStyle?: 'light-content' | 'dark-content' | 'default';
   statusBarColor?: string;
+  onBackPress?: () => void;
 };
 
 export default function Layout({
@@ -40,6 +41,7 @@ export default function Layout({
   scrollable = false,
   style,
   contentContainerStyle,
+  onBackPress,
   safeAreaEdges = ['top', 'left', 'right'],
 }: LayoutProps) {
   const { colors } = useTheme();
@@ -87,7 +89,11 @@ export default function Layout({
             title={title}
             showBackButton={showBackButton}
             rightComponent={headerRight}
-            onBackPress={() => router.back()}
+            onBackPress={() => {
+
+              onBackPress?.()
+              router.push('/(tabs)')
+            }}
           />
         )}
         <KeyboardAvoidingView

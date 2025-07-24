@@ -11,6 +11,7 @@ import { clearAuthData, getAuthData } from '@/services/secureStore';
 import useUsersStore from '@/store/useUsersStore';
 import useUserBusinessServices from '@/store/useUserBusinessServices';
 import { CatalogDetailModal } from '@/components/modal/CatalogDetailModal';
+import Layout from '@/components/common/Layout';
 
 const { width } = Dimensions.get('window');
 
@@ -183,24 +184,21 @@ export default function BusinessCatalogScreen() {
 
 
     return (
-        <View style={[styles.container, { backgroundColor: theme.background }]}>
-            <View style={[styles.header, { borderBottomColor: theme.border }]}>
-                <TouchableOpacity onPress={() => router.back()}>
-                    <ArrowLeft size={24} color={theme.text} />
-                </TouchableOpacity>
-
-
-                <Text style={[styles.title, { color: theme.text }]}>Business Catalog</Text>
-
-                {(isOwner != 'false') ? (
+        <Layout title={'Business Catalog'}
+            headerRight={
+                (isOwner != 'false') ? (
                     <TouchableOpacity onPress={() => handleAddCatalogItem()}>
                         <PlusCircle size={24} color={theme.primary} />
                     </TouchableOpacity>
                 ) : (
                     <View style={{ width: 24 }} />
-                )}
+                )
+            }
+            showBackButton
 
-            </View>
+
+        >
+
 
             {!selectedItem ? (
                 <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -224,14 +222,15 @@ export default function BusinessCatalogScreen() {
                     isEdit={!!editingCatalogItem}
                 />
             }
-        </View>
+
+        </Layout>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingTop: 40
+        // paddingTop: 40
     },
     header: {
         // width:

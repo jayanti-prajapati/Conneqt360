@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   TextInput,
   FlatList,
+  Dimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Filter, Plus } from 'lucide-react-native';
@@ -18,6 +19,8 @@ import Spacing from '@/constants/Spacing';
 import { Product } from '@/types';
 import Layout from '@/components/common/Layout';
 import Search from '@/components/common/Search';
+import Button from '@/components/ui-components/Button';
+import { ComingSoon } from '@/components/utils/ComingSoon';
 
 // Mock data for products
 const mockProducts: Product[] = [
@@ -105,6 +108,8 @@ const mockProducts: Product[] = [
     verified: true,
   },
 ];
+const { width, height } = Dimensions.get('window');
+
 
 export default function MarketplaceScreen() {
   const router = useRouter();
@@ -127,7 +132,9 @@ export default function MarketplaceScreen() {
 
   return (
     <Layout title={'Business Marketplace'} scrollable>
-      <Search />
+
+      <ComingSoon />
+      {/* <Search />
 
       <View style={styles.categoryTabs}>
         <ScrollView
@@ -187,7 +194,7 @@ export default function MarketplaceScreen() {
         onPress={handleCreateListing}
       >
         <Plus size={24} color={Colors.white} />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </Layout>
   );
 }
@@ -195,99 +202,30 @@ export default function MarketplaceScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.gray[100],
+    paddingHorizontal: 24,
+    paddingTop: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  header: {
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.xl,
-    paddingBottom: Spacing.md,
-    backgroundColor: Colors.white,
+  image: {
+    width: width * 0.6,
+    height: height * 0.3,
+    marginBottom: 30,
   },
   title: {
-    fontSize: Typography.size.xl,
-    fontWeight: Typography.weight.bold as any,
-    color: Colors.gray[800],
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 12,
+    textAlign: 'center',
   },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    backgroundColor: Colors.white,
+  subtitle: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 40,
   },
-  searchBar: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.gray[100],
+  button: {
+    paddingHorizontal: 24,
+    paddingVertical: 10,
     borderRadius: 8,
-    paddingHorizontal: Spacing.sm,
-    height: 40,
-  },
-  searchIcon: {
-    marginRight: Spacing.xs,
-  },
-  searchInput: {
-    flex: 1,
-    height: 40,
-    fontSize: Typography.size.md,
-    color: Colors.gray[800],
-  },
-  filterButton: {
-    marginLeft: Spacing.md,
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    backgroundColor: Colors.gray[100],
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  categoryTabs: {
-    paddingVertical: Spacing.md,
-    backgroundColor: Colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.gray[200],
-  },
-  categoryTabsContent: {
-    paddingHorizontal: Spacing.md,
-  },
-  categoryTab: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    marginRight: Spacing.sm,
-    borderRadius: 20,
-  },
-  categoryTabActive: {
-    backgroundColor: Colors.primary[50],
-  },
-  categoryTabText: {
-    fontSize: Typography.size.sm,
-    color: Colors.gray[600],
-  },
-  categoryTabTextActive: {
-    color: Colors.primary[600],
-    fontWeight: Typography.weight.semiBold as any,
-  },
-  productGrid: {
-    padding: Spacing.sm,
-  },
-  productRow: {
-    justifyContent: 'space-between',
-  },
-  floatingButton: {
-    position: 'absolute',
-    bottom: Spacing.lg,
-    right: Spacing.lg,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: Colors.primary[600],
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
   },
 });

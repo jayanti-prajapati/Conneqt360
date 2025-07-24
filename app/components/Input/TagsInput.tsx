@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Plus, Trash2 } from 'lucide-react-native';
 import { useThemeStore } from '@/store/themeStore';
+import Input from '../ui-components/Input';
 
 interface TagsInputProps {
     title: string;
@@ -36,7 +37,7 @@ const TagsInput: React.FC<TagsInputProps> = ({ title, tags, setTags }) => {
     };
 
     return (
-        <View style={styles.wrapper}>
+        <View >
             <View style={styles.tagsHeader}>
                 <Text style={[styles.label, { color: theme.text }]}>{title}</Text>
                 <TouchableOpacity onPress={handleAddTag} style={[styles.addButton, { backgroundColor: theme.primary }]}>
@@ -47,17 +48,10 @@ const TagsInput: React.FC<TagsInputProps> = ({ title, tags, setTags }) => {
             <ScrollView style={{ marginTop: 12 }}>
                 {tags.map((tag, index) => (
                     <View key={index} style={styles.tagRow}>
-                        <TextInput
-                            style={[
-                                styles.input,
-                                {
-                                    backgroundColor: theme.surface,
-                                    color: theme.text,
-                                    borderColor: theme.border,
-                                },
-                            ]}
+                        <Input
+
                             placeholder="Enter tag (e.g., React, Node.js)"
-                            placeholderTextColor={theme.textSecondary}
+                            // placeholderTextColor={theme.textSecondary}
                             value={tag}
                             onChangeText={(text) => handleChangeTag(text, index)}
                         />
@@ -76,9 +70,7 @@ const TagsInput: React.FC<TagsInputProps> = ({ title, tags, setTags }) => {
 
 export default TagsInput;
 const styles = StyleSheet.create({
-    wrapper: {
-        marginTop: 24,
-    },
+
     tagsHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -97,6 +89,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 12,
         gap: 8,
+        width: '80%',
     },
     input: {
         flex: 1,

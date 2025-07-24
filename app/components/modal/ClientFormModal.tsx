@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet, Modal, ScrollView, TouchableOpacity,
 import { X, Save, Star } from 'lucide-react-native';
 import { Client } from '@/types';
 import { useThemeStore } from '@/store/themeStore';
+import Input from '../ui-components/Input';
 
 
 interface ClientFormModalProps {
@@ -25,7 +26,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
         name: client?.name || '',
         logo: client?.logo || '',
         testimonial: client?.testimonial || '',
-        rating: client?.rating || 5,
+        rating: client?.rating || "5",
         projectType: client?.projectType || '',
         completedDate: client?.completedDate ? new Date(client.completedDate).toISOString().split('T')[0] : '',
     });
@@ -35,15 +36,30 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
             Alert.alert('Error', 'Client name is required.');
             return;
         }
-
+        if (!formData.logo.trim()) {
+            Alert.alert('Error', 'Logo  is required.');
+            return;
+        }
+        if (!formData.projectType.trim()) {
+            Alert.alert('Error', 'Project Type is required.');
+            return;
+        }
+        if (!formData.testimonial.trim()) {
+            Alert.alert('Error', 'Feedback is required.');
+            return;
+        }
+        if (!formData.completedDate.trim()) {
+            Alert.alert('Error', 'Completed Date is required.');
+            return;
+        }
         const clientData: Partial<Client> = {
-            ...(isEdit && client ? { id: client.id } : {}),
+            ...(isEdit && client ? { id: client._id } : {}),
             name: formData.name,
             logo: formData.logo || undefined,
             testimonial: formData.testimonial || undefined,
-            rating: formData.rating,
+            rating: formData.rating as string,
             projectType: formData.projectType || undefined,
-            completedDate: formData.completedDate ? new Date(formData.completedDate) : undefined,
+            completedDate: formData.completedDate ? (formData.completedDate) : undefined,
         };
 
         onSave(clientData);
@@ -66,7 +82,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
                         <Star
                             size={24}
                             color="#FFD700"
-                            fill={star <= formData.rating ? "#FFD700" : "none"}
+                            fill={star <= Number(formData.rating) ? "#FFD700" : "none"}
                         />
                     </TouchableOpacity>
                 ))}
@@ -94,69 +110,80 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
                         <Text style={[styles.sectionTitle, { color: theme.text }]}>Client Information</Text>
 
                         <View style={styles.inputGroup}>
-                            <Text style={[styles.label, { color: theme.textSecondary }]}>Client Name *</Text>
-                            <TextInput
-                                style={[styles.input, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
+                            <Text style={[styles.label, { color: theme.textSecondary }]}>
+                                <Text >Client Name </Text>
+                                <Text style={{ color: 'red' }}>*</Text>
+                            </Text>
+                            <Input
                                 value={formData.name}
                                 onChangeText={(value) => updateField('name', value)}
                                 placeholder="Enter client company name"
-                                placeholderTextColor={theme.textSecondary}
                             />
                         </View>
 
                         <View style={styles.inputGroup}>
-                            <Text style={[styles.label, { color: theme.textSecondary }]}>Logo URL</Text>
-                            <TextInput
-                                style={[styles.input, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
+                            <Text style={[styles.label, { color: theme.textSecondary }]}>
+                                <Text >Logo URL</Text>
+                                <Text style={{ color: 'red' }}>*</Text>
+                            </Text>
+                            <Input
                                 value={formData.logo}
                                 onChangeText={(value) => updateField('logo', value)}
                                 placeholder="Enter logo image URL"
-                                placeholderTextColor={theme.textSecondary}
+                            />
+                        </View>
+                        <View style={[styles.inputGroup, styles.halfWidth]}>
+                            <Text style={[styles.label, { color: theme.textSecondary }]}>
+                                <Text >Project Type</Text>
+                                <Text style={{ color: 'red' }}>*</Text>
+                            </Text>
+
+                            <Input
+                                value={formData.projectType}
+                                onChangeText={(value) => updateField('projectType', value)}
+                                placeholder="e.g., E-commerce Platform"
                             />
                         </View>
 
-                        <View style={styles.row}>
-                            <View style={[styles.inputGroup, styles.halfWidth]}>
-                                <Text style={[styles.label, { color: theme.textSecondary }]}>Project Type</Text>
-                                <TextInput
-                                    style={[styles.input, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
-                                    value={formData.projectType}
-                                    onChangeText={(value) => updateField('projectType', value)}
-                                    placeholder="e.g., E-commerce Platform"
-                                    placeholderTextColor={theme.textSecondary}
-                                />
-                            </View>
 
-                            <View style={[styles.inputGroup, styles.halfWidth]}>
-                                <Text style={[styles.label, { color: theme.textSecondary }]}>Completion Date</Text>
-                                <TextInput
-                                    style={[styles.input, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
-                                    value={formData.completedDate}
-                                    onChangeText={(value) => updateField('completedDate', value)}
-                                    placeholder="YYYY-MM-DD"
-                                    placeholderTextColor={theme.textSecondary}
-                                />
-                            </View>
-                        </View>
 
-                        <View style={styles.inputGroup}>
-                            <Text style={[styles.label, { color: theme.textSecondary }]}>Rating</Text>
-                            {renderStarRating()}
-                        </View>
-
-                        <View style={styles.inputGroup}>
-                            <Text style={[styles.label, { color: theme.textSecondary }]}>Testimonial</Text>
-                            <TextInput
-                                style={[styles.textArea, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
+                        <View style={[styles.inputGroup, styles.halfWidth]}>
+                            <Text style={[styles.label, { color: theme.textSecondary }]}>
+                                <Text >Testimonial </Text>
+                                <Text style={{ color: 'red' }}>*</Text>
+                            </Text>
+                            <Input
                                 value={formData.testimonial}
                                 onChangeText={(value) => updateField('testimonial', value)}
                                 placeholder="Enter client testimonial or feedback"
-                                placeholderTextColor={theme.textSecondary}
                                 multiline
                                 numberOfLines={4}
-                                textAlignVertical="top"
                             />
                         </View>
+
+
+                        <View style={[styles.inputGroup, styles.halfWidth]}>
+                            <Text style={[styles.label, { color: theme.textSecondary }]}>
+                                <Text >Rating</Text>
+                                <Text style={{ color: 'red' }}>*</Text>
+                            </Text>
+                            {renderStarRating()}
+                        </View>
+
+
+                        <View style={[styles.inputGroup, styles.halfWidth]}>
+                            <Text style={[styles.label, { color: theme.textSecondary }]}>
+                                <Text >Completion Date </Text>
+                                <Text style={{ color: 'red' }}>*</Text>
+                            </Text>
+
+                            <Input
+                                value={formData.completedDate}
+                                onChangeText={(value) => updateField('completedDate', value)}
+                                placeholder="YYYY-MM-DD"
+                            />
+                        </View>
+
                     </View>
 
                     <View style={[styles.tipSection, { backgroundColor: theme.surface, borderColor: theme.border }]}>
@@ -171,8 +198,8 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
 
                     <View style={styles.bottomPadding} />
                 </ScrollView>
-            </View>
-        </Modal>
+            </View >
+        </Modal >
     );
 };
 
