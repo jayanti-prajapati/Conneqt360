@@ -1,6 +1,6 @@
 import React from 'react';
 import { DrawerContentScrollView } from '@react-navigation/drawer';
-import { View, Image, StyleSheet } from 'react-native';
+import { View, Image, StyleSheet, Text } from 'react-native';
 import Colors from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable } from 'react-native';
@@ -25,6 +25,18 @@ export default function CustomDrawerContent(props: any) {
           resizeMode="contain"
         />
       </View>
+      <View style={[styles.logoContainer, { alignItems: 'flex-start', flexDirection: 'row' }]}>
+        <Ionicons name="home" size={24} color={Colors.gray[700]} />
+        <Text style={[styles.logoText, { marginLeft: 10 }]}>Home</Text>
+      </View>
+      <View style={[styles.logoContainer, { alignItems: 'flex-start', flexDirection: 'row' }]}>
+        <Ionicons name="home" size={24} color={Colors.gray[700]} />
+        <Text style={[styles.logoText, { marginLeft: 10 }]}>Home</Text>
+      </View>
+      <View style={[styles.logoContainer, { alignItems: 'flex-start', flexDirection: 'row' }]}>
+        <Ionicons name="home" size={24} color={Colors.gray[700]} />
+        <Text style={[styles.logoText, { marginLeft: 10 }]}>Home</Text>
+      </View>
     </DrawerContentScrollView>
   );
 }
@@ -37,6 +49,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.gray[200],
     paddingBottom: 16,
+  },
+  logoText: {
+    fontSize: 16,
+    marginLeft: 10,
+    fontWeight: 'bold',
+    color: Colors.gray[700],
   },
   logo: {
     width: '100%',

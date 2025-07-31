@@ -1,9 +1,8 @@
 import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity, Dimensions, Alert } from 'react-native';
 
-import { Heart, MessageSquare, Send, Bookmark, MoreVertical, X } from 'lucide-react-native';
+import { Heart, MessageSquare, Send, MoreVertical } from 'lucide-react-native';
 import { UserSelectionModal } from '../modal/UserSelectionModal';
-import useUsersStore from '@/store/useUsersStore';
 import { User } from '@/types';
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
@@ -14,7 +13,7 @@ import CustomVideoPlayer from '../utils/CustomVideoPlayer';
 
 import { CommunityPost } from '@/types/feeds';
 
-import { CommentSection } from '../comments/CommentSection';
+
 import { Comment } from '@/types';
 import useChatStore from '@/store/useChatStore';
 import useCommunityFeedsStore from '@/store/useCommunityFeeds';
@@ -35,7 +34,6 @@ interface FeedCardProps {
   timestamp: string;
   content: string;
   imageUrl?: string;
-  likes: number;
   videoUrl: string;
   verified?: boolean;
   profileImage?: string;
@@ -91,9 +89,9 @@ export default function FeedCard({
   // const { user: currentUser } = useUsersStore();
   const commentModalRef = useRef<any>(null);
   useEffect(() => {
-    if (post && post?.likes && Array.isArray(post.likes) && user?.data?._id) {
-      setIsLiked(post.likes.includes(user.data._id));
-      setLikesCount(post.likes.length);
+    if (post && post?.likes && Array.isArray(post?.likes) && user?.data?._id) {
+      setIsLiked(post?.likes?.includes(user?.data?._id));
+      setLikesCount(post?.likes?.length);
     }
     if (post) {
       handleGetComments();
@@ -105,7 +103,7 @@ export default function FeedCard({
 
 
   const handleGetComments = async () => {
-    const comments = await getFeedById(post._id);
+    const comments = await getFeedById(post?._id);
     // console.log("comments", comments.data);
     if (comments && comments?.data?.data) {
       setComments(comments?.data?.data?.comments);
@@ -142,7 +140,7 @@ export default function FeedCard({
 
     setIsLiked(!isLiked);
     setLikesCount((prev: any) => (isLiked ? prev - 1 : prev + 1));
-    onLike(post._id, updatedLikes);
+    onLike(post?._id, updatedLikes);
   };
 
 
@@ -196,8 +194,8 @@ export default function FeedCard({
             // Handle sending the post to the selected user
             await sendMessage({
               sender: user?.data?._id,
-              receiver: receiver._id,
-              content: post.content,
+              receiver: receiver?._id,
+              content: post?.content,
               type: 'text'
             });
 
@@ -285,7 +283,7 @@ export default function FeedCard({
               </View>
               {comments?.length > 0 && (
                 <Text style={{ color: '#262626', fontSize: 16, marginLeft: 8 }}>
-                  {comments.length}
+                  {comments?.length}
                 </Text>
               )}
             </TouchableOpacity>
@@ -317,7 +315,7 @@ export default function FeedCard({
               marginBottom: 2
             }}
           >
-            #{post.location}
+            #{post?.location}
           </Text>
 
         </View>}
@@ -342,7 +340,7 @@ export default function FeedCard({
           post?._id && (
             <CommentModal
               ref={commentModalRef}
-              postId={post._id}
+              postId={post?._id}
               comments={comments}
               user={user?.data}
               onAddComment={handleAddComment}

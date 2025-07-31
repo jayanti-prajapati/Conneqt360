@@ -8,6 +8,7 @@ export default function DrawerLayout() {
       drawerContent={props => <CustomDrawerContent {...props} />}
     >
       <Drawer.Screen name="(tabs)" options={{ headerShown: false }} />
+
       {/* Add other Drawer screens here if needed */}
     </Drawer>
   );

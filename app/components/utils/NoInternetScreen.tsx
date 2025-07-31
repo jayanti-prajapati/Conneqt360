@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { WifiOff } from 'lucide-react-native'; // you can use any icon library
 import { LinearGradient } from 'expo-linear-gradient';
 
 
-export default function NoInternetScreen({ onRetry }: { onRetry?: () => void }) {
+export default function NoInternetScreen() {
     return (
         <LinearGradient
             colors={['#f9f9f9', '#e3f2fd']}

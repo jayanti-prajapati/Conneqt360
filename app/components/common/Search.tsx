@@ -1,11 +1,9 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import Colors from '@/constants/Colors';
 import { Search as SearchIcon, Filter } from 'lucide-react-native';
 import { TextInput } from 'react-native';
 import Spacing from '@/constants/Spacing';
-import { useEffect, useState } from 'react';
 import Typography from '@/constants/Typography';
-import { useCommunityFeedsStore } from '@/store/communityFeedsStore';
 
 type SearchProps = {
   searchQuery: string;

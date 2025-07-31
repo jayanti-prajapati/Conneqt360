@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "Connect360.app"
-               BlueprintName = "Connect360"
-               ReferencedContainer = "container:Connect360.xcodeproj">
+               BuildableName = "conneqt360.app"
+               BlueprintName = "conneqt360"
+               ReferencedContainer = "container:conneqt360.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "Connect360Tests.xctest"
-               BlueprintName = "Connect360Tests"
-               ReferencedContainer = "container:Connect360.xcodeproj">
+               BuildableName = "conneqt360Tests.xctest"
+               BlueprintName = "conneqt360Tests"
+               ReferencedContainer = "container:conneqt360.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "Connect360.app"
-            BlueprintName = "Connect360"
-            ReferencedContainer = "container:Connect360.xcodeproj">
+            BuildableName = "conneqt360.app"
+            BlueprintName = "conneqt360"
+            ReferencedContainer = "container:conneqt360.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "Connect360.app"
-            BlueprintName = "Connect360"
-            ReferencedContainer = "container:Connect360.xcodeproj">
+            BuildableName = "conneqt360.app"
+            BlueprintName = "conneqt360"
+            ReferencedContainer = "container:conneqt360.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

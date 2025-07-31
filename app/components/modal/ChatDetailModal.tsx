@@ -44,8 +44,9 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
         let intervalId: NodeJS.Timeout;
 
         const initializeChat = async () => {
-            setLoading(true);
             await fetchChatData();
+            setLoading(true);
+
 
             // Set up interval after fetchChatData completes
             intervalId = setInterval(() => {

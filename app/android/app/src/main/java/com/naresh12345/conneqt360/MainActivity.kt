@@ -1,4 +1,4 @@
-package com.suresh_p7994.connect360
+package com.naresh12345.conneqt360
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

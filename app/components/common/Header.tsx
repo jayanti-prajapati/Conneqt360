@@ -12,7 +12,7 @@ import {
   useNavigation,
 } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 import Spacing from '@/constants/Spacing';
 import Typography from '@/constants/Typography';
 import Colors from '@/constants/Colors';
@@ -82,10 +82,8 @@ export const Header: React.FC<HeaderProps> = ({
   showBackButton = false,
   rightComponent,
   onBackPress,
-  style,
 }) => {
   const { colors } = useTheme();
-  const params = useLocalSearchParams();
   const navigation = useNavigation<any>();
   const onMenuPress = () => {
     navigation.dispatch(DrawerActions.openDrawer());
@@ -109,7 +107,7 @@ export const Header: React.FC<HeaderProps> = ({
       </View>
 
       <View style={styles.middleSection}>
-        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.title}>{title ? title : ""}</Text>
       </View>
 
       <View style={styles.rightSection}>

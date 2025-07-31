@@ -1,11 +1,8 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   StyleSheet,
-  View,
-  SafeAreaView,
   KeyboardAvoidingView,
   Platform,
-  BackHandler,
   FlatList,
   RefreshControl,
   Alert,
@@ -31,8 +28,8 @@ import useNetworkStatus from '@/hooks/useNetworkStatus';
 import { getAuthData } from '@/services/secureStore';
 import Colors from '@/constants/Colors';
 import Spacing from '@/constants/Spacing';
-import Typography from '@/constants/Typography';
 import { CommunityPost } from '@/types/feeds';
+import SafeView from '@/components/common/SafeView';
 
 export const handleReport = () => {
   Alert.alert('Report Post', 'Why are you reporting this post?', [
@@ -82,8 +79,16 @@ export default function HomeScreen() {
   const [isOwnPost, setIsOwnPost] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
 
-  const onViewRef = useRef(({ viewableItems }: { viewableItems: Array<{ item: any }> }) => {
-    setVisibleItemIds(viewableItems.map(({ item }) => item._id));
+  // const onViewRef = useRef(({ viewableItems }: { viewableItems: Array<{ item: any }> }) => {
+  //   const visibleIds = viewableItems.map((item) => item?.item?._id);
+  //   setVisibleItemIds(visibleIds);
+  // });
+
+  const onViewRef = useRef(({ viewableItems = [] }: { viewableItems: Array<{ item: any }> }) => {
+    const visibleIds = viewableItems
+      .filter((item) => item?.item?._id)
+      .map((item) => item?.item?._id);
+    setVisibleItemIds(visibleIds);
   });
 
   const viewConfigRef = useRef({ itemVisiblePercentThreshold: 60 });
@@ -117,7 +122,7 @@ export default function HomeScreen() {
 
   const refreshSelectedPost = useCallback(async () => {
     if (!selectedPost?._id) return;
-    const data = await getFeedById(selectedPost._id);
+    const data = await getFeedById(selectedPost?._id);
     setSelectedPost(data?.data?.data);
   }, [selectedPost]);
 
@@ -131,19 +136,25 @@ export default function HomeScreen() {
     fetchFeeds();
   }, []);
 
-  const handleDelete = useCallback((id: string) => {
+
+  const handleDelete = useCallback((id: string | undefined) => {
+    if (!id) return;
     Alert.alert('Delete Post', 'Are you sure you want to delete this post?', [
       { text: 'Cancel', style: 'cancel' },
       {
-        text: 'Delete', style: 'destructive', onPress: () => {
-          deleteFeed(id);
-          fetchFeeds();
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          await deleteFeed(id);
+          await fetchFeeds();
+          setShowOptions(false);
         },
       },
     ]);
   }, []);
 
   const handleMoreOptions = useCallback((post: CommunityPost) => {
+    if (!post?.user?._id) return;
     setSelectedPost(post);
     setIsOwnPost(post?.user?._id === users?.data?._id);
     setShowOptions(true);
@@ -157,82 +168,81 @@ export default function HomeScreen() {
 
 
   return (
-    <Layout title="Home">
-      <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-      <Form closeText="Skip" />
-      {isConnected ? (
-        <SafeAreaView style={styles.safeArea}>
-          <KeyboardAvoidingView
-            style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-            {feedData.length > 0 ? (
-              <FlatList
-                data={feedData}
-                keyExtractor={(item) => item._id}
-                contentContainerStyle={styles.scrollContent}
-                showsVerticalScrollIndicator={false}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.primary[600]]} tintColor={Colors.primary[600]} />}
-                renderItem={({ item }) => (
-                  <FeedCard
-                    id={item._id}
-                    phone={item.user?.phone}
-                    profileImage={item.user?.profileUrl}
-                    user={users}
-                    post={item}
-                    username={item.user?.username}
-                    businessName={item.user?.businessName}
-                    timestamp={item.createdAt}
-                    content={item.content}
-                    imageUrl={item.imageUrl}
-                    videoUrl={item.videoUrl}
-                    onLike={handleLike}
-                    onComment={handleComments}
-                    onShare={handleShare}
-                    setSelectedPost={setSelectedPost}
-                    setShowPostModal={setShowPostModal}
-                    setShowProfileModal={setShowProfileModal}
-                    onMoreOptions={handleMoreOptions}
-                    onPress={handlePostPress}
-                    likesIds={item.likes}
-                    verified={item.user?.verified}
-                    isVisible={visibleItemIds.includes(item._id) && isFocused}
-                    likes={0}
-                  />
-                )}
-                onViewableItemsChanged={onViewRef.current}
-                viewabilityConfig={viewConfigRef.current}
-              />
-            ) : loading ? <CustomLoader visible={loading} /> : <NotFound />}
 
-            {selectedPost && (
-              <PostDetailModal visible={showPostModal} post={selectedPost} onClose={() => setShowPostModal(false)} onRefresh={refreshSelectedPost} />
+    isConnected ? (
+      // <SafeView style={styles.safeArea}>
+      <Layout title="Home">
+        <Search searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        <Form closeText="Skip" />
+        {feedData?.length > 0 ? (
+          <FlatList
+            data={feedData}
+            keyExtractor={(item) => item?._id}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.primary[600]]} tintColor={Colors.primary[600]} />}
+            renderItem={({ item }) => (
+              <FeedCard
+                id={item?._id || ''}
+                phone={item?.user?.phone || ''}
+                profileImage={item?.user?.profileUrl || ''}
+                user={users}
+                post={item}
+                username={item?.user?.username || 'Anonymous'}
+                businessName={item?.user?.businessName || ''}
+                timestamp={item?.createdAt || ''}
+                content={item?.content || ''}
+                imageUrl={item?.imageUrl}
+                videoUrl={item?.videoUrl}
+                onLike={handleLike}
+                onComment={handleComments}
+                onShare={handleShare}
+                setSelectedPost={setSelectedPost}
+                setShowPostModal={setShowPostModal}
+                setShowProfileModal={setShowProfileModal}
+                onMoreOptions={handleMoreOptions}
+                onPress={handlePostPress}
+                likesIds={item?.likes || []}
+                verified={item?.user?.verified || false}
+                isVisible={visibleItemIds.includes(item?._id || '') && isFocused}
+
+              />
             )}
-            {selectedPost?.user && (
-              <UserProfileModal visible={showProfileModal} onClose={() => setShowProfileModal(false)} userId={selectedPost.user._id} />
-            )}
-            {showOptions && <PostOptionsModal
-              visible={showOptions}
-              onClose={() => setShowOptions(false)}
-              isOwnPost={isOwnPost}
-              onShare={() => handleShare(selectedPost?._id || '')}
-              onReport={handleReport}
-              onSave={handleSave}
-              onCopyLink={handleCopyLink}
-              onBlock={handleBlock}
-              onDelete={() => handleDelete(selectedPost?._id || '')}
-              onViewProfile={() => setShowProfileModal(true)}
-            />}
-          </KeyboardAvoidingView>
-        </SafeAreaView>
-      ) : <NoInternetScreen />}
-    </Layout>
+            onViewableItemsChanged={onViewRef.current}
+            viewabilityConfig={viewConfigRef.current}
+          />
+        ) : loading ? <CustomLoader visible={loading} /> : <NotFound />}
+
+        {selectedPost && (
+          <PostDetailModal visible={showPostModal} post={selectedPost} onClose={() => setShowPostModal(false)} onRefresh={refreshSelectedPost} />
+        )}
+        {selectedPost?.user && (
+          <UserProfileModal visible={showProfileModal} onClose={() => setShowProfileModal(false)} userId={selectedPost?.user?._id} />
+        )}
+        {showOptions && <PostOptionsModal
+          visible={showOptions}
+          onClose={() => setShowOptions(false)}
+          isOwnPost={isOwnPost}
+          onShare={() => handleShare(selectedPost?._id || '')}
+          onReport={handleReport}
+          onSave={handleSave}
+          onCopyLink={handleCopyLink}
+          onBlock={handleBlock}
+          onDelete={() => handleDelete(selectedPost?._id || '')}
+          onViewProfile={() => setShowProfileModal(true)}
+        />}
+
+      </Layout>
+      // </SafeView>
+    ) : <NoInternetScreen />
+
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    marginTop: Spacing.sm,
+    // marginTop: Spacing.sm,
   },
   container: {
     flex: 1,

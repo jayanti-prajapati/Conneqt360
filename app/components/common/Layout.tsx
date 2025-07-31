@@ -8,14 +8,12 @@ import {
   StatusBar,
   StyleProp,
   ViewStyle,
-  ImageBackground,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '@react-navigation/native';
+// import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { clearAuthData } from '@/services/secureStore';
-import { Colors, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { Header } from './Header';
+import SafeView from './SafeView';
 
 type LayoutProps = {
   children: ReactNode;
@@ -44,7 +42,6 @@ export default function Layout({
   onBackPress,
   safeAreaEdges = ['top', 'left', 'right'],
 }: LayoutProps) {
-  const { colors } = useTheme();
 
   const renderContent = () => {
     if (scrollable) {
@@ -83,7 +80,7 @@ export default function Layout({
         }}
         style={styles.imageBackground}
       > */}
-      <SafeAreaView style={styles.safeArea} edges={safeAreaEdges}>
+      <SafeView style={styles.safeArea} >
         {showHeader && (
           <Header
             title={title}
@@ -91,8 +88,8 @@ export default function Layout({
             rightComponent={headerRight}
             onBackPress={() => {
 
-              onBackPress?.()
-              router.push('/(tabs)')
+              // onBackPress?.()
+              onBackPress ? onBackPress() : router.back()
             }}
           />
         )}
@@ -103,7 +100,7 @@ export default function Layout({
         >
           {renderContent()}
         </KeyboardAvoidingView>
-      </SafeAreaView>
+      </SafeView>
       {/* </ImageBackground> */}
     </View>
   );

@@ -115,6 +115,8 @@ export default function ChatScreen() {
     return sender?._id === user?._id ? receiver : sender;
   };
 
+
+
   const formatTime = (date?: string | Date) => {
     if (!date) return '';
     const time = typeof date === 'string' ? new Date(date) : date;
@@ -126,6 +128,14 @@ export default function ChatScreen() {
     if (minutes > 0) return `${minutes}m ago`;
     return 'Just now';
   };
+
+  // Filter chats based on search query
+  const filteredChats = chats.filter(chat => {
+    if (!searchQuery) return true;
+    const otherUser = getOtherUser(chat);
+    return otherUser?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      otherUser?.username?.toLowerCase().includes(searchQuery.toLowerCase());
+  });
 
   const renderChatItem = ({ item }: { item: any }) => {
     const otherUser = getOtherUser(item);
@@ -180,15 +190,15 @@ export default function ChatScreen() {
     </TouchableOpacity>
   );
 
-  if (initialLoading) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-        <View style={styles.loadingContainer}>
-          <Text style={[styles.loadingText, { color: theme.text }]}>Loading chats...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  // if (initialLoading) {
+  //   return (
+  //     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+  //       <View style={styles.loadingContainer}>
+  //         <Text style={[styles.loadingText, { color: theme.text }]}>Loading chats...</Text>
+  //       </View>
+  //     </SafeAreaView>
+  //   );
+  // }
 
   if (showNewChat) {
     return (
@@ -277,48 +287,67 @@ export default function ChatScreen() {
         <Search placeholder="Search User" searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
 
-        {chats.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <MessageCircle size={64} color={theme.textSecondary} />
-            <Text style={[styles.emptyTitle, { color: theme.text }]}>No messages yet</Text>
-            <Text style={[styles.emptySubtitle, { color: theme.textSecondary }]}>
-              Start a conversation with someone from the community
-            </Text>
-            <TouchableOpacity
-              style={[styles.startChatButton, { backgroundColor: theme.primary }]}
-              onPress={() => setShowNewChat(true)}
-            >
-              <Text style={styles.startChatText}>Start New Chat</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <ScrollView
-            contentContainerStyle={[styles.chatsList, { paddingBottom: 100 }]} // 👈 padding at bottom
-            showsVerticalScrollIndicator={false}
-          >
-            {chats.map((item) => (
-              <View
-                key={item.participants.sender._id + item.participants.receiver._id}
-              >
-                {renderChatItem({ item })}
+        {
+          initialLoading ? (
+            // <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+            <View style={styles.loadingContainer}>
+              <Text style={[styles.loadingText, { color: theme.text }]}>Loading chats...</Text>
+            </View>
+            // </SafeAreaView>
+          ) :
+
+            chats.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <MessageCircle size={64} color={theme.textSecondary} />
+                <Text style={[styles.emptyTitle, { color: theme.text }]}>No messages yet</Text>
+                <Text style={[styles.emptySubtitle, { color: theme.textSecondary }]}>
+                  Start a conversation with someone from the community
+                </Text>
+                <TouchableOpacity
+                  style={[styles.startChatButton, { backgroundColor: theme.primary }]}
+                  onPress={() => setShowNewChat(true)}
+                >
+                  <Text style={styles.startChatText}>Start New Chat</Text>
+                </TouchableOpacity>
               </View>
-            ))}
-          </ScrollView>
+            ) : (
+              // <ScrollView
+              //   contentContainerStyle={[styles.chatsList, { paddingBottom: 100 }]} // 👈 padding at bottom
+              //   showsVerticalScrollIndicator={false}
+              // >
 
-
-        )}
-        {showChatModal && (
-          <ChatDetailModal
-            visible={showChatModal}
-            receiverData={selectedChatUserId}
-            user={user}
-            onClose={() => {
-              setShowChatModal(false);
-              setSelectedChatUserId(null);
-            }}
-          />
-        )}
-      </Layout>
+              // <View style={[styles.chatsList, { paddingBottom: 100 }]}>
+              <FlatList
+                data={filteredChats}
+                keyExtractor={(item) => item.participants.sender._id + item.participants.receiver._id}
+                renderItem={renderChatItem}
+                contentContainerStyle={[styles.chatsList, { paddingBottom: 100 }]}
+                showsVerticalScrollIndicator={false}
+                ListEmptyComponent={
+                  <View style={styles.emptySearchContainer}>
+                    <Text style={[styles.emptySearchText, { color: theme.textSecondary }]}>
+                      No chats found matching "{searchQuery}"
+                    </Text>
+                  </View>
+                }
+              />
+              // </View>
+              // </ScrollView>
+            )}
+        {
+          showChatModal && (
+            <ChatDetailModal
+              visible={showChatModal}
+              receiverData={selectedChatUserId}
+              user={user}
+              onClose={() => {
+                setShowChatModal(false);
+                setSelectedChatUserId(null);
+              }}
+            />
+          )
+        }
+      </Layout >
     ) : (
       <NoInternetScreen />
     )
@@ -414,4 +443,15 @@ const styles = StyleSheet.create({
   startChatText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   loadingText: { fontSize: 16 },
+  emptySearchContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  emptySearchText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 16,
+  },
 });

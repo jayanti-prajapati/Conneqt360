@@ -48,7 +48,7 @@ export default function OTPScreen() {
         console.log('OTP verified successfully');
         setError(null);
 
-        router.push('/(tabs)');
+        router.replace('/(tabs)');
       } else {
         setError('Invalid OTP. Please Enter the correct OTP.');
       }
