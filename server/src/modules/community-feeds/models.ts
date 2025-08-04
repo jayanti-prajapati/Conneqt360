@@ -20,7 +20,17 @@ const feedSchema = new Schema<IPost>({
   user: {
     type: Schema.Types.ObjectId,
     ref: "User",
-    required: true,
+    required: false,
+    default: null,
+  },
+   location: {
+    type: String,
+    required: false,
+    default: null,
+  },
+   tags: {
+    type: [String],
+    required: false,
     default: null,
   },
   likes: [
@@ -36,17 +46,35 @@ const feedSchema = new Schema<IPost>({
       user: {
         type: Schema.Types.ObjectId,
         ref: "User",
-        required: true,
-        default: null,
+        required: false,
       },
       content: {
         type: String,
-        required: true,
+        required: false,
+      },
+      replyTo: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: false,
+        default: null,
+      },
+      parentCommentId: {
+        type: Schema.Types.ObjectId,
+        ref: "Post.comments",
+        required: false,
         default: null,
       },
       createdAt: {
         type: Date,
         default: Date.now,
+      },
+      updatedAt: {
+        type: Date,
+        default: null,
+      },
+      edited: {
+        type: Boolean,
+        default: false,
       },
     },
   ],
@@ -77,11 +105,14 @@ export interface IPostModel extends Model<IPost> {
 feedSchema.statics.getFeedByUserId = function (filter) {
   return this.find(filter)
     .populate("user", "name username email phone businessName businessType")
-    .populate("comments.user", "name username email phone businessName businessType")
+    .populate(
+      "comments.user",
+      "name username email phone businessName businessType"
+    )
     .sort({ createdAt: -1 });
 };
 
 export const Community_Feeds = mongoose.model<IPost, IPostModel>(
-  "community_feeds",
+  "Community_Feeds",
   feedSchema
 );

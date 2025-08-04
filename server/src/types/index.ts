@@ -47,10 +47,12 @@ export interface IUser extends Document {
   interests?: string[];
   aboutUs?: Text;
   profileUrl?: string;
+  bookmark: IPost["_id"];
   thumbnail?: string;
   followersCount?: number;
   postsCount?: number;
   isOnline?: boolean;
+  block?: string[];
   lastSeen?: Date;
   createdAt: Date;
   status: string;
@@ -64,14 +66,21 @@ export interface IPost extends Document {
   videoUrl?: string;
   user: IUser["_id"];
   likes: IUser["_id"][];
-  comments: {
-    user: IUser["_id"];
+  replyTo: Text;
+ comments: {      
+     user: IUser["_id"];
     content: Text;
     createdAt: Date;
+    updatedAt?: Date;
+    edited?: boolean;
+    replyTo?: IUser["_id"]; 
+    parentCommentId?: string;                
   }[];
   description?: Text;
   share?: string;
   circle?: ICircle["_id"];
+  tags?: string[];
+  location?: string;
   isDeleted: boolean;
   createdAt: Date;
 }

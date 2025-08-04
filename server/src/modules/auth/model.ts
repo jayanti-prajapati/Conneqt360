@@ -37,6 +37,12 @@ const authSchema = new Schema<IUser>({
     required: false,
     default: null,
   },
+   bookmark: {
+    type: Schema.Types.ObjectId,
+    ref: "Community_Feeds",
+    required: false,
+    default: null,
+  },
   businessName: {
     type: String,
     required: false,
