@@ -7,13 +7,15 @@ export class UserServicesController {
 
   async create(req: Request, res: Response) {
     try {
-      const user = await this.services.create(req.body);
+
+      const { user } = req.body;
+      const newData = await this.services.create(user);
 
       return res.status(200).json({
         statusCode: 200,
         message: "success",
         data: {
-          user,
+          newData,
         },
       });
     } catch (error: any) {

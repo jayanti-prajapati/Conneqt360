@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { AuthService } from "./service";
 import { User } from "./model";
+import { UserServicesService } from "../user-services/service";
 
 const jwt = require("jsonwebtoken");
 
@@ -32,6 +33,7 @@ export const otpStore: { [phone: string]: OTPEntry } = {};
 
 export class AuthController {
   private authService = new AuthService();
+  private userService = new UserServicesService();
 
   constructor() {
     this.authService = new AuthService();
@@ -231,7 +233,10 @@ export class AuthController {
           verified: true,
         });
       }
-
+      console.log("exist", existingUser);
+      
+    await this.userService.create(existingUser._id.toString());
+    
       const storedEntry = otpStore[phone];
       if (!storedEntry || storedEntry.otp !== otp) {
         return res.status(401).json({ message: "Invalid or expired OTP" });

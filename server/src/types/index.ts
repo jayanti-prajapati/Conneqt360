@@ -41,16 +41,18 @@ export interface IUser extends Document {
     projectType: string;
     completedDate: Date;
   }[];
-  catalog: string;
+  //catalog: IUserServices["_id"];
   //confirmPassword: String,
   udyamNumber?: string;
   interests?: string[];
   aboutUs?: Text;
   profileUrl?: string;
+  bookmark: IPost["_id"];
   thumbnail?: string;
   followersCount?: number;
   postsCount?: number;
   isOnline?: boolean;
+  block?: string[];
   lastSeen?: Date;
   createdAt: Date;
   status: string;
@@ -64,14 +66,21 @@ export interface IPost extends Document {
   videoUrl?: string;
   user: IUser["_id"];
   likes: IUser["_id"][];
-  comments: {
-    user: IUser["_id"];
+  replyTo: Text;
+ comments: {      
+     user: IUser["_id"];
     content: Text;
     createdAt: Date;
+    updatedAt?: Date;
+    edited?: boolean;
+    replyTo?: IUser["_id"]; 
+    parentCommentId?: string;                
   }[];
   description?: Text;
   share?: string;
   circle?: ICircle["_id"];
+  tags?: string[];
+  location?: string;
   isDeleted: boolean;
   createdAt: Date;
 }
@@ -90,11 +99,9 @@ export interface ICustomFileDocument extends ICustomFile, Document {
 export interface IUserServices extends Document {
   user: IUser["_id"];
   services: {
-    key: string;
-    value: {
-      title: string;
-      description: string;
-    }[];
+    title?: Text;
+    description?: Text;
+    features?: Text[];
   }[];
   catalog: {
     title?: string;
@@ -113,6 +120,20 @@ export interface IUserServices extends Document {
     projectType?: string;
     completedDate?: Date;
   }[];
+}
+
+
+
+export interface Message {
+  content: Text;
+  sender: IUser["_id"];
+  receiver: IUser["_id"];
+  type: 'text' | 'image' | 'file';
+  edited: boolean;
+  editedAt?: Date;
+  readBy: Array<{ user: Types.ObjectId; readAt: Date }>;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface ICircle extends Document {
@@ -157,9 +178,14 @@ export interface IChat extends Document {
   createdAt: Date;
 }
 
+
 export interface AuthRequest extends Request {
-  userId?: string;
-}
+    userId: string;
+
+  };
+
+
+
 
 export interface IAuthDocument extends IUser, Document {}
 export interface IUserDocument extends IUser, Document {}
