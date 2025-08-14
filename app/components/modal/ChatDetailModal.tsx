@@ -404,6 +404,8 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
                                                 {otherUser.name?.charAt(0)?.toUpperCase() || 'U'}
                                             </Text>
                                         )}
+                                        {otherUser.isOnline && <View style={[styles.onlineIndicator, { backgroundColor: theme.success }]} />}
+
                                     </View>
                                     <View style={styles.headerUserInfo}>
                                         <Text style={[styles.headerName, { color: theme.text }]}>
@@ -510,6 +512,17 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    onlineIndicator: {
+        position: 'absolute',
+        bottom: -4,
+        right: -4,
+        width: 16,
+        height: 16,
+        borderRadius: 8,
+        borderWidth: 2,
+        borderColor: '#FFFFFF',
+        zIndex: 1,
+    },
     keyboardAvoidingView: {
         flex: 1,
     },
@@ -536,11 +549,13 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 12,
-        overflow: 'hidden',
+        position: 'relative',
+        overflow: 'visible',
     },
     avatarImage: {
         width: '100%',
         height: '100%',
+        borderRadius: 20,
     },
     avatarText: {
         color: Colors.primary[700],

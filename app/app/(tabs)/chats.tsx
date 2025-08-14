@@ -31,7 +31,9 @@ export default function ChatScreen() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [showNewChat, setShowNewChat] = useState(false);
+  const [showSearch, setShowSearch] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [showChatModal, setShowChatModal] = useState(false);
@@ -40,6 +42,7 @@ export default function ChatScreen() {
   const { getAllUsers, clearUsers, response: usersResponse } = useUsersStore();
   const { getChatsBySenderUserId, sendMessage, getConversation } = useChatStore();
   let allUsers = usersResponse?.data || [];
+
 
   // Fetch chats with latest logic
   const fetchChats = useCallback(async (showLoader: boolean = false) => {
@@ -129,12 +132,23 @@ export default function ChatScreen() {
     return 'Just now';
   };
 
+  // Debounce search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300); // 300ms delay
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
+
   // Filter chats based on search query
   const filteredChats = chats.filter(chat => {
-    if (!searchQuery) return true;
+    if (!showSearch) return true;
     const otherUser = getOtherUser(chat);
-    return otherUser?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      otherUser?.username?.toLowerCase().includes(searchQuery.toLowerCase());
+    return otherUser?.name?.toLowerCase().includes(showSearch.toLowerCase()) ||
+      otherUser?.username?.toLowerCase().includes(showSearch.toLowerCase());
   });
 
   const renderChatItem = ({ item }: { item: any }) => {
@@ -156,6 +170,7 @@ export default function ChatScreen() {
             style={styles.chatAvatar}
           /> : <Text style={[styles.avatarText, { color: theme.text }]}>{otherUser.name[0].toUpperCase()}</Text>}
           {/* </View> */}
+          {otherUser.isOnline && <View style={[styles.onlineIndicator, { backgroundColor: theme.success }]} />}
         </View>
         <View style={styles.chatContent}>
           <View style={styles.chatHeader}>
@@ -231,6 +246,7 @@ export default function ChatScreen() {
               placeholderTextColor={theme.textSecondary}
               value={searchQuery}
               onChangeText={setSearchQuery}
+              returnKeyType="search"
             />
           </View>
           {selectedUser ? (
@@ -239,6 +255,7 @@ export default function ChatScreen() {
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                   <Image source={{ uri: selectedUser.profileUrl || placeholderImage }} style={styles.chatAvatar} />
                   <Text style={[styles.selectedUserName, { color: theme.text }]}>{selectedUser.name}</Text>
+
                 </View>
                 <TouchableOpacity
                   onPress={() => setSelectedUser(null)}
@@ -292,7 +309,7 @@ export default function ChatScreen() {
           <Plus size={20} color="#FFFFFF" />
         </TouchableOpacity>
       }>
-        <Search placeholder="Search User" searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        <Search placeholder="Search User" searchQuery={showSearch} setSearchQuery={setShowSearch} />
 
 
         {
@@ -430,6 +447,17 @@ const styles = StyleSheet.create({
     width: 40, height: 40, borderRadius: 20,
     justifyContent: 'center', alignItems: 'center',
   },
+  onlineIndicator: {
+    position: 'absolute',
+    bottom: -4,
+    right: -4,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    zIndex: 1,
+  },
   avatarText: {
     color: Colors.primary[700],
     fontSize: Typography.size.lg,
@@ -443,6 +471,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
+    position: 'relative',
+    overflow: 'visible',
   },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 },
   emptyTitle: { fontSize: 24, fontWeight: 'bold', marginTop: 16, marginBottom: 8 },
