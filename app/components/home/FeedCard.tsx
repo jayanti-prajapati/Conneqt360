@@ -191,11 +191,22 @@ export default function FeedCard({
           visible={showUserSelection}
           onClose={() => setShowUserSelection(false)}
           onUserSelect={async (receiver: User) => {
-            // Handle sending the post to the selected user
+            // Create a structured message for the post share
+            const postShareData = {
+              type: 'post_share',
+              postId: post?._id,
+              content: post?.content,
+              imageUrl: imageUrl,
+              videoUrl: videoUrl,
+              username: username,
+              timestamp: new Date().toISOString()
+            };
+
+            // console.log("postShareData", postShareData);
             await sendMessage({
               sender: user?.data?._id,
               receiver: receiver?._id,
-              content: post?.content,
+              content: JSON.stringify(postShareData),
               type: 'text'
             });
 

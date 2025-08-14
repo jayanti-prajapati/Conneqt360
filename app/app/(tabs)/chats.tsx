@@ -166,7 +166,15 @@ export default function ChatScreen() {
           </View>
           <Text style={[styles.lastMessage, { color: theme.textSecondary }]} numberOfLines={1}>
             {lastMessage?.sender?._id === user?._id ? 'You: ' : ''}
-            {lastMessage?.content || ''}
+            {(function () {
+              try {
+                if (!lastMessage?.content) return '';
+                const parsed = JSON.parse(lastMessage.content);
+                return parsed?.type === 'post_share' ? parsed.content ? parsed.content : 'Shared post ...' : lastMessage.content;
+              } catch (e) {
+                return lastMessage?.content || '';
+              }
+            })()}
           </Text>
         </View>
       </TouchableOpacity>

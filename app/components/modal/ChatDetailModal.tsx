@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Platform, Modal, ActivityIndicator } from 'react-native';
 import { ArrowLeft, Send, Phone, Video } from 'lucide-react-native';
 import { useThemeStore } from '../../store/themeStore';
@@ -6,6 +6,7 @@ import { Message, User } from '../../types';
 import useChatStore from '@/store/useChatStore';
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
+import CustomVideoPlayer from '../utils/CustomVideoPlayer';
 
 
 
@@ -16,13 +17,45 @@ interface ChatDetailModalProps {
     user: any;
 }
 
+interface TruncatedTextProps {
+    text: string;
+    maxLength: number;
+    textStyle: any;
+    seeMoreStyle: any;
+}
+
+const TruncatedText: React.FC<TruncatedTextProps> = ({ text, maxLength, textStyle, seeMoreStyle }) => {
+    const [expanded, setExpanded] = useState(false);
+    const shouldTruncate = text.length > maxLength;
+    const displayText = expanded || !shouldTruncate
+        ? text
+        : `${text.substring(0, maxLength)}...`;
+
+    return (
+        <View >
+            <Text style={textStyle}>
+                {displayText}
+            </Text>
+            {shouldTruncate && (
+                <TouchableOpacity
+                    onPress={() => setExpanded(!expanded)}
+                    style={styles.seeMoreButton}
+                >
+                    <Text style={seeMoreStyle}>
+                        {expanded ? 'See Less' : 'See More'}
+                    </Text>
+                </TouchableOpacity>
+            )}
+        </View>
+    );
+};
 
 export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
     visible,
     receiverData,
     user,
     onClose,
-}) => {
+}: ChatDetailModalProps) => {
     const { theme } = useThemeStore();
     const [messages, setMessages] = useState<any[]>([]);
     const [newMessage, setNewMessage] = useState('');
@@ -210,16 +243,78 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
                     <View style={[
                         styles.messageBubble,
                         {
-                            backgroundColor: isOwnMessage ? theme.primary : theme.surface,
+                            backgroundColor: isOwnMessage ? Colors.gray[700] : theme.surface,
                             borderColor: theme.border,
                         }
                     ]}>
-                        <Text style={[
-                            styles.messageText,
-                            { color: isOwnMessage ? '#FFFFFF' : theme.text }
-                        ]}>
-                            {item.content}
-                        </Text>
+                        {
+                            (() => {
+                                try {
+                                    const messageData = JSON.parse(item.content);
+                                    if (messageData.type === 'post_share') {
+                                        return (
+                                            <View style={styles.postShareContainer}>
+                                                <Text style={[styles.postShareHeader, { color: isOwnMessage ? '#FFFFFF' : theme.primary }]}>
+                                                    Shared Post from {messageData.username}
+                                                </Text>
+                                                {messageData.content && (
+                                                    <TruncatedText
+                                                        text={messageData.content}
+                                                        maxLength={200}
+                                                        textStyle={[styles.messageText, { color: isOwnMessage ? '#FFFFFF' : theme.text }]}
+                                                        seeMoreStyle={[styles.seeMoreText, { color: isOwnMessage ? 'rgba(255,255,255,0.8)' : theme.primary }]}
+                                                    />
+                                                )}
+                                                {messageData.imageUrl && (
+                                                    <Image
+                                                        source={{ uri: messageData.imageUrl }}
+                                                        style={styles.postShareImage}
+                                                        resizeMode="cover"
+                                                    />
+                                                )}
+
+                                                {
+                                                    messageData?.videoUrl && (
+                                                        <CustomVideoPlayer
+                                                            videoUrl={messageData.videoUrl}
+                                                            isVisible={true}
+                                                        />
+                                                    )
+                                                }
+                                            </View>
+                                        );
+                                    }
+                                } catch (e) {
+                                    // If parsing fails, fall back to regular text
+                                    // console.log("e", e);
+                                    return (
+                                        <TruncatedText
+                                            text={item.content}
+                                            maxLength={200}
+                                            textStyle={[styles.messageText, { color: isOwnMessage ? '#FFFFFF' : theme.text }]}
+                                            seeMoreStyle={[styles.seeMoreText, { color: isOwnMessage ? 'rgba(255,255,255,0.8)' : theme.primary }]}
+                                        />
+                                    );
+                                }
+                                // Default fallback
+                                return (
+                                    <TruncatedText
+                                        text={item.content}
+                                        maxLength={200}
+                                        textStyle={[styles.messageText, { color: isOwnMessage ? '#FFFFFF' : theme.text }]}
+                                        seeMoreStyle={[styles.seeMoreText, { color: isOwnMessage ? 'rgba(255,255,255,0.8)' : theme.primary }]}
+                                    />
+                                );
+                            })()
+                            // ) : (
+                            //     <Text style={[
+                            //         styles.messageText,
+                            //         { color: isOwnMessage ? '#FFFFFF' : theme.text }
+                            //     ]}>
+                            //         {item.content}
+                            //     </Text>
+                            // )}
+                        }
                         <View style={styles.messageTimeContainer}>
                             <Text style={[
                                 styles.messageTime,
@@ -360,7 +455,7 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
                                 style={[
                                     styles.sendButton,
                                     {
-                                        backgroundColor: theme.primary,
+                                        backgroundColor: Colors.gray[700],
                                         opacity: 1
                                     }
                                 ]}
@@ -377,6 +472,31 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
 };
 
 const styles = StyleSheet.create({
+    postShareContainer: {
+        padding: 10,
+        borderRadius: 8,
+        maxWidth: '100%',
+    },
+    postShareHeader: {
+        fontWeight: 'bold',
+        marginBottom: 5,
+        fontSize: 14,
+        opacity: 0.9,
+    },
+    postShareImage: {
+        width: '100%',
+        height: 150,
+        borderRadius: 8,
+        marginTop: 8,
+    },
+    seeMoreButton: {
+        marginTop: 4,
+        alignSelf: 'flex-start',
+    },
+    seeMoreText: {
+        fontSize: 14,
+        fontWeight: '500',
+    },
     container: {
         flex: 1,
     },
@@ -466,7 +586,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
     },
     messageText: {
-        fontSize: 16,
+        fontSize: 14,
         lineHeight: 20,
     },
     messageTime: {
@@ -512,6 +632,7 @@ const styles = StyleSheet.create({
     },
     noMessagesContainer: {
         flex: 1,
+
         justifyContent: 'center',
         alignItems: 'center',
     },
