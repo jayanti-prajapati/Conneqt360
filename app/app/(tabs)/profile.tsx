@@ -75,25 +75,25 @@ export default function ProfileScreen() {
       const data = await getAuthData();
       const userId = data?.userData?.data?._id;
 
-      if (!userId) {
-        clearAuthData();
-        router.replace('/(auth)/login');
-        return;
-      }
+      // if (!userId) {
+      //   clearAuthData();
+      //   router.replace('/(auth)/login');
+      //   return;
+      // }
 
       await getUserServicesByUserId(userId as string);
 
       const response = await getUserById(userId);
       if (response?.data?.statusCode === 200) {
         setUser(response.data.data);
-      } else {
-        clearAuthData();
-        router.replace('/(auth)/login');
+        // } else {
+        //   clearAuthData();
+        //   router.replace('/(auth)/login');
       }
     } catch (error) {
       console.error('Error fetching user:', error);
-      clearAuthData();
-      router.replace('/(auth)/login');
+      // clearAuthData();
+      // router.replace('/(auth)/login');
     }
   };
 
@@ -157,7 +157,8 @@ export default function ProfileScreen() {
 
     try {
       await Share.share({
-        message: `Connect with ${user.name} - ${user.businessName || 'Business Professional'}\n\nEmail: ${user.email}\nPhone: ${user.phone || 'Not provided'}\n\nShared via Business Network App`,
+        message:
+          `📢 Connect with ${user.name}\n\n👤 Name: ${user.name}\n📧 Email: ${user.email}\n📱 Phone: ${user.phone || 'Not provided'}\n🏢 Business Name: ${user.businessName || 'Not provided'}\n📧 Business Email: ${user.businessEmail || 'Not provided'}\n📂 Business Type: ${user.businessType || 'Not provided'}\n\n🔗 Download the App:\n https://your-app-download-link.com`,
         title: `${user.name}'s Business Card`,
       });
     } catch (error) {
