@@ -21,7 +21,7 @@ import Button from '../ui-components/Button';
 interface UserProfileModalProps {
     visible: boolean;
     onClose: () => void;
-    userId: string;
+    userId?: string;
 }
 
 export const UserProfileModal: React.FC<UserProfileModalProps> = ({
@@ -52,6 +52,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
     const getUserData = async () => {
         setIsLoading(true)
+        if (!userId) return;
         const data = await getUserById(userId)
         if (data?.data?.statusCode === 200) {
             setUser(data.data.data);

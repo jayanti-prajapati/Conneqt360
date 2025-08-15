@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import Button from '@/components/ui-components/Button';
 
-import { navigate } from '@/utils/navigation';
 import Layout from '@/components/common/Layout';
 
 import {
@@ -30,9 +29,7 @@ import { pickImage } from '@/utils/imageUtils';
 import { clearAuthData, getAuthData } from '@/services/secureStore';
 import Colors from '@/constants/Colors';
 import Spacing from '@/constants/Spacing';
-import Form from '@/components/profile/Form';
 import useUsersStore from '@/store/useUsersStore';
-import About from '@/components/profile/About';
 import { Ionicons } from '@expo/vector-icons';
 import Typography from '@/constants/Typography';
 import LogoutModal from '@/components/profile/LogoutModal';
@@ -41,9 +38,7 @@ import { useThemeStore } from '@/store/themeStore';
 import { EditProfileModal } from '@/components/profile/EditProfileModal';
 import { User } from '@/types';
 import { ProfileImageModal } from '@/components/modal/ProfileImageModal';
-import { HARDCODED_USER } from '@/components/mock/UserData';
 import { SocialMediaModal } from '@/components/profile/SocialMediaModal';
-import InfoItem from '@/components/common/InfoItem';
 import InfoCard from '@/components/common/InfoCard';
 import { useRouter } from 'expo-router';
 import useUserBusinessServices from '@/store/useUserBusinessServices';
@@ -64,7 +59,6 @@ export default function ProfileScreen() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showProfileImage, setShowProfileImage] = useState(false);
   const [showSocialModal, setShowSocialModal] = useState(false);
-  const [isAboutExpanded, setIsAboutExpanded] = useState(false);
   const isConnected = useNetworkStatus(false);
   const { loading, getUserById, updateUser } = useUsersStore();
   const { response, getUserServicesByUserId } = useUserBusinessServices();

@@ -22,6 +22,7 @@ import Search from '@/components/common/Search';
 import { ScrollView } from 'react-native-gesture-handler';
 import Spacing from '@/constants/Spacing';
 import Input from '@/components/ui-components/Input';
+import { UserProfileModal } from '@/components/modal/UserProfileModal';
 
 const placeholderImage = 'https://via.placeholder.com/50';
 
@@ -32,6 +33,7 @@ export default function ChatScreen() {
   const [user, setUser] = useState<User | null>(null);
   const [showNewChat, setShowNewChat] = useState(false);
   const [showSearch, setShowSearch] = useState('');
+  const [showUserProfile, setShowUserProfile] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -372,6 +374,7 @@ export default function ChatScreen() {
             />
           )
         }
+
       </Layout >
     ) : (
       <NoInternetScreen />

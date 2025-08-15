@@ -7,6 +7,7 @@ import useChatStore from '@/store/useChatStore';
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
 import CustomVideoPlayer from '../utils/CustomVideoPlayer';
+import { UserProfileModal } from './UserProfileModal';
 
 
 
@@ -62,6 +63,7 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
     const [otherUser, setOtherUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [chatData, setChatData] = useState<any>(null);
+    const [showUserProfile, setShowUserProfile] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
     const { sendMessage, getConversation } = useChatStore();
 
@@ -392,7 +394,7 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
                             </TouchableOpacity>
 
                             {otherUser && (
-                                <View style={styles.headerUser}>
+                                <TouchableOpacity style={styles.headerUser} onPress={() => setShowUserProfile(true)}>
                                     <View style={styles.headerAvatar}>
                                         {otherUser.profileUrl ? (
                                             <Image
@@ -415,7 +417,7 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
                                             {otherUser.isOnline ? 'Online' : 'Offline'}
                                         </Text>
                                     </View>
-                                </View>
+                                </TouchableOpacity>
                             )}
                         </View>
 
@@ -469,6 +471,10 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
                         </View>
                     </KeyboardAvoidingView>
                 </View>)}
+
+            {showUserProfile && (
+                <UserProfileModal visible={showUserProfile} onClose={() => setShowUserProfile(false)} userId={otherUser?._id} />
+            )}
         </Modal>
     );
 };
