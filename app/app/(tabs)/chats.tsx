@@ -85,13 +85,17 @@ export default function ChatScreen() {
     }
   }, [user, fetchChats]);
 
-  // Search logic
+  // Search logic with debounce
   useEffect(() => {
-    if (searchQuery.length > 0) {
-      getAllUsers(searchQuery);
-    } else {
-      clearUsers();
-    }
+    const searchDebounce = setTimeout(() => {
+      if (searchQuery.trim().length > 0) {
+        getAllUsers(searchQuery);
+      } else {
+        clearUsers();
+      }
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(searchDebounce);
   }, [searchQuery]);
 
   const startNewChat = async (targetUser: User) => {
