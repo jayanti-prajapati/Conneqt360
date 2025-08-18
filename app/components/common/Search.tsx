@@ -1,6 +1,6 @@
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import Colors from '@/constants/Colors';
-import { Search as SearchIcon, Filter, FilterX } from 'lucide-react-native';
+import { Search as SearchIcon, Filter, FilterX, X } from 'lucide-react-native';
 import { TextInput } from 'react-native';
 import Spacing from '@/constants/Spacing';
 import Typography from '@/constants/Typography';
@@ -41,10 +41,10 @@ export default function Search({ searchQuery, setSearchQuery, placeholder }: Sea
           }}
         />
       </View>
-      <TouchableOpacity style={styles.filterButton} onPress={()=>setSearchQuery("")}>
-        {searchQuery.length>0 ?
-        <FilterX color={Colors.gray[500]} />:
-        <Filter color={Colors.gray[500]} />
+      <TouchableOpacity style={styles.filterButton} onPress={() => setSearchQuery("")}>
+        {searchQuery.length > 0 ?
+          <X color={Colors.gray[500]} /> :
+          <Filter color={Colors.gray[500]} />
         }
       </TouchableOpacity>
     </View>
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderRadius: 24,
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+    // paddingVertical: Spacing.sm,
     borderColor: Colors.gray[200],
     borderWidth: 1,
   },

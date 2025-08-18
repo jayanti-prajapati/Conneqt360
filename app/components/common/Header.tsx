@@ -89,7 +89,7 @@ export const Header: React.FC<HeaderProps> = ({
     navigation.dispatch(DrawerActions.openDrawer());
   };
   const onProfilePress = () => {
-    router.replace('/(tabs)/profile');
+    router.push('/notifications');
   };
   return (
     <View style={styles.header}>
