@@ -295,6 +295,12 @@ export default function ChatScreen() {
               renderItem={renderUserItem}
               contentContainerStyle={styles.usersList}
               showsVerticalScrollIndicator={false}
+              ListEmptyComponent={
+                <View style={styles.emptyContainer}>
+                  <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
+                    {searchQuery ? 'No users found matching your search' : 'Type to search users'}
+                  </Text>
+                </View>}
             />
           )}
           {/* </View> */}
@@ -357,7 +363,7 @@ export default function ChatScreen() {
                 ListEmptyComponent={
                   <View style={styles.emptySearchContainer}>
                     <Text style={[styles.emptySearchText, { color: theme.textSecondary }]}>
-                      No chats found matching "{searchQuery}"
+                      No chats found matching "{showSearch}""
                     </Text>
                   </View>
                 }
@@ -388,6 +394,11 @@ export default function ChatScreen() {
 
 const styles = StyleSheet.create({
   // Reuse the latest UI styles from your second code block
+  emptyText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 20,
+  },
   container: { flex: 1 },
   header: {
     flexDirection: 'row', justifyContent: 'space-between',
