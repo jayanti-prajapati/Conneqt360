@@ -8,6 +8,9 @@ import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
 import CustomVideoPlayer from '../utils/CustomVideoPlayer';
 import { UserProfileModal } from './UserProfileModal';
+import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
+
 
 
 
@@ -66,6 +69,8 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
     const [showUserProfile, setShowUserProfile] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
     const { sendMessage, getConversation } = useChatStore();
+    // const router = useRouter();
+    const navigation = useNavigation();
 
     // Determine if current user is the sender or receiver
     const isCurrentUserSender = useCallback((message: any) => {
@@ -255,35 +260,46 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
                                     const messageData = JSON.parse(item.content);
                                     if (messageData.type === 'post_share') {
                                         return (
-                                            <View style={styles.postShareContainer}>
-                                                <Text style={[styles.postShareHeader, { color: isOwnMessage ? '#FFFFFF' : theme.primary }]}>
-                                                    Shared Post from {messageData.username}
-                                                </Text>
-                                                {messageData.content && (
-                                                    <TruncatedText
-                                                        text={messageData.content}
-                                                        maxLength={200}
-                                                        textStyle={[styles.messageText, { color: isOwnMessage ? '#FFFFFF' : theme.text }]}
-                                                        seeMoreStyle={[styles.seeMoreText, { color: isOwnMessage ? 'rgba(255,255,255,0.8)' : theme.primary }]}
-                                                    />
-                                                )}
-                                                {messageData.imageUrl && (
-                                                    <Image
-                                                        source={{ uri: messageData.imageUrl }}
-                                                        style={styles.postShareImage}
-                                                        resizeMode="cover"
-                                                    />
-                                                )}
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    if (!messageData?.postId) return;
 
-                                                {
-                                                    messageData?.videoUrl && (
+                                                    // @ts-ignore
+                                                    navigation.navigate('index', {
+                                                        postId: messageData?.postId
+                                                    });
+                                                    onClose();
+
+                                                }}
+                                                activeOpacity={0.8}
+                                            >
+                                                <View style={styles.postShareContainer}>
+                                                    <Text style={[styles.postShareHeader, { color: isOwnMessage ? '#FFFFFF' : theme.primary }]}>
+                                                        shared post from <Text style={{ fontWeight: 'bold' }}>{messageData.username}</Text>
+                                                    </Text>
+                                                    {messageData.content && (
+                                                        <TruncatedText
+                                                            text={messageData.content}
+                                                            maxLength={200}
+                                                            textStyle={[styles.messageText, { color: isOwnMessage ? '#FFFFFF' : theme.text }]}
+                                                            seeMoreStyle={[styles.seeMoreText, { color: isOwnMessage ? 'rgba(255,255,255,0.8)' : theme.primary }]}
+                                                        />
+                                                    )}
+                                                    {messageData.imageUrl && (
+                                                        <Image
+                                                            source={{ uri: messageData.imageUrl }}
+                                                            style={styles.postShareImage}
+                                                            resizeMode="cover"
+                                                        />
+                                                    )}
+                                                    {messageData?.videoUrl && (
                                                         <CustomVideoPlayer
                                                             videoUrl={messageData.videoUrl}
                                                             isVisible={true}
                                                         />
-                                                    )
-                                                }
-                                            </View>
+                                                    )}
+                                                </View>
+                                            </TouchableOpacity>
                                         );
                                     }
                                 } catch (e) {
@@ -481,12 +497,12 @@ export const ChatDetailModal: React.FC<ChatDetailModalProps> = ({
 
 const styles = StyleSheet.create({
     postShareContainer: {
-        padding: 10,
+        // padding: 10,
         borderRadius: 8,
         maxWidth: '100%',
     },
     postShareHeader: {
-        fontWeight: 'bold',
+        // fontWeight: 'bold',
         marginBottom: 5,
         fontSize: 14,
         opacity: 0.9,

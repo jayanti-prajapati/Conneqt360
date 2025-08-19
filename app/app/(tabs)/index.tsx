@@ -9,7 +9,7 @@ import {
   Share,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useIsFocused } from '@react-navigation/native';
+import { RouteProp, useIsFocused, useRoute } from '@react-navigation/native';
 
 import FeedCard from '@/components/home/FeedCard';
 import Form from '@/components/profile/Form';
@@ -62,11 +62,21 @@ export const handleShare = async (id: string) => {
   }
 };
 
+type RootStackParamList = {
+  index: { postId?: string };
+  directory: undefined;
+};
+
+type HomeScreenRouteProp = RouteProp<RootStackParamList, 'index'>;
 export default function HomeScreen() {
+
   const router = useRouter();
   const { getAllFeeds, loading, updateFeed, deleteFeed, getFeedById } = useCommunityFeedsStore();
   const isConnected = useNetworkStatus(false);
   const isFocused = useIsFocused();
+  const route = useRoute<HomeScreenRouteProp>();
+
+  const postId = route.params?.postId;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [feedData, setFeedData] = useState([]);
@@ -83,6 +93,22 @@ export default function HomeScreen() {
   //   const visibleIds = viewableItems.map((item) => item?.item?._id);
   //   setVisibleItemIds(visibleIds);
   // });
+  // console.log("Current route:", router.getCurrentRoute());
+  // console.log("Navigation state:", router.getState());
+  useEffect(() => {
+    const fetchPostById = async (postId: string) => {
+
+      const data = await getFeedById(postId);
+      setSelectedPost(data?.data?.data);
+
+
+    };
+    if (postId) {
+
+      fetchPostById(postId);
+      setShowPostModal(true);
+    }
+  }, [postId]);
 
   const onViewRef = useRef(({ viewableItems = [] }: { viewableItems: Array<{ item: any }> }) => {
     const visibleIds = viewableItems
@@ -214,7 +240,7 @@ export default function HomeScreen() {
         ) : loading ? <CustomLoader visible={loading} /> : <NotFound />}
 
         {selectedPost && (
-          <PostDetailModal visible={showPostModal} post={selectedPost} onClose={() => setShowPostModal(false)} onRefresh={refreshSelectedPost} />
+          <PostDetailModal visible={showPostModal} post={selectedPost} onClose={() => { setShowPostModal(false); setSelectedPost(null) }} onRefresh={refreshSelectedPost} />
         )}
         {selectedPost?.user && (
           <UserProfileModal visible={showProfileModal} onClose={() => setShowProfileModal(false)} userId={selectedPost?.user?._id} />

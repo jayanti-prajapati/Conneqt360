@@ -31,7 +31,7 @@ const BottomView: React.FC = () => {
       case 'home':
         icon = 'home-outline';
         break;
-      case 'directory':
+      case 'index':
         icon = 'people-outline';
         break;
       case 'circles':
@@ -68,6 +68,7 @@ const BottomView: React.FC = () => {
     selectedTab: string;
     navigate: (routeName: string) => void;
   }) => {
+    ;
     return (
       <TouchableOpacity
         onPress={() => navigate(routeName)}
@@ -96,7 +97,7 @@ const BottomView: React.FC = () => {
         borderColor="#e0e0e0"
         borderWidth={1}
         bgColor="white"
-        initialRouteName="directory"
+        initialRouteName="index"
         borderTopLeftRight
         backBehavior="initialRoute"
         screenOptions={{
@@ -152,7 +153,7 @@ const BottomView: React.FC = () => {
       >
         {/* <CurvedBottomBarExpo.Screen name="home" position="LEFT" component={HomeScreen} /> */}
         <CurvedBottomBarExpo.Screen
-          name="directory"
+          name="index"
           position="LEFT"
           component={HomeScreen}
         />
